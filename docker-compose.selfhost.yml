@@ -1,0 +1,53 @@
+# Self-hosting: this one file is all a server needs (no source code, no .env).
+#
+#   docker compose -f docker-compose.selfhost.yml up -d
+#
+# It pulls prebuilt images from GitHub Container Registry. Edit the marked lines below, or set
+# the same names as environment variables. See the README section "Self-hosting with just
+# this file" for the full walkthrough.
+
+name: ptcgp-tracker-selfhost
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ptcgp
+      # CHANGE ME before the first start. The database is only reachable from inside this compose
+      # project (no published port), but Postgres only reads this once, when it creates its volume.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ptcgp_tracker
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ptcgp -d ptcgp_tracker"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: ghcr.io/hdlam91/ptcgp-tracker-backend:${PTCGP_VERSION:-latest}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=ptcgp_tracker;Username=ptcgp;Password=${POSTGRES_PASSWORD:-changeme}"
+      # CHANGE ME: your email, so you become admin when you register with it. Comma-separate several.
+      # Emails aren't verified, so register this account right away, before you share the site.
+      Admin__Emails: ${ADMIN_EMAILS:-}
+      APPLY_MIGRATIONS_ON_STARTUP: "true"
+      ASPNETCORE_URLS: "http://+:8080"
+
+  frontend:
+    image: ghcr.io/hdlam91/ptcgp-tracker-frontend:${PTCGP_VERSION:-latest}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      # The website. Change the left number to use another port (or put a reverse proxy in front).
+      - "${PTCGP_PORT:-8081}:80"
+
+volumes:
+  pgdata:

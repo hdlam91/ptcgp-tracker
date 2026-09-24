@@ -1,16 +1,19 @@
+# Builds the app from this checkout. Runs as-is with no .env: every setting has a default below,
+# and .env (or exported variables) can override any of them. To run prebuilt images instead
+# (no source needed), see docker-compose.selfhost.yml.
 services:
   postgres:
     image: postgres:17-alpine
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:-ptcgp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${POSTGRES_DB:-ptcgp_tracker}
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
       - "5433:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ptcgp} -d ${POSTGRES_DB:-ptcgp_tracker}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -22,8 +25,8 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
-      CardData__RepoTag: ${CARD_DATA_REPO_TAG}
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-ptcgp_tracker};Username=${POSTGRES_USER:-ptcgp};Password=${POSTGRES_PASSWORD:-changeme}"
+      CardData__RepoTag: ${CARD_DATA_REPO_TAG:-v5.3.1}
       Admin__Emails: ${ADMIN_EMAILS:-}
       APPLY_MIGRATIONS_ON_STARTUP: "true"
       ASPNETCORE_URLS: "http://+:8080"
