@@ -57,6 +57,7 @@ const rarityGroupsFor = computed(() => {
                   v-for="pack in expansion.packs.filter(pack => pack.image)"
                   :key="pack.id"
                   :pack="pack"
+                  preview
                   class="h-12 w-12 shrink-0 rounded-md"
                 />
               </div>
