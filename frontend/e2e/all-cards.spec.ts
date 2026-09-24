@@ -45,13 +45,13 @@ test('all cards page is reachable from the nav and shares ownership state with a
   await page.goto('/sets/a1')
   await expect(page.getByRole('heading', { name: 'Genetic Apex' })).toBeVisible()
   const firstCard = page.locator('.grid > div').filter({ has: page.locator('img') }).first()
-  await firstCard.getByRole('button').nth(1).click()
-  await expect(firstCard.getByText('1', { exact: true })).toBeVisible()
+  await firstCard.getByRole('button', { name: 'Add one copy' }).click()
+  await expect(firstCard.getByText('×1')).toBeVisible()
 
   await page.getByRole('link', { name: 'All cards' }).click()
   await expect(page.getByRole('heading', { name: 'All cards' })).toBeVisible()
 
   await page.getByPlaceholder('Search name, number, attack, ability').fill('bulbasaur')
   const bulbasaurCard = page.locator('.grid > div').filter({ has: page.locator('img') }).first()
-  await expect(bulbasaurCard.getByText('1', { exact: true })).toBeVisible()
+  await expect(bulbasaurCard.getByText('×1')).toBeVisible()
 })

@@ -20,8 +20,8 @@ test('searching and filtering narrows the card grid in a set', async ({ page }) 
   await expect(page.getByText('286 / 286 cards')).toBeVisible()
 
   const firstCard = page.locator('.grid > div').filter({ has: page.locator('img') }).first()
-  await firstCard.getByRole('button').nth(1).click()
-  await expect(firstCard.getByText('1', { exact: true })).toBeVisible()
+  await firstCard.getByRole('button', { name: 'Add one copy' }).click()
+  await expect(firstCard.getByText('×1')).toBeVisible()
 
   await page.getByRole('button', { name: 'Owned', exact: true }).click()
   await expect(page.getByText('1 / 286 cards')).toBeVisible()

@@ -8,9 +8,9 @@ test('marking a card owned persists across a reload and updates the set progress
   await expect(page.getByRole('heading', { name: 'Genetic Apex' })).toBeVisible()
 
   const firstCard = page.locator('.grid > div').filter({ has: page.locator('img') }).first()
-  const incrementButton = firstCard.getByRole('button').nth(1)
+  const incrementButton = firstCard.getByRole('button', { name: 'Add one copy' })
   await incrementButton.click()
-  await expect(firstCard.getByText('1', { exact: true })).toBeVisible()
+  await expect(firstCard.getByText('×1')).toBeVisible()
   await incrementButton.click()
   await expect(firstCard.getByText('×2')).toBeVisible()
 
@@ -29,7 +29,8 @@ test('setting owned count back to zero removes it from the collection', async ({
   await expect(page.getByRole('heading', { name: 'Genetic Apex' })).toBeVisible()
 
   const firstCard = page.locator('.grid > div').filter({ has: page.locator('img') }).first()
-  const [decrementButton, incrementButton] = await firstCard.getByRole('button').all()
+  const decrementButton = firstCard.getByRole('button', { name: 'Remove one copy' })
+  const incrementButton = firstCard.getByRole('button', { name: 'Add one copy' })
 
   await incrementButton.click()
   await expect(firstCard.getByText('×1')).toBeVisible()

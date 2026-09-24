@@ -31,7 +31,7 @@ export interface CardMeta {
 export const ENERGY_TYPES: EnergyType[] = ['Grass', 'Fire', 'Water', 'Lightning', 'Psychic', 'Fighting', 'Darkness', 'Metal', 'Dragon', 'Colorless']
 
 // Attack costs are written as strings of energy letters, e.g. "GGC" = two Grass + one Colorless.
-const ENERGY_BY_COST_LETTER: Record<string, EnergyType> = {
+export const ENERGY_BY_COST_LETTER: Record<string, EnergyType> = {
   G: 'Grass',
   R: 'Fire',
   W: 'Water',
@@ -130,4 +130,32 @@ export function matchesEvolution(meta: CardMeta, filter: EvolutionFilter): boole
 /** Ability filters only make sense for Pokémon; trainers are excluded from both "has" and "no" ability. */
 export function matchesAbility(meta: CardMeta, filter: AbilityFilter): boolean {
   return meta.isPokemon && meta.hasAbility === (filter === 'yes')
+}
+
+/** "GGC" → [Grass, Grass, Colorless]. A cost of "0" (a free attack) or nothing parses to []. */
+export function parseEnergyCost(cost: string | null | undefined): EnergyType[] {
+  return [...(cost ?? '')].flatMap((letter) => {
+    const energy = ENERGY_BY_COST_LETTER[letter]
+    return energy ? [energy] : []
+  })
+}
+
+export type EnergyTextPart = { text: string } | { energy: EnergyType }
+
+/** Splits effect text on inline energy tokens like "[R]" or "[ C ]" so they can be drawn as icons. */
+export function splitEnergyText(text: string): EnergyTextPart[] {
+  const parts: EnergyTextPart[] = []
+  let cursor = 0
+  for (const match of text.matchAll(/\[\s*([GRWLPFDMC])\s*\]/g)) {
+    if (match.index > cursor) parts.push({ text: text.slice(cursor, match.index) })
+    parts.push({ energy: ENERGY_BY_COST_LETTER[match[1]] })
+    cursor = match.index + match[0].length
+  }
+  if (cursor < text.length) parts.push({ text: text.slice(cursor) })
+  return parts
+}
+
+/** The catalog id of a print listed in `alternate_versions` (set + un-padded number), e.g. a4b/1 → "a4b-001". */
+export function printCardId(setCode: string, number: number): string {
+  return `${setCode}-${String(number).padStart(3, '0')}`
 }
