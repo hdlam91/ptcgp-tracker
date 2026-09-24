@@ -1,26 +1,38 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import PackThumbnail from '@/components/cards/PackThumbnail.vue'
+import RarityBadgeRow from '@/components/cards/RarityBadgeRow.vue'
 import SetProgressBar from '@/components/cards/SetProgressBar.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useCardCatalog } from '@/composables/useCardCatalog'
 import { useCollection } from '@/composables/useCollection'
+import { computeRarityGroups } from '@/composables/useRarityGroups'
 import type { SetSummaryResponse } from '@/types/api'
 
-const { getExpansions } = useCardCatalog()
-const { getSummary } = useCollection()
+const { getExpansions, getCardsBySet } = useCardCatalog()
+const { getSummary, getOwnedCount, ensureLoaded: ensureCollectionLoaded } = useCollection()
 
 const expansions = getExpansions()
 const summaryBySet = ref<Map<string, SetSummaryResponse>>(new Map())
 const loading = ref(true)
 
 onMounted(async () => {
-  const summary = await getSummary()
+  const [summary] = await Promise.all([getSummary(), ensureCollectionLoaded()])
   summaryBySet.value = new Map(summary.map(s => [s.setCode, s]))
   loading.value = false
 })
 
 const ownedFor = computed(() => (setCode: string) => summaryBySet.value.get(setCode)?.ownedUniqueCards ?? 0)
+
+// Diamond/star/crown completion per set, same grouping as the set-detail page's
+// rarity panel — recomputed whenever ownedCounts changes (getOwnedCount reads it).
+const rarityGroupsFor = computed(() => {
+  const map = new Map<string, ReturnType<typeof computeRarityGroups>>()
+  for (const expansion of expansions) {
+    map.set(expansion.id, computeRarityGroups(getCardsBySet(expansion.id), getOwnedCount))
+  }
+  return map
+})
 </script>
 
 <template>
@@ -50,7 +62,8 @@ const ownedFor = computed(() => (setCode: string) => summaryBySet.value.get(setC
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent class="flex flex-col gap-3">
+            <RarityBadgeRow v-if="!loading" :groups="rarityGroupsFor.get(expansion.id) ?? []" />
             <SetProgressBar :owned="loading ? 0 : ownedFor(expansion.id)" :total="expansion.total_cards" />
           </CardContent>
         </Card>
