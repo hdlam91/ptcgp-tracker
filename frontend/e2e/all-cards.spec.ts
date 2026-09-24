@@ -13,7 +13,7 @@ test('searching and filtering the all-cards page spans every set', async ({ page
   await expect(page.getByText(/cards across every set/)).toBeVisible()
   await expect(page.locator('.grid > div')).toHaveCount(0)
 
-  await page.getByPlaceholder('Search by name or number').fill('pikachu')
+  await page.getByPlaceholder('Search name, number, attack, ability').fill('pikachu')
   const matchedCards = page.locator('.grid > div').filter({ has: page.locator('img') })
   await expect(matchedCards.first()).toBeVisible()
   const matchedCount = await matchedCards.count()
@@ -27,7 +27,7 @@ test('searching and filtering the all-cards page spans every set', async ({ page
   const setCodes = new Set(cardIds.map(text => text.split('-')[0].trim()))
   expect(setCodes.size).toBeGreaterThan(1)
 
-  await page.getByPlaceholder('Search by name or number').fill('')
+  await page.getByPlaceholder('Search name, number, attack, ability').fill('')
   await page.getByLabel('Filter by set').selectOption({ label: 'Mythical Island' })
   await expect(matchedCards).toHaveCount(86)
   for (const name of await matchedCards.locator('p.text-xs').allInnerTexts()) {
@@ -51,7 +51,7 @@ test('all cards page is reachable from the nav and shares ownership state with a
   await page.getByRole('link', { name: 'All cards' }).click()
   await expect(page.getByRole('heading', { name: 'All cards' })).toBeVisible()
 
-  await page.getByPlaceholder('Search by name or number').fill('bulbasaur')
+  await page.getByPlaceholder('Search name, number, attack, ability').fill('bulbasaur')
   const bulbasaurCard = page.locator('.grid > div').filter({ has: page.locator('img') }).first()
   await expect(bulbasaurCard.getByText('1', { exact: true })).toBeVisible()
 })

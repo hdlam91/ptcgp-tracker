@@ -22,7 +22,7 @@ const cards = computed(() => getCardsBySet(setCode.value))
 const expansion = computed(() => getExpansion(setCode.value))
 
 const {
-  search, setCode: setCodeFilter, rarity, pack, ownership,
+  search, setCode: setCodeFilter, rarity, pack, ownership, cardType, pokemonType, evolution, ability, moveType, advancedOptions,
   setOptions, rarityOptions, packOptions, filteredCards, hasActiveFilters, resetFilters,
 } = useCardFilters(cards, getOwnedCount)
 
@@ -74,6 +74,12 @@ onMounted(async () => {
       v-model:rarity="rarity"
       v-model:pack="pack"
       v-model:ownership="ownership"
+      v-model:card-type="cardType"
+      v-model:pokemon-type="pokemonType"
+      v-model:evolution="evolution"
+      v-model:ability="ability"
+      v-model:move-type="moveType"
+      :advanced-options="advancedOptions"
       class="mt-4"
       :set-options="setOptions"
       :rarity-options="rarityOptions"

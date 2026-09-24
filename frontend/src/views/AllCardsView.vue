@@ -14,7 +14,7 @@ const { wantedCardIds, offeredCardIds, toggle, ensureLoaded: ensureTradeListLoad
 const cards = computed(() => getAllCards())
 
 const {
-  search, setCode, rarity, pack, ownership,
+  search, setCode, rarity, pack, ownership, cardType, pokemonType, evolution, ability, moveType, advancedOptions,
   setOptions, rarityOptions, packOptions, filteredCards, hasActiveFilters, resetFilters,
 } = useCardFilters(cards, getOwnedCount)
 
@@ -38,6 +38,12 @@ onMounted(async () => {
       v-model:rarity="rarity"
       v-model:pack="pack"
       v-model:ownership="ownership"
+      v-model:card-type="cardType"
+      v-model:pokemon-type="pokemonType"
+      v-model:evolution="evolution"
+      v-model:ability="ability"
+      v-model:move-type="moveType"
+      :advanced-options="advancedOptions"
       class="mt-4"
       :set-options="setOptions"
       :rarity-options="rarityOptions"
@@ -50,7 +56,7 @@ onMounted(async () => {
     />
 
     <p v-if="!hasActiveFilters" class="mt-10 rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-      {{ cards.length }} cards across every set. Search by name or number, or pick a set, rarity, or pack to browse them.
+      {{ cards.length }} cards across every set. Search by name, number, attack or ability, or use the filters to browse them.
     </p>
     <p v-else-if="filteredCards.length === 0" class="mt-8 text-sm text-muted-foreground">
       No cards match these filters.

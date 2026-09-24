@@ -8,7 +8,7 @@ test('searching and filtering narrows the card grid in a set', async ({ page }) 
   await expect(page.getByRole('heading', { name: 'Genetic Apex' })).toBeVisible()
   await expect(page.getByText('286 / 286 cards')).toBeVisible()
 
-  await page.getByPlaceholder('Search by name or number').fill('charizard')
+  await page.getByPlaceholder('Search name, number, attack, ability').fill('charizard')
   const matchedCards = page.locator('.grid > div').filter({ has: page.locator('img') })
   await expect(matchedCards).not.toHaveCount(286)
   await expect(matchedCards.first()).toBeVisible()
@@ -38,6 +38,6 @@ test('filtering to nothing shows an empty state instead of an empty grid', async
   await page.goto('/sets/a1')
   await expect(page.getByRole('heading', { name: 'Genetic Apex' })).toBeVisible()
 
-  await page.getByPlaceholder('Search by name or number').fill('this card does not exist')
+  await page.getByPlaceholder('Search name, number, attack, ability').fill('this card does not exist')
   await expect(page.getByText('No cards match these filters.')).toBeVisible()
 })

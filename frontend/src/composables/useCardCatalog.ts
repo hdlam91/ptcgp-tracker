@@ -1,6 +1,8 @@
 import cardRecords from 'pokemon-tcg-pocket-cards/v5/collection'
 import expansionRecords from 'pokemon-tcg-pocket-cards/v5/expansions'
-import type { CardCatalogEntry, ExpansionEntry } from '@/types/catalog'
+import gameplayRecords from 'pokemon-tcg-pocket-cards/v5/gameplay/no-image'
+import { type CardMeta, deriveCardMeta } from '@/lib/cardMetadata'
+import type { CardCatalogEntry, ExpansionEntry, GameplayEntry } from '@/types/catalog'
 
 const cardsById = new Map<string, CardCatalogEntry>(
   (cardRecords as CardCatalogEntry[]).map(card => [card.id, card]),
@@ -33,6 +35,28 @@ for (const [setCode, override] of Object.entries(PROMO_PACK_IMAGE_OVERRIDES)) {
   }
 }
 
+// The gameplay payload has one record per distinct card (2,822), while the collection
+// lists every print (3,879) — alt-art and full-art prints have no gameplay record of
+// their own. Each base card lists its other prints in `alternate_versions`, so index
+// those to give every print the gameplay data of the card it reprints.
+const gameplayById = new Map<string, GameplayEntry>(
+  (gameplayRecords as GameplayEntry[]).map(entry => [entry.id, entry]),
+)
+
+const gameplayIdByPrintId = new Map<string, string>()
+for (const card of cardsById.values()) {
+  if (!gameplayById.has(card.id)) continue
+  for (const print of card.alternate_versions ?? []) {
+    gameplayIdByPrintId.set(`${print.set_code}-${String(print.id).padStart(3, '0')}`, card.id)
+  }
+}
+
+const metaById = new Map<string, CardMeta>()
+for (const card of cardsById.values()) {
+  const gameplay = gameplayById.get(card.id) ?? gameplayById.get(gameplayIdByPrintId.get(card.id) ?? '')
+  if (gameplay) metaById.set(card.id, deriveCardMeta(gameplay))
+}
+
 const cardsBySetCode = new Map<string, CardCatalogEntry[]>()
 for (const card of cardsById.values()) {
   const cards = cardsBySetCode.get(card.set_code) ?? []
@@ -57,6 +81,7 @@ const allCardsSorted = expansionsSortedByRelease.flatMap(expansion => cardsBySet
 export function useCardCatalog() {
   return {
     getCard: (cardId: string): CardCatalogEntry | undefined => cardsById.get(cardId),
+    getMeta: (cardId: string): CardMeta | undefined => metaById.get(cardId),
     getCardsBySet: (setCode: string): CardCatalogEntry[] => cardsBySetCode.get(setCode) ?? [],
     getAllCards: (): CardCatalogEntry[] => allCardsSorted,
     getExpansions: (): ExpansionEntry[] => expansionsSortedByRelease,
