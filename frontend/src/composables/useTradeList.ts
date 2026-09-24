@@ -29,15 +29,35 @@ async function reload() {
 }
 
 async function add(cardId: string, direction: TradeDirection) {
-  await tradeListService.add(cardId, direction)
-  setFor(direction).value = new Set(setFor(direction).value).add(cardId)
+  // Optimistic: a rapid second click must see this card as already added,
+  // not race the still-in-flight first request.
+  const target = setFor(direction)
+  if (target.value.has(cardId)) return
+  target.value = new Set(target.value).add(cardId)
+
+  try {
+    await tradeListService.add(cardId, direction)
+  }
+  catch (error) {
+    target.value = new Set([...target.value].filter(id => id !== cardId))
+    throw error
+  }
 }
 
 async function remove(cardId: string, direction: TradeDirection) {
-  await tradeListService.remove(cardId, direction)
-  const next = new Set(setFor(direction).value)
+  const target = setFor(direction)
+  if (!target.value.has(cardId)) return
+  const next = new Set(target.value)
   next.delete(cardId)
-  setFor(direction).value = next
+  target.value = next
+
+  try {
+    await tradeListService.remove(cardId, direction)
+  }
+  catch (error) {
+    target.value = new Set(target.value).add(cardId)
+    throw error
+  }
 }
 
 async function toggle(cardId: string, direction: TradeDirection) {

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import AppNav from '@/components/layout/AppNav.vue'
+import ThemeToggle from '@/components/ThemeToggle.vue'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/composables/useAuth'
 
@@ -21,6 +22,7 @@ async function onLogout() {
     </div>
     <div class="flex shrink-0 items-center gap-3">
       <span class="hidden text-sm text-muted-foreground sm:inline">{{ currentUser?.displayName }}</span>
+      <ThemeToggle />
       <Button variant="outline" size="sm" @click="onLogout">
         Log out
       </Button>
