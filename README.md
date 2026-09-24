@@ -6,6 +6,7 @@ Track which Pokémon TCG Pocket cards you own, see your progress per set, and ma
 - **Search and filters** across every card: name, attack and ability text, set, pack, rarity, card type, Pokémon type, evolution stage, ability, and attack energy.
 - **Card pages** with HP, attacks and energy costs, abilities, trainer text and other prints.
 - **Wishlist and trade list**, with an optional public read-only share link (`/share/your-name`).
+- **Installable on your phone** as a PWA (needs HTTPS).
 - **Accounts** for multiple users, plus an admin **Settings** page (manage users, moderate share links, open or close registration).
 
 See [CLAUDE.md](./CLAUDE.md) for the architecture and coding conventions.
@@ -174,6 +175,39 @@ Admins see a gear icon in the header that opens **Settings**, where they can:
 
 More admins can be added from that page. You can't change or delete your own account there, so a mistake can't remove the last admin. `ADMIN_EMAILS` only ever *adds* admins: if you demote someone who is still listed, they become admin again the next time the backend starts.
 
+## Installing it on your phone
+
+The app is a PWA, so you can add it to your home screen and open it like a normal app, full screen and with its own icon.
+
+**It needs HTTPS.** Browsers only offer to install a web app from a secure address. `http://your-server:8081` won't get the install option on Android, and on iPhones it only makes a plain shortcut. `http://localhost` is the one exception, which is only useful for testing on the same computer. So put your server behind a reverse proxy that serves HTTPS on a domain name you own. [Caddy](https://caddyserver.com/) does this with almost no setup, because it gets and renews the certificate for you:
+
+```
+# /etc/caddy/Caddyfile
+tracker.example.com {
+    encode zstd gzip
+    reverse_proxy localhost:8081
+}
+```
+
+Point `tracker.example.com` at your server first, and make sure ports 80 and 443 are open. Any other HTTPS proxy or tunnel works too.
+
+- **Keep `encode`.** The app's card data is a single 4.3 MB file and the app's own web server doesn't compress it. With `encode` it is about 450 KB, which is what your phone downloads on first install.
+- **Use a domain or subdomain of its own**, not a path such as `example.com/tracker`. The app expects to live at the root of its address.
+- **If Caddy runs in Docker**, `localhost:8081` would point at Caddy's own container. Put Caddy on the same compose network and use `reverse_proxy frontend:80`, or use your server's address instead of `localhost`.
+- **With Caddy in front, don't leave the plain HTTP port open.** In the compose file change `"${PTCGP_PORT:-8081}:80"` to `"127.0.0.1:8081:80"`, so only Caddy (on the same machine) can reach it. Docker publishes ports around most host firewalls, so don't rely on one to block it.
+
+Then, on your phone, open your `https://` address and:
+
+- **Android (Chrome):** menu (⋮) → **Install app** (or **Add to Home screen**). Chrome may also offer it on its own.
+- **iPhone (Safari):** Share button → **Add to Home Screen**. It has to be Safari; other iOS browsers can't install web apps.
+
+A few things to know:
+
+- It still needs a connection. Your collection lives on the server, so opening the app with no network shows a "Can't reach the server" screen with a **Try again** button. The install makes it launch faster and feel like an app; it doesn't add offline use.
+- Updates are automatic. After you update the server, the installed app picks up the new version the next time it opens and reloads once.
+- The app icons are generated from `frontend/public/favicon.svg`. After changing the favicon, run `npm run generate-pwa-icons` (in `frontend/`) to refresh them.
+- The service worker is only built into production builds. `npm run dev` doesn't have it, so to try the install behaviour locally use the Docker frontend (`http://localhost:8081`).
+
 ## Development
 
 Run the database and backend in Docker, and the frontend with Vite so you get hot reload:
@@ -223,6 +257,8 @@ The end-to-end tests run against your **running dev stack** (`docker compose up 
 - **Registration must be open**, or the tests can't create users.
 - The admin tests promote their users by running `psql` inside the `postgres` container, so they need `docker compose` to work from the repository root.
 
+The PWA checks (`e2e/pwa.spec.ts`) need a production build, so they are skipped unless you point them at the Docker frontend: `E2E_BASE_URL=http://localhost:8081 E2E_PWA=1 npx playwright test e2e/pwa.spec.ts` (rebuild it first with `docker compose up -d --build frontend`).
+
 If an admin has closed registration and you only want to run read-only specs, set `E2E_LOGIN_EMAIL` and `E2E_LOGIN_PASSWORD` to sign in as an existing account instead of registering. Only do that for tests that don't change its data.
 
 ### Updating the card data
@@ -254,7 +290,7 @@ The frontend never talks to the database. The backend owns all collection and tr
 The compose file is set up for local use or a trusted network. If other people will reach it over the internet:
 
 - set a strong `POSTGRES_PASSWORD`. The self-host compose file already publishes only the website port; if you build from source, remove the published `5433` (database) and `8080` (API) ports from `docker-compose.yml`
-- put a reverse proxy that terminates HTTPS in front of the website port
+- put a reverse proxy that terminates HTTPS in front of the website port (this is also what lets people [install it on their phones](#installing-it-on-your-phone))
 - register your admin account before anyone else can (see [Your first admin](#your-first-admin))
 - decide whether strangers should be able to sign up. You can close registration from the admin Settings page once your own account exists.
 - the backend applies database migrations on startup (`APPLY_MIGRATIONS_ON_STARTUP`). That is convenient for one instance, but if you run several copies, apply migrations as a separate step instead.

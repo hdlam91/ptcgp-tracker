@@ -8,21 +8,29 @@ import type { UserResponse } from '@/types/api'
 // pulling in a state-management library for this alone.
 const currentUser = ref<UserResponse | null>(null)
 const initialized = ref(false)
+// True when the startup check couldn't reach the server (offline, or the server is down), as
+// opposed to the server answering "not logged in".
+const connectionError = ref(false)
 
 async function fetchCurrentUser(): Promise<UserResponse | null> {
   try {
     currentUser.value = await authService.me()
+    connectionError.value = false
+    initialized.value = true
   }
   catch (error) {
     if (error instanceof ApiError && error.status === 401) {
       currentUser.value = null
+      connectionError.value = false
+      initialized.value = true
     }
-    else {
+    else if (error instanceof ApiError && error.status < 500) {
       throw error
     }
-  }
-  finally {
-    initialized.value = true
+    else {
+      // A network failure (fetch throws) or a 5xx. Stay uninitialized so the next navigation retries.
+      connectionError.value = true
+    }
   }
   return currentUser.value
 }
@@ -48,6 +56,7 @@ export function useAuth() {
     isAuthenticated: computed(() => currentUser.value !== null),
     isAdmin: computed(() => currentUser.value?.isAdmin === true),
     initialized: computed(() => initialized.value),
+    connectionError: computed(() => connectionError.value),
     fetchCurrentUser,
     register,
     login,

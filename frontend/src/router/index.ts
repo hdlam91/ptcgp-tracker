@@ -73,10 +73,16 @@ router.beforeEach(async (to) => {
     return true
   }
 
-  const { initialized, isAuthenticated, isAdmin, fetchCurrentUser } = useAuth()
+  const { initialized, isAuthenticated, isAdmin, connectionError, fetchCurrentUser } = useAuth()
 
   if (!initialized.value) {
     await fetchCurrentUser()
+  }
+
+  // Couldn't reach the server, so we can't tell whether the user is logged in. Don't bounce them to
+  // the login page; let App.vue show its "can't reach the server" screen for this route instead.
+  if (connectionError.value) {
+    return true
   }
 
   const requiresAuth = to.meta.requiresAuth !== false
