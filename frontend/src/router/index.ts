@@ -47,6 +47,12 @@ const router = createRouter({
       // Public: works whether or not the visitor is logged in, and never redirects.
       meta: { public: true },
     },
+    {
+      path: '/legal',
+      name: 'legal',
+      component: () => import('@/views/LegalView.vue'),
+      meta: { public: true },
+    },
   ],
 })
 
