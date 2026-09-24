@@ -1,2 +1,8 @@
 node_modules/
 dist/
+
+# Local dev-time mirror of card art (see scripts/download-card-images.mjs).
+# Deployed containers hotlink the dataset's own image URLs instead — see
+# CardGridItem.vue's fallback — rather than shipping ~135MB of card art baked
+# into every image.
+public/card-images/

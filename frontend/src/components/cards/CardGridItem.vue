@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Heart, Minus, Plus, Repeat } from '@lucide/vue'
+import { computed, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { CardCatalogEntry } from '@/types/catalog'
@@ -21,6 +22,23 @@ const emit = defineEmits<{
   (e: 'toggle-offer'): void
 }>()
 
+// The dataset's own URL — used as the initial src if no local copy was ever
+// downloaded (see scripts/download-card-images.mjs), and as the fallback if the
+// local copy 404s (e.g. it failed to download or public/ was never populated).
+const remoteImageUrl = computed(() => props.card.image ?? props.card.image_png)
+const localImageUrl = computed(() => {
+  if (!remoteImageUrl.value) return undefined
+  const ext = remoteImageUrl.value.slice(remoteImageUrl.value.lastIndexOf('.'))
+  return `/card-images/${props.card.id}${ext}`
+})
+const imageUrl = ref(localImageUrl.value ?? remoteImageUrl.value)
+
+function onImageError() {
+  if (imageUrl.value !== remoteImageUrl.value) {
+    imageUrl.value = remoteImageUrl.value
+  }
+}
+
 function increment() {
   emit('update:ownedCount', props.ownedCount + 1)
 }
@@ -41,11 +59,12 @@ function decrement() {
   >
     <div class="relative aspect-[5/7] bg-muted">
       <img
-        v-if="card.image || card.image_png"
-        :src="card.image ?? card.image_png"
+        v-if="imageUrl"
+        :src="imageUrl"
         :alt="card.name"
         class="h-full w-full object-contain"
         loading="lazy"
+        @error="onImageError"
       >
       <span
         v-if="ownedCount > 0"

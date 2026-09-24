@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Local mirror of card art, populated by `npm run download-card-images`.
+# Not committed — it's a rerunnable cache of publicly-linked images, not source.
+public/card-images/
+
 # Playwright
 test-results
 playwright-report
