@@ -49,7 +49,12 @@ function decrement() {
       !readonly && ownedCount === 0 && 'opacity-60',
     )"
   >
-    <div class="relative aspect-[5/7] bg-muted">
+    <div
+      :class="cn('relative aspect-[5/7] bg-muted', !readonly && 'cursor-pointer select-none')"
+      :title="readonly ? undefined : 'Click to add one, right-click to remove one'"
+      @click="!readonly && increment()"
+      @contextmenu.prevent="!readonly && decrement()"
+    >
       <img
         v-if="imageUrl"
         :src="imageUrl"
