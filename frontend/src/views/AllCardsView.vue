@@ -45,6 +45,7 @@ onMounted(async () => {
       :result-count="filteredCards.length"
       :total-count="cards.length"
       :has-active-filters="hasActiveFilters"
+      set-selector="dropdown"
       @reset="resetFilters"
     />
 

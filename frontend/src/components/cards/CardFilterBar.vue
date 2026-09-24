@@ -16,8 +16,11 @@ withDefaults(defineProps<{
   hasActiveFilters: boolean
   /** Hidden on views with no ownership state, e.g. a shared read-only trade list. */
   showOwnership?: boolean
+  /** The trade list can span every set at once with no natural pack art to show; a plain dropdown reads faster there than a wall of tiles. */
+  setSelector?: 'tiles' | 'dropdown'
 }>(), {
   showOwnership: true,
+  setSelector: 'tiles',
 })
 
 const emit = defineEmits<{ (e: 'reset'): void }>()
@@ -38,6 +41,15 @@ const selectClass = 'h-10 rounded-md border border-input bg-background px-3 text
         <Search class="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input v-model="search" type="text" placeholder="Search by name or number" class="pl-8" />
       </div>
+
+      <select v-if="setSelector === 'dropdown' && setOptions.length > 1" v-model="setCode" :class="selectClass" aria-label="Filter by set">
+        <option value="">
+          Any set
+        </option>
+        <option v-for="option in setOptions" :key="option.id" :value="option.id">
+          {{ option.name }}
+        </option>
+      </select>
 
       <select v-model="rarity" :class="selectClass" aria-label="Filter by rarity">
         <option value="">
@@ -85,7 +97,7 @@ const selectClass = 'h-10 rounded-md border border-input bg-background px-3 text
       </span>
     </div>
 
-    <div v-if="setOptions.length > 1" class="flex items-center gap-2 overflow-x-auto pb-1" role="group" aria-label="Filter by set">
+    <div v-if="setSelector === 'tiles' && setOptions.length > 1" class="flex items-center gap-2 overflow-x-auto pb-1" role="group" aria-label="Filter by set">
       <button
         type="button"
         :class="cn(

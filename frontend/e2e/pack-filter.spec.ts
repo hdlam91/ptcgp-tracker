@@ -43,7 +43,7 @@ test('the pack dropdown is hidden until a set with more than one pack is in view
   await expect(page.getByRole('heading', { name: 'All cards' })).toBeVisible()
   await expect(page.getByLabel('Filter by pack')).toHaveCount(0)
 
-  await page.getByRole('group', { name: 'Filter by set' }).getByRole('button', { name: 'Genetic Apex' }).click()
+  await page.getByLabel('Filter by set').selectOption({ label: 'Genetic Apex' })
   const packSelect = page.getByLabel('Filter by pack')
   await expect(packSelect).toBeVisible()
   const options = await packSelect.locator('option').allTextContents()

@@ -9,6 +9,7 @@ import { useCardFilters } from '@/composables/useCardFilters'
 import { useCollection } from '@/composables/useCollection'
 import { useRarityGroups } from '@/composables/useRarityGroups'
 import { useTradeList } from '@/composables/useTradeList'
+import { runInBatches } from '@/lib/batch'
 
 const route = useRoute()
 const setCode = computed(() => route.params.setCode as string)
@@ -38,11 +39,7 @@ async function completeGroup(key: string) {
     // Chunked rather than one giant Promise.all — a set can have 200+ cards in a
     // rarity group, and firing that many PUTs at once in one burst is needless
     // load for no visible benefit over a handful of quick batches.
-    const batchSize = 8
-    for (let i = 0; i < group.missingCardIds.length; i += batchSize) {
-      const batch = group.missingCardIds.slice(i, i + batchSize)
-      await Promise.all(batch.map(cardId => setOwnedCount(cardId, 1)))
-    }
+    await runInBatches(group.missingCardIds, 8, cardId => setOwnedCount(cardId, 1))
   }
   finally {
     completingKey.value = null

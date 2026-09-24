@@ -8,8 +8,11 @@ withDefaults(defineProps<{
   wantedCardIds: Set<string>
   offeredCardIds: Set<string>
   readonly?: boolean
+  /** Dims cards you don't own — turned off where that's the expected state for every card, e.g. a wishlist. */
+  dimMissing?: boolean
 }>(), {
   readonly: false,
+  dimMissing: true,
 })
 
 const emit = defineEmits<{
@@ -29,6 +32,7 @@ const emit = defineEmits<{
       :wanted="wantedCardIds.has(card.id)"
       :offered="offeredCardIds.has(card.id)"
       :readonly="readonly"
+      :dim-missing="dimMissing"
       @update:owned-count="(count) => emit('update:ownedCount', card.id, count)"
       @toggle-want="emit('toggle-want', card.id)"
       @toggle-offer="emit('toggle-offer', card.id)"

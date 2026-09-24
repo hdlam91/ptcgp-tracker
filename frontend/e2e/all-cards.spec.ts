@@ -28,7 +28,7 @@ test('searching and filtering the all-cards page spans every set', async ({ page
   expect(setCodes.size).toBeGreaterThan(1)
 
   await page.getByPlaceholder('Search by name or number').fill('')
-  await page.getByRole('group', { name: 'Filter by set' }).getByRole('button', { name: 'Mythical Island' }).click()
+  await page.getByLabel('Filter by set').selectOption({ label: 'Mythical Island' })
   await expect(matchedCards).toHaveCount(86)
   for (const name of await matchedCards.locator('p.text-xs').allInnerTexts()) {
     expect(name.startsWith('a1a-')).toBe(true)

@@ -13,8 +13,11 @@ const props = withDefaults(defineProps<{
   offered: boolean
   /** Hides the owned-count stepper and want/offer toggles, e.g. on a shared trade-list page. */
   readonly?: boolean
+  /** Dims the card when unowned — off for lists where that's every card by default, e.g. a wishlist. */
+  dimMissing?: boolean
 }>(), {
   readonly: false,
+  dimMissing: true,
 })
 
 const emit = defineEmits<{
@@ -46,7 +49,7 @@ function decrement() {
   <div
     :class="cn(
       'flex flex-col overflow-hidden rounded-lg border bg-card transition-opacity',
-      !readonly && ownedCount === 0 && 'opacity-60',
+      !readonly && dimMissing && ownedCount === 0 && 'opacity-60',
     )"
   >
     <div
