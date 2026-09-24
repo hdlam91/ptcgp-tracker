@@ -1,0 +1,38 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Frontend (Vue/Vite/npm)
+node_modules/
+dist/
+dist-ssr/
+*.local
+.vite/
+
+# Backend (.NET)
+bin/
+obj/
+*.user
+*.suo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker
+docker-compose.override.yml
+
+# Database
+*.sql.bak
