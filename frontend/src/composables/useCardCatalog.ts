@@ -17,6 +17,15 @@ for (const card of cardsById.values()) {
   cardsBySetCode.set(card.set_code, cards)
 }
 
+// Sets without a release_date (promos) sort last, not first.
+const expansionsSortedByRelease = [...expansionsByCode.values()].sort((a, b) =>
+  (a.release_date ?? '9999-99-99').localeCompare(b.release_date ?? '9999-99-99'))
+
+// All cards, ordered by set release date then card id, so a global card list
+// reads the same way the sets overview does rather than following whatever
+// order the dataset's own JSON array happens to use.
+const allCardsSorted = expansionsSortedByRelease.flatMap(expansion => cardsBySetCode.get(expansion.id) ?? [])
+
 /**
  * Read-only access to the card dataset bundled via the pokemon-tcg-pocket-cards
  * npm package (pinned to the same tag the backend fetches). The BFF never returns
@@ -26,10 +35,8 @@ export function useCardCatalog() {
   return {
     getCard: (cardId: string): CardCatalogEntry | undefined => cardsById.get(cardId),
     getCardsBySet: (setCode: string): CardCatalogEntry[] => cardsBySetCode.get(setCode) ?? [],
-    getExpansions: (): ExpansionEntry[] =>
-      // Sets without a release_date (promos) sort last, not first.
-      [...expansionsByCode.values()].sort((a, b) =>
-        (a.release_date ?? '9999-99-99').localeCompare(b.release_date ?? '9999-99-99')),
+    getAllCards: (): CardCatalogEntry[] => allCardsSorted,
+    getExpansions: (): ExpansionEntry[] => expansionsSortedByRelease,
     getExpansion: (setCode: string): ExpansionEntry | undefined => expansionsByCode.get(setCode),
   }
 }

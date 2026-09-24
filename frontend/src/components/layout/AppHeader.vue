@@ -17,7 +17,8 @@ async function onLogout() {
 <template>
   <header class="flex items-center justify-between gap-2 border-b px-3 py-3 sm:gap-4 sm:px-6">
     <div class="flex min-w-0 items-center gap-3 sm:gap-6">
-      <span class="whitespace-nowrap text-base font-semibold sm:text-lg">PTCGP Tracker</span>
+      <span class="whitespace-nowrap text-base font-semibold sm:hidden">PTCGP</span>
+      <span class="hidden whitespace-nowrap text-base font-semibold sm:inline sm:text-lg">PTCGP Tracker</span>
       <AppNav />
     </div>
     <div class="flex shrink-0 items-center gap-3">

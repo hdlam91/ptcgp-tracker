@@ -6,7 +6,9 @@ export default defineConfig({
   // Every test registers a real user and hits the same single dev server +
   // backend + Postgres instance — too much worker parallelism causes enough
   // contention to occasionally exceed even a generous assertion timeout.
-  workers: 2,
+  // workers: 2 was fine for 7 tests but started flaking (~1 in 8 runs) once
+  // the suite grew to 9; serial execution costs ~15-20s more but is reliable.
+  workers: 1,
   retries: 0,
   reporter: 'list',
   // Each test registers a real user and loads the full ~3MB card catalog against a

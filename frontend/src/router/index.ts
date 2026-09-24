@@ -29,6 +29,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/cards',
+      name: 'all-cards',
+      component: () => import('@/views/AllCardsView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/trade-list',
       name: 'trade-list',
       component: () => import('@/views/TradeListView.vue'),

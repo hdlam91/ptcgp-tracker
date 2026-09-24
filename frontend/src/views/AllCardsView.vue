@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
 import CardFilterBar from '@/components/cards/CardFilterBar.vue'
 import CardGrid from '@/components/cards/CardGrid.vue'
 import { useCardCatalog } from '@/composables/useCardCatalog'
@@ -8,18 +7,14 @@ import { useCardFilters } from '@/composables/useCardFilters'
 import { useCollection } from '@/composables/useCollection'
 import { useTradeList } from '@/composables/useTradeList'
 
-const route = useRoute()
-const setCode = computed(() => route.params.setCode as string)
-
-const { getCardsBySet, getExpansion } = useCardCatalog()
+const { getAllCards } = useCardCatalog()
 const { ownedCounts, getOwnedCount, setOwnedCount, ensureLoaded: ensureCollectionLoaded } = useCollection()
 const { wantedCardIds, offeredCardIds, toggle, ensureLoaded: ensureTradeListLoaded } = useTradeList()
 
-const cards = computed(() => getCardsBySet(setCode.value))
-const expansion = computed(() => getExpansion(setCode.value))
+const cards = computed(() => getAllCards())
 
 const {
-  search, setCode: setCodeFilter, rarity, pack, ownership,
+  search, setCode, rarity, pack, ownership,
   setOptions, rarityOptions, packOptions, filteredCards, hasActiveFilters, resetFilters,
 } = useCardFilters(cards, getOwnedCount)
 
@@ -30,16 +25,16 @@ onMounted(async () => {
 
 <template>
   <div class="mx-auto max-w-6xl p-4 sm:p-6">
-    <RouterLink to="/" class="text-sm text-muted-foreground hover:underline">
-      ← All sets
-    </RouterLink>
-    <h1 class="mt-1 text-2xl font-semibold">
-      {{ expansion?.name ?? setCode }}
+    <h1 class="text-2xl font-semibold">
+      All cards
     </h1>
+    <p class="mt-1 text-muted-foreground">
+      Search and filter across every set at once.
+    </p>
 
     <CardFilterBar
       v-model:search="search"
-      v-model:set-code="setCodeFilter"
+      v-model:set-code="setCode"
       v-model:rarity="rarity"
       v-model:pack="pack"
       v-model:ownership="ownership"
@@ -53,7 +48,10 @@ onMounted(async () => {
       @reset="resetFilters"
     />
 
-    <p v-if="filteredCards.length === 0" class="mt-8 text-sm text-muted-foreground">
+    <p v-if="!hasActiveFilters" class="mt-10 rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+      {{ cards.length }} cards across every set. Search by name or number, or pick a set, rarity, or pack to browse them.
+    </p>
+    <p v-else-if="filteredCards.length === 0" class="mt-8 text-sm text-muted-foreground">
       No cards match these filters.
     </p>
     <div v-else class="mt-6">
