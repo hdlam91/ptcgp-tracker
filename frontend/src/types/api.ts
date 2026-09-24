@@ -23,3 +23,13 @@ export interface TradeListEntryResponse {
   direction: TradeDirection
   createdAt: string
 }
+
+export interface TradeListShareStatusResponse {
+  enabled: boolean
+  token: string | null
+}
+
+export interface SharedTradeListResponse {
+  displayName: string
+  entries: TradeListEntryResponse[]
+}

@@ -4,12 +4,16 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { CardCatalogEntry } from '@/types/catalog'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   card: CardCatalogEntry
   ownedCount: number
   wanted: boolean
   offered: boolean
-}>()
+  /** Hides the owned-count stepper and want/offer toggles, e.g. on a shared trade-list page. */
+  readonly?: boolean
+}>(), {
+  readonly: false,
+})
 
 const emit = defineEmits<{
   (e: 'update:ownedCount', count: number): void
@@ -32,7 +36,7 @@ function decrement() {
   <div
     :class="cn(
       'flex flex-col overflow-hidden rounded-lg border bg-card transition-opacity',
-      ownedCount === 0 && 'opacity-60',
+      !readonly && ownedCount === 0 && 'opacity-60',
     )"
   >
     <div class="relative aspect-[5/7] bg-muted">
@@ -61,7 +65,7 @@ function decrement() {
         </p>
       </div>
 
-      <div class="mt-auto flex items-center justify-between gap-2">
+      <div v-if="!readonly" class="mt-auto flex items-center justify-between gap-2">
         <div class="flex items-center gap-1">
           <Button variant="outline" size="icon" class="h-7 w-7" :disabled="ownedCount === 0" @click="decrement">
             <Minus class="size-3.5" />

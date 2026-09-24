@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import CardGrid from '@/components/cards/CardGrid.vue'
+import TradeListShareCard from '@/components/trade/TradeListShareCard.vue'
 import { Button } from '@/components/ui/button'
 import { useCardCatalog } from '@/composables/useCardCatalog'
 import { useCollection } from '@/composables/useCollection'
@@ -34,7 +35,9 @@ const activeCards = computed(() =>
       Cards you want, and cards you're willing to trade away.
     </p>
 
-    <div class="mt-4 flex gap-2">
+    <TradeListShareCard class="mt-4" />
+
+    <div class="mt-6 flex gap-2">
       <Button :variant="activeTab === 'Want' ? 'default' : 'outline'" @click="activeTab = 'Want'">
         Want ({{ wantedCardIds.size }})
       </Button>

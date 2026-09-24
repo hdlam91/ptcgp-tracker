@@ -2,12 +2,15 @@
 import CardGridItem from '@/components/cards/CardGridItem.vue'
 import type { CardCatalogEntry } from '@/types/catalog'
 
-defineProps<{
+withDefaults(defineProps<{
   cards: CardCatalogEntry[]
   ownedCounts: Map<string, number>
   wantedCardIds: Set<string>
   offeredCardIds: Set<string>
-}>()
+  readonly?: boolean
+}>(), {
+  readonly: false,
+})
 
 const emit = defineEmits<{
   (e: 'update:ownedCount', cardId: string, count: number): void
@@ -25,6 +28,7 @@ const emit = defineEmits<{
       :owned-count="ownedCounts.get(card.id) ?? 0"
       :wanted="wantedCardIds.has(card.id)"
       :offered="offeredCardIds.has(card.id)"
+      :readonly="readonly"
       @update:owned-count="(count) => emit('update:ownedCount', card.id, count)"
       @toggle-want="emit('toggle-want', card.id)"
       @toggle-offer="emit('toggle-offer', card.id)"

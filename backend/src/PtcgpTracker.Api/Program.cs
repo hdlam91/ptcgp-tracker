@@ -86,6 +86,7 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 app.MapAuthEndpoints();
 app.MapCollectionEndpoints();
 app.MapTradeListEndpoints();
+app.MapTradeListShareEndpoints();
 
 // Convenient for solo-dev/compose; a real multi-replica cloud deploy should apply
 // migrations as a separate step to avoid concurrent-migration races.

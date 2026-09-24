@@ -34,10 +34,21 @@ const router = createRouter({
       component: () => import('@/views/TradeListView.vue'),
       meta: { requiresAuth: true },
     },
+    {
+      path: '/shared/:token',
+      name: 'shared-trade-list',
+      component: () => import('@/views/SharedTradeListView.vue'),
+      // Public: works whether or not the visitor is logged in, and never redirects.
+      meta: { public: true },
+    },
   ],
 })
 
 router.beforeEach(async (to) => {
+  if (to.meta.public) {
+    return true
+  }
+
   const { initialized, isAuthenticated, fetchCurrentUser } = useAuth()
 
   if (!initialized.value) {

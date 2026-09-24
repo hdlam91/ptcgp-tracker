@@ -25,5 +25,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         {
             entity.HasIndex(e => new { e.UserId, e.CardId, e.Direction }).IsUnique();
         });
+
+        builder.Entity<ApplicationUser>(entity =>
+        {
+            entity.HasIndex(e => e.TradeListShareToken).IsUnique();
+        });
     }
 }
