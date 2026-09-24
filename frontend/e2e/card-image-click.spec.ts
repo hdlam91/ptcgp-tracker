@@ -35,12 +35,12 @@ test('image click/right-click are disabled on the read-only shared trade list', 
   await firstCard.getByTitle('Offer this card for trade').click()
 
   const enableRes = await page.request.post('/api/trade-list/share', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-  const { token } = await enableRes.json()
+  const { handle } = await enableRes.json()
 
   const errors: string[] = []
   page.on('pageerror', err => errors.push(err.message))
 
-  await page.goto(`/shared/${token}`)
+  await page.goto(`/share/${handle}`)
   await page.getByRole('button', { name: /^Offers/ }).click()
   const sharedCard = page.locator('.grid > div').filter({ has: page.locator('img') }).first()
   await expect(sharedCard).toBeVisible()

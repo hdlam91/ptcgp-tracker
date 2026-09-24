@@ -26,7 +26,7 @@ export interface TradeListEntryResponse {
 
 export interface TradeListShareStatusResponse {
   enabled: boolean
-  token: string | null
+  handle: string | null
 }
 
 export interface SharedTradeListResponse {

@@ -9,8 +9,8 @@ public class ApplicationUser : IdentityUser<Guid>
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     /// <summary>
-    /// Unguessable token for the public, read-only trade-list share link.
-    /// Null means sharing is disabled; regenerating replaces (and invalidates) it.
+    /// URL-safe, unique handle for the public, read-only trade-list share link
+    /// (/share/{handle}), derived from the display name. Null means sharing is disabled.
     /// </summary>
-    public string? TradeListShareToken { get; set; }
+    public string? TradeListShareHandle { get; set; }
 }

@@ -41,7 +41,7 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
-      path: '/shared/:token',
+      path: '/share/:handle',
       name: 'shared-trade-list',
       component: () => import('@/views/SharedTradeListView.vue'),
       // Public: works whether or not the visitor is logged in, and never redirects.

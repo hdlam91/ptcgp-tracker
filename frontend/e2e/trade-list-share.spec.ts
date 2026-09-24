@@ -12,7 +12,8 @@ test('sharing a trade list produces a working public read-only link that revokes
   await page.goto('/trade-list')
   await page.getByRole('button', { name: 'Create share link' }).click()
   const shareUrl = await page.locator('input[readonly]').inputValue()
-  expect(shareUrl).toContain('/shared/')
+  // Short, readable link built from the display name — "Test Trainer" → /share/test-trainer[-N].
+  expect(shareUrl).toMatch(/\/share\/test-trainer(-\d+)?$/)
 
   // A completely separate, unauthenticated browser context — like a friend clicking the link.
   const anonContext = await browser.newContext()

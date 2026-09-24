@@ -19,7 +19,7 @@ const emptyMap = new Map<string, number>()
 
 onMounted(async () => {
   try {
-    shared.value = await getSharedTradeList(route.params.token as string)
+    shared.value = await getSharedTradeList(route.params.handle as string)
   }
   catch {
     notFound.value = true

@@ -28,7 +28,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         builder.Entity<ApplicationUser>(entity =>
         {
-            entity.HasIndex(e => e.TradeListShareToken).IsUnique();
+            entity.HasIndex(e => e.TradeListShareHandle).IsUnique();
         });
     }
 }

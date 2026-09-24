@@ -13,7 +13,7 @@ export const tradeListService = {
   disableSharing: () => httpClient.delete<void>('/trade-list/share'),
 }
 
-/** Public, unauthenticated lookup for a shared trade-list link — no cookie needed. */
-export function getSharedTradeList(token: string) {
-  return httpClient.get<SharedTradeListResponse>(`/trade-list/shared/${encodeURIComponent(token)}`)
+/** Public, unauthenticated lookup for a shared trade-list link (/share/{handle}) — no cookie needed. */
+export function getSharedTradeList(handle: string) {
+  return httpClient.get<SharedTradeListResponse>(`/trade-list/shared/${encodeURIComponent(handle)}`)
 }

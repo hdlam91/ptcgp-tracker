@@ -5,7 +5,7 @@ namespace PtcgpTracker.Api.Tests.Infrastructure;
 internal static class AuthTestHelper
 {
     public static async Task<HttpClient> CreateAuthenticatedClientAsync(
-        this ApiWebApplicationFactory factory, string? email = null)
+        this ApiWebApplicationFactory factory, string? email = null, string displayName = "Test Trainer")
     {
         var client = factory.CreateClient();
         client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
@@ -14,7 +14,7 @@ internal static class AuthTestHelper
         {
             email = email ?? $"{Guid.NewGuid()}@example.com",
             password = "Password1",
-            displayName = "Test Trainer",
+            displayName,
         });
         response.EnsureSuccessStatusCode();
 

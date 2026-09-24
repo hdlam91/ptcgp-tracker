@@ -5,24 +5,24 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { tradeListService } from '@/services/tradeListService'
 
-const token = ref<string | null>(null)
+const handle = ref<string | null>(null)
 const loading = ref(true)
 const busy = ref(false)
 const copied = ref(false)
 
 onMounted(async () => {
   const status = await tradeListService.getShareStatus()
-  token.value = status.token
+  handle.value = status.handle
   loading.value = false
 })
 
-const shareUrl = computed(() => (token.value ? `${window.location.origin}/shared/${token.value}` : null))
+const shareUrl = computed(() => (handle.value ? `${window.location.origin}/share/${handle.value}` : null))
 
 async function enable() {
   busy.value = true
   try {
     const status = await tradeListService.enableSharing()
-    token.value = status.token
+    handle.value = status.handle
   }
   finally {
     busy.value = false
@@ -33,7 +33,7 @@ async function disable() {
   busy.value = true
   try {
     await tradeListService.disableSharing()
-    token.value = null
+    handle.value = null
   }
   finally {
     busy.value = false
@@ -59,7 +59,7 @@ async function copyLink() {
       </CardDescription>
     </CardHeader>
     <CardContent>
-      <div v-if="token" class="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div v-if="handle" class="flex flex-col gap-2 sm:flex-row sm:items-center">
         <input
           :value="shareUrl"
           readonly
