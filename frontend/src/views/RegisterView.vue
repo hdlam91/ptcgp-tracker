@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useAppConfig } from '@/composables/useAppConfig'
 import { useAuth } from '@/composables/useAuth'
 import { ApiError } from '@/services/httpClient'
 
@@ -15,6 +16,9 @@ const errorMessage = ref('')
 const isSubmitting = ref(false)
 
 const { register } = useAuth()
+const { registrationOpen, load: loadConfig, markRegistrationClosed } = useAppConfig()
+
+onMounted(loadConfig)
 const router = useRouter()
 
 async function onSubmit() {
@@ -25,9 +29,15 @@ async function onSubmit() {
     await router.push('/')
   }
   catch (error) {
-    errorMessage.value = error instanceof ApiError
-      ? describeRegistrationError(error)
-      : 'Something went wrong. Please try again.'
+    if (error instanceof ApiError && (error.body as { error?: string } | null)?.error === 'registration_closed') {
+      // Closed after the page loaded — show the closed state instead of a form that can't work.
+      markRegistrationClosed()
+    }
+    else {
+      errorMessage.value = error instanceof ApiError
+        ? describeRegistrationError(error)
+        : 'Something went wrong. Please try again.'
+    }
   }
   finally {
     isSubmitting.value = false
@@ -45,11 +55,13 @@ function describeRegistrationError(error: ApiError): string {
   <div class="flex min-h-screen items-center justify-center bg-muted/40 px-4">
     <Card class="w-full max-w-sm">
       <CardHeader>
-        <CardTitle>Create an account</CardTitle>
-        <CardDescription>Start tracking your Pokémon TCG Pocket collection.</CardDescription>
+        <CardTitle>{{ registrationOpen === false ? 'Registration is closed' : 'Create an account' }}</CardTitle>
+        <CardDescription>
+          {{ registrationOpen === false ? 'New accounts aren\'t being accepted right now.' : 'Start tracking your Pokémon TCG Pocket collection.' }}
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <form class="flex flex-col gap-4" @submit.prevent="onSubmit">
+        <form v-if="registrationOpen !== false" class="flex flex-col gap-4" @submit.prevent="onSubmit">
           <div class="flex flex-col gap-1.5">
             <Label for="displayName">Display name</Label>
             <Input id="displayName" v-model="displayName" autocomplete="nickname" required />

@@ -48,6 +48,12 @@ const router = createRouter({
       meta: { public: true },
     },
     {
+      path: '/settings',
+      name: 'settings',
+      component: () => import('@/views/SettingsView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true },
+    },
+    {
       path: '/legal',
       name: 'legal',
       component: () => import('@/views/LegalView.vue'),
@@ -61,7 +67,7 @@ router.beforeEach(async (to) => {
     return true
   }
 
-  const { initialized, isAuthenticated, fetchCurrentUser } = useAuth()
+  const { initialized, isAuthenticated, isAdmin, fetchCurrentUser } = useAuth()
 
   if (!initialized.value) {
     await fetchCurrentUser()
@@ -73,6 +79,11 @@ router.beforeEach(async (to) => {
   }
 
   if (!requiresAuth && isAuthenticated.value) {
+    return { name: 'collection' }
+  }
+
+  // The backend enforces this too; this just keeps non-admins off a page that would only show errors.
+  if (to.meta.requiresAdmin && !isAdmin.value) {
     return { name: 'collection' }
   }
 

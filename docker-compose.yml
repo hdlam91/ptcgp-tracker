@@ -24,6 +24,7 @@ services:
     environment:
       ConnectionStrings__Default: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       CardData__RepoTag: ${CARD_DATA_REPO_TAG}
+      Admin__Emails: ${ADMIN_EMAILS:-}
       APPLY_MIGRATIONS_ON_STARTUP: "true"
       ASPNETCORE_URLS: "http://+:8080"
     ports:

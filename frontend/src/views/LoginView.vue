@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useAppConfig } from '@/composables/useAppConfig'
 import { useAuth } from '@/composables/useAuth'
 import { ApiError } from '@/services/httpClient'
 
@@ -14,6 +15,9 @@ const errorMessage = ref('')
 const isSubmitting = ref(false)
 
 const { login } = useAuth()
+const { registrationOpen, load: loadConfig } = useAppConfig()
+
+onMounted(loadConfig)
 const router = useRouter()
 const route = useRoute()
 
@@ -60,7 +64,7 @@ async function onSubmit() {
             {{ isSubmitting ? 'Logging in…' : 'Log in' }}
           </Button>
         </form>
-        <p class="mt-4 text-center text-sm text-muted-foreground">
+        <p v-if="registrationOpen" class="mt-4 text-center text-sm text-muted-foreground">
           Don't have an account?
           <RouterLink to="/register" class="font-medium text-primary underline-offset-4 hover:underline">
             Sign up

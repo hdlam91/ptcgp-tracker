@@ -23,10 +23,10 @@ test('searching and filtering narrows the card grid in a set', async ({ page }) 
   await firstCard.getByRole('button').nth(1).click()
   await expect(firstCard.getByText('1', { exact: true })).toBeVisible()
 
-  await page.getByRole('button', { name: 'Owned' }).click()
+  await page.getByRole('button', { name: 'Owned', exact: true }).click()
   await expect(page.getByText('1 / 286 cards')).toBeVisible()
 
-  await page.getByRole('button', { name: 'Missing' }).click()
+  await page.getByRole('button', { name: 'Missing', exact: true }).click()
   await expect(page.getByText('285 / 286 cards')).toBeVisible()
 
   await page.getByRole('button', { name: 'All', exact: true }).click()

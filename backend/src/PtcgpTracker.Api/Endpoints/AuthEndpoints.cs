@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using PtcgpTracker.Api.Data.Entities;
 using PtcgpTracker.Api.Models;
+using PtcgpTracker.Api.Services;
 
 namespace PtcgpTracker.Api.Endpoints;
 
@@ -14,8 +15,15 @@ public static class AuthEndpoints
         group.MapPost("/register", async (
             RegisterRequest request,
             UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager) =>
+            SignInManager<ApplicationUser> signInManager,
+            AppSettingsService settings,
+            AdminRoleService adminRoles) =>
         {
+            if (!await settings.IsRegistrationOpenAsync())
+            {
+                return Results.Json(new { error = "registration_closed" }, statusCode: StatusCodes.Status403Forbidden);
+            }
+
             var user = new ApplicationUser
             {
                 UserName = request.Email,
@@ -30,8 +38,15 @@ public static class AuthEndpoints
                     result.Errors.ToDictionary(e => e.Code, e => new[] { e.Description }));
             }
 
+            // Before sign-in, so the session's role claims are right from the first request.
+            var isAdmin = adminRoles.IsConfiguredAdmin(user.Email);
+            if (isAdmin)
+            {
+                await adminRoles.SetAdminAsync(user, true);
+            }
+
             await signInManager.SignInAsync(user, isPersistent: true);
-            return Results.Created($"/api/auth/me", new UserResponse(user.Id, user.Email!, user.DisplayName));
+            return Results.Created($"/api/auth/me", new UserResponse(user.Id, user.Email!, user.DisplayName, isAdmin));
         });
 
         group.MapPost("/login", async (
@@ -48,7 +63,8 @@ public static class AuthEndpoints
             }
 
             var user = await userManager.FindByEmailAsync(request.Email);
-            return Results.Ok(new UserResponse(user!.Id, user.Email!, user.DisplayName));
+            var isAdmin = await userManager.IsInRoleAsync(user!, AppRoles.Admin);
+            return Results.Ok(new UserResponse(user!.Id, user.Email!, user.DisplayName, isAdmin));
         });
 
         group.MapPost("/logout", async (SignInManager<ApplicationUser> signInManager) =>
@@ -62,7 +78,7 @@ public static class AuthEndpoints
             var user = await userManager.GetUserAsync(principal);
             return user is null
                 ? Results.Unauthorized()
-                : Results.Ok(new UserResponse(user.Id, user.Email!, user.DisplayName));
+                : Results.Ok(new UserResponse(user.Id, user.Email!, user.DisplayName, principal.IsInRole(AppRoles.Admin)));
         }).RequireAuthorization();
     }
 }

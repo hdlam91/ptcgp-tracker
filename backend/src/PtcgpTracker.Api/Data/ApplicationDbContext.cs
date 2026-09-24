@@ -12,6 +12,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<TradeListEntry> TradeListEntries => Set<TradeListEntry>();
 
+    public DbSet<AppSetting> AppSettings => Set<AppSetting>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -24,6 +26,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<TradeListEntry>(entity =>
         {
             entity.HasIndex(e => new { e.UserId, e.CardId, e.Direction }).IsUnique();
+        });
+
+        builder.Entity<AppSetting>(entity =>
+        {
+            entity.HasKey(e => e.Key);
         });
 
         builder.Entity<ApplicationUser>(entity =>

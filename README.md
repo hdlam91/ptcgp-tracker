@@ -20,6 +20,8 @@ docker compose up postgres
 
 Postgres is exposed on host port `5433` (not the default `5432`) to avoid clashing with other local Postgres instances. Inside the Docker network, other services still reach it at `postgres:5432`.
 
+Admins: list comma-separated emails in `ADMIN_EMAILS` (in `.env`) to grant the admin role on backend startup and at registration. Admins get a Settings page (gear icon in the header) for managing users, share links, new-registration access, and the card data cache. More admins can be promoted from that page.
+
 Backend and frontend setup instructions will be added as those projects are scaffolded.
 
 ## Legal

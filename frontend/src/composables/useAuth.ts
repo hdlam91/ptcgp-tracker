@@ -46,6 +46,7 @@ export function useAuth() {
   return {
     currentUser: computed(() => currentUser.value),
     isAuthenticated: computed(() => currentUser.value !== null),
+    isAdmin: computed(() => currentUser.value?.isAdmin === true),
     initialized: computed(() => initialized.value),
     fetchCurrentUser,
     register,

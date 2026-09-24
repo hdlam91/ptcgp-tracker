@@ -2,6 +2,7 @@ export interface UserResponse {
   id: string
   email: string
   displayName: string
+  isAdmin: boolean
 }
 
 export type TradeDirection = 'Want' | 'Offer'
@@ -32,4 +33,31 @@ export interface TradeListShareStatusResponse {
 export interface SharedTradeListResponse {
   displayName: string
   entries: TradeListEntryResponse[]
+}
+
+export interface AdminUserResponse {
+  id: string
+  email: string
+  displayName: string
+  createdAt: string
+  isAdmin: boolean
+  ownedUniqueCards: number
+  wantCount: number
+  offerCount: number
+  shareHandle: string | null
+}
+
+export interface AdminSettingsResponse {
+  registrationOpen: boolean
+}
+
+export interface CatalogStatusResponse {
+  repoTag: string
+  cardCount: number
+  lastRefreshedAt: string | null
+  lastError: string | null
+}
+
+export interface PublicConfigResponse {
+  registrationOpen: boolean
 }

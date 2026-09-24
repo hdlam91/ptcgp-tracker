@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PtcgpTracker.Api.CardData;
@@ -18,8 +20,11 @@ builder.Services.Configure<CardDataOptions>(builder.Configuration.GetSection(Car
 builder.Services.AddHttpClient(CardCatalogHostedService.HttpClientName);
 builder.Services.AddSingleton<CardCatalogHostedService>();
 builder.Services.AddSingleton<ICardCatalogProvider>(sp => sp.GetRequiredService<CardCatalogHostedService>());
+builder.Services.AddSingleton<ICardCatalogAdmin>(sp => sp.GetRequiredService<CardCatalogHostedService>());
 builder.Services.AddHostedService(sp => sp.GetRequiredService<CardCatalogHostedService>());
 builder.Services.AddScoped<CollectionSummaryService>();
+builder.Services.AddScoped<AppSettingsService>();
+builder.Services.AddScoped<AdminRoleService>();
 
 builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
     .AddCookie(IdentityConstants.ApplicationScheme, options =>
@@ -38,9 +43,38 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             return Task.CompletedTask;
         };
+
+        // The cookie alone would keep a deleted user signed in, and keep a demoted admin's
+        // role, for up to 14 days. Re-check the user on every request instead, so deletes
+        // and role changes take effect immediately (one small lookup per request is fine here).
+        options.Events.OnValidatePrincipal = async context =>
+        {
+            var services = context.HttpContext.RequestServices;
+            var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+
+            var user = Guid.TryParse(context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)
+                ? await userManager.FindByIdAsync(userId.ToString())
+                : null;
+
+            if (user is null)
+            {
+                context.RejectPrincipal();
+                await context.HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+                return;
+            }
+
+            var isAdmin = await userManager.IsInRoleAsync(user, AppRoles.Admin);
+            if (isAdmin != context.Principal!.IsInRole(AppRoles.Admin))
+            {
+                var signInManager = services.GetRequiredService<SignInManager<ApplicationUser>>();
+                context.ReplacePrincipal(await signInManager.CreateUserPrincipalAsync(user));
+                context.ShouldRenew = true;
+            }
+        };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy(AppRoles.AdminPolicy, policy => policy.RequireRole(AppRoles.Admin));
 
 builder.Services
     .AddIdentityCore<ApplicationUser>(options =>
@@ -87,6 +121,8 @@ app.MapAuthEndpoints();
 app.MapCollectionEndpoints();
 app.MapTradeListEndpoints();
 app.MapTradeListShareEndpoints();
+app.MapConfigEndpoints();
+app.MapAdminEndpoints();
 
 // Convenient for solo-dev/compose; a real multi-replica cloud deploy should apply
 // migrations as a separate step to avoid concurrent-migration races.
@@ -94,6 +130,7 @@ if (builder.Configuration.GetValue("APPLY_MIGRATIONS_ON_STARTUP", false))
 {
     using var scope = app.Services.CreateScope();
     await scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.MigrateAsync();
+    await scope.ServiceProvider.GetRequiredService<AdminRoleService>().PromoteConfiguredAdminsAsync();
 }
 
 app.Run();

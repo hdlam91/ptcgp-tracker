@@ -6,7 +6,7 @@ namespace PtcgpTracker.Api.Tests.Infrastructure;
 /// Small, fixed catalog used by endpoint integration tests instead of the real
 /// network-backed catalog, so tests don't depend on GitHub availability.
 /// </summary>
-internal class FakeCardCatalogProvider : ICardCatalogProvider
+internal class FakeCardCatalogProvider : ICardCatalogProvider, ICardCatalogAdmin
 {
     public static readonly CollectionCardRecord CardA1_001 = new(
         "a1-001", "Bulbasaur", "a1", "Genetic Apex", "Mewtwo", "2024-10-30", "◊", 35,
@@ -29,4 +29,25 @@ internal class FakeCardCatalogProvider : ICardCatalogProvider
         _cards.TryGetValue(cardId, out card!);
 
     public IReadOnlyCollection<CollectionCardRecord> GetAll() => _cards.Values.ToList();
+
+    /// <summary>Set to make the next refreshes fail, like an unreachable GitHub would.</summary>
+    public Exception? RefreshFailure { get; set; }
+
+    public int RefreshCount { get; private set; }
+
+    public DateTimeOffset? LastRefreshedAt { get; private set; }
+
+    public CatalogStatus GetStatus() => new("v-test", _cards.Count, LastRefreshedAt, RefreshFailure?.Message);
+
+    public Task RefreshNowAsync(CancellationToken cancellationToken)
+    {
+        if (RefreshFailure is not null)
+        {
+            throw RefreshFailure;
+        }
+
+        RefreshCount++;
+        LastRefreshedAt = DateTimeOffset.UtcNow;
+        return Task.CompletedTask;
+    }
 }

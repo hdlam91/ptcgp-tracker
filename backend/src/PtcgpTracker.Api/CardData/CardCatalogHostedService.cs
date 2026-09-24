@@ -13,17 +13,46 @@ namespace PtcgpTracker.Api.CardData;
 public class CardCatalogHostedService(
     IHttpClientFactory httpClientFactory,
     IOptions<CardDataOptions> options,
-    ILogger<CardCatalogHostedService> logger) : BackgroundService, ICardCatalogProvider
+    ILogger<CardCatalogHostedService> logger) : BackgroundService, ICardCatalogProvider, ICardCatalogAdmin
 {
     public const string HttpClientName = "CardData";
 
     private ImmutableDictionary<string, CollectionCardRecord> _snapshot =
         ImmutableDictionary<string, CollectionCardRecord>.Empty;
 
+    private readonly SemaphoreSlim _refreshLock = new(1, 1);
+    private DateTimeOffset? _lastRefreshedAt;
+    private string? _lastError;
+
     public bool TryGetCard(string cardId, out CollectionCardRecord card) =>
         _snapshot.TryGetValue(cardId, out card!);
 
     public IReadOnlyCollection<CollectionCardRecord> GetAll() => _snapshot.Values.ToList();
+
+    public CatalogStatus GetStatus() =>
+        new(options.Value.RepoTag, _snapshot.Count, _lastRefreshedAt, _lastError);
+
+    public async Task RefreshNowAsync(CancellationToken cancellationToken)
+    {
+        // Serialized so a manual refresh can't overlap the timer-driven one.
+        await _refreshLock.WaitAsync(cancellationToken);
+        try
+        {
+            _snapshot = await FetchSnapshotAsync(cancellationToken);
+            _lastRefreshedAt = DateTimeOffset.UtcNow;
+            _lastError = null;
+            logger.LogInformation("Card catalog cache populated with {Count} cards", _snapshot.Count);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _lastError = ex.Message;
+            throw;
+        }
+        finally
+        {
+            _refreshLock.Release();
+        }
+    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -34,10 +63,9 @@ public class CardCatalogHostedService(
         {
             try
             {
-                _snapshot = await FetchSnapshotAsync(stoppingToken);
-                logger.LogInformation("Card catalog cache populated with {Count} cards", _snapshot.Count);
+                await RefreshNowAsync(stoppingToken);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 logger.LogError(ex, "Failed to refresh card catalog cache; keeping previous snapshot ({Count} cards)", _snapshot.Count);
             }
