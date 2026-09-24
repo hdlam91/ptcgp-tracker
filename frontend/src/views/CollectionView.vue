@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import PackThumbnail from '@/components/cards/PackThumbnail.vue'
 import SetProgressBar from '@/components/cards/SetProgressBar.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useCardCatalog } from '@/composables/useCardCatalog'
@@ -35,9 +36,19 @@ const ownedFor = computed(() => (setCode: string) => summaryBySet.value.get(setC
       <RouterLink v-for="expansion in expansions" :key="expansion.id" :to="`/sets/${expansion.id}`">
         <Card class="h-full transition-colors hover:bg-accent">
           <CardHeader>
-            <CardTitle class="text-base">
-              {{ expansion.name }}
-            </CardTitle>
+            <div class="flex items-center justify-between gap-3">
+              <CardTitle class="text-base">
+                {{ expansion.name }}
+              </CardTitle>
+              <div v-if="expansion.packs.some(pack => pack.image)" class="flex shrink-0 -space-x-4">
+                <PackThumbnail
+                  v-for="pack in expansion.packs.filter(pack => pack.image)"
+                  :key="pack.id"
+                  :pack="pack"
+                  class="h-12 w-12 shrink-0 rounded-md"
+                />
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <SetProgressBar :owned="loading ? 0 : ownedFor(expansion.id)" :total="expansion.total_cards" />

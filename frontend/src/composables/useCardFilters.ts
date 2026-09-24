@@ -1,9 +1,10 @@
 import type { ComputedRef, Ref } from 'vue'
 import { computed, ref, watch } from 'vue'
 import { useCardCatalog } from '@/composables/useCardCatalog'
-import type { CardCatalogEntry } from '@/types/catalog'
+import type { CardCatalogEntry, ExpansionEntry } from '@/types/catalog'
 
 export type OwnershipFilter = 'all' | 'owned' | 'missing'
+export type PackOption = ExpansionEntry['packs'][number]
 
 type Rarity = CardCatalogEntry['rarity']
 
@@ -22,7 +23,7 @@ export function useCardFilters(
   cards: Ref<CardCatalogEntry[]> | ComputedRef<CardCatalogEntry[]>,
   getOwnedCount?: (cardId: string) => number,
 ) {
-  const { getExpansions } = useCardCatalog()
+  const { getExpansions, getExpansion } = useCardCatalog()
 
   const search = ref('')
   const setCode = ref('')
@@ -40,14 +41,27 @@ export function useCardFilters(
     return RARITY_ORDER.filter((r): r is Rarity => present.has(r as Rarity))
   })
 
-  const packOptions = computed(() => {
+  // The pack dropdown is only meaningful once exactly one set is in view —
+  // either because the set filter picked one, or because the incoming card
+  // list already happens to be scoped to a single set (e.g. a set's own page).
+  const packSetCode = computed(() => {
+    if (setCode.value) return setCode.value
+    const codes = new Set(cards.value.map(card => card.set_code))
+    return codes.size === 1 ? [...codes][0] : undefined
+  })
+
+  const packOptions = computed<PackOption[]>(() => {
+    if (!packSetCode.value) return []
+    const expansion = getExpansion(packSetCode.value)
+    if (!expansion) return []
+
     const present = new Set(
       cards.value
-        .filter(card => !setCode.value || card.set_code === setCode.value)
+        .filter(card => card.set_code === packSetCode.value)
         .map(card => card.pack)
         .filter((p): p is string => !!p),
     )
-    return [...present].sort()
+    return expansion.packs.filter(pack => present.has(pack.name))
   })
 
   const filteredCards = computed(() => {

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Heart, Minus, Plus, Repeat } from '@lucide/vue'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
+import { useLocalImage } from '@/composables/useLocalImage'
 import { cn } from '@/lib/utils'
 import type { CardCatalogEntry } from '@/types/catalog'
 
@@ -22,22 +23,13 @@ const emit = defineEmits<{
   (e: 'toggle-offer'): void
 }>()
 
-// The dataset's own URL — used as the initial src if no local copy was ever
-// downloaded (see scripts/download-card-images.mjs), and as the fallback if the
-// local copy 404s (e.g. it failed to download or public/ was never populated).
 const remoteImageUrl = computed(() => props.card.image ?? props.card.image_png)
 const localImageUrl = computed(() => {
   if (!remoteImageUrl.value) return undefined
   const ext = remoteImageUrl.value.slice(remoteImageUrl.value.lastIndexOf('.'))
   return `/card-images/${props.card.id}${ext}`
 })
-const imageUrl = ref(localImageUrl.value ?? remoteImageUrl.value)
-
-function onImageError() {
-  if (imageUrl.value !== remoteImageUrl.value) {
-    imageUrl.value = remoteImageUrl.value
-  }
-}
+const { src: imageUrl, onError: onImageError } = useLocalImage(localImageUrl.value, remoteImageUrl.value)
 
 function increment() {
   emit('update:ownedCount', props.ownedCount + 1)

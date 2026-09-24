@@ -10,6 +10,29 @@ const expansionsByCode = new Map<string, ExpansionEntry>(
   (expansionRecords as ExpansionEntry[]).map(expansion => [expansion.id, expansion]),
 )
 
+// The dataset leaves every promo pack's image null (there's no real box art for
+// a promo drop), but the source repo does host art for a couple of individual
+// promo waves under the same images/webp/packs path used for real packs — it's
+// just not wired up in expansions.json. Borrow one confirmed-good image per
+// promo set as its representative icon, so Promo-A/B aren't the only sets with
+// no art at all on the collection page and set picker.
+// `targetPackId` is the pack actually declared in expansions.json to patch;
+// `imageId` is whichever image file we know exists in the repo (they only
+// happen to match for pa — pb's only declared pack is "pb-booster", which has
+// no image file of its own, so it borrows pb-promov1's art instead).
+const PROMO_PACK_IMAGE_OVERRIDES: Record<string, { targetPackId: string, imageId: string }> = {
+  pa: { targetPackId: 'pa-promov1', imageId: 'pa-promov1' },
+  pb: { targetPackId: 'pb-booster', imageId: 'pb-promov1' },
+}
+
+for (const [setCode, override] of Object.entries(PROMO_PACK_IMAGE_OVERRIDES)) {
+  const expansion = expansionsByCode.get(setCode)
+  const pack = expansion?.packs.find(p => p.id === override.targetPackId)
+  if (pack) {
+    pack.image = `https://raw.githubusercontent.com/PocketDecks/pokemon-tcg-pocket-cards/refs/heads/main/images/webp/packs/${override.imageId}.webp`
+  }
+}
+
 const cardsBySetCode = new Map<string, CardCatalogEntry[]>()
 for (const card of cardsById.values()) {
   const cards = cardsBySetCode.get(card.set_code) ?? []
