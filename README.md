@@ -219,6 +219,7 @@ Then, on your phone, open your `https://` address and:
 A few things to know:
 
 - It still needs a connection. Your collection lives on the server, so opening the app with no network shows a "Can't reach the server" screen with a **Try again** button. The install makes it launch faster and feel like an app; it doesn't add offline use.
+- **On Android, links to your server open in the installed app.** That includes a share link someone sends you (or you send yourself). An installed app has no address bar or back button, so the shared page shows the app's menu when you're logged in, and a **Log in** link when you're not. You're never stuck on it.
 - Updates are automatic. After you update the server, the installed app picks up the new version the next time it opens and reloads once.
 - The app icons are generated from `frontend/public/favicon.svg`. After changing the favicon, run `npm run generate-pwa-icons` (in `frontend/`) to refresh them.
 - The service worker is only built into production builds. `npm run dev` doesn't have it, so to try the install behaviour locally use the Docker frontend (`http://localhost:8081`).

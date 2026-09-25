@@ -69,14 +69,17 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
-  if (to.meta.public) {
-    return true
-  }
-
   const { initialized, isAuthenticated, isAdmin, connectionError, fetchCurrentUser } = useAuth()
 
   if (!initialized.value) {
     await fetchCurrentUser()
+  }
+
+  // Public pages (a shared list, the legal notice) are for anyone, but we still find out who is
+  // looking: a logged-in visitor, such as you opening your own share link inside the installed
+  // app, needs the app's navigation, because an installed app has no address bar or back button.
+  if (to.meta.public) {
+    return true
   }
 
   // Couldn't reach the server, so we can't tell whether the user is logged in. Don't bounce them to

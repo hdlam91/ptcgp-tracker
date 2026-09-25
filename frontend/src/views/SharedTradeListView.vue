@@ -5,12 +5,14 @@ import CardGrid from '@/components/cards/CardGrid.vue'
 import SetRarityFilter from '@/components/cards/SetRarityFilter.vue'
 import { Button } from '@/components/ui/button'
 import { useCardCatalog } from '@/composables/useCardCatalog'
+import { useAuth } from '@/composables/useAuth'
 import { useCardFilters } from '@/composables/useCardFilters'
 import { getSharedTradeList } from '@/services/tradeListService'
 import type { SharedTradeListResponse, TradeDirection } from '@/types/api'
 
 const route = useRoute()
 const { getCard } = useCardCatalog()
+const { isAuthenticated } = useAuth()
 
 const shared = ref<SharedTradeListResponse | null>(null)
 const notFound = ref(false)
@@ -113,5 +115,14 @@ const offeredCount = computed(() => shared.value?.entries.filter(e => e.directio
         </template>
       </template>
     </template>
+
+    <!-- Logged-in visitors get the app's own header instead. Everyone else would otherwise be stuck on this
+         page (an installed app has no address bar or back button). -->
+    <p v-if="!isAuthenticated && (shared || notFound)" class="mb-10 mt-10 text-center text-sm text-muted-foreground">
+      Tracking your own Pokémon TCG Pocket collection?
+      <RouterLink to="/login" class="font-medium text-primary underline-offset-4 hover:underline">
+        Log in
+      </RouterLink>
+    </p>
   </div>
 </template>
