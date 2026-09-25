@@ -12,6 +12,11 @@ permissions:
   contents: read
   packages: write
 
+# A newer push replaces a build that's still running for the same branch or tag.
+concurrency:
+  group: publish-images-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   publish:
     # Pinned rather than ubuntu-latest, which moves to Ubuntu 26 on 2026-10-19. Bump on purpose.

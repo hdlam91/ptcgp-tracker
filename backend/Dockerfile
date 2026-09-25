@@ -1,4 +1,6 @@
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+# Framework-dependent publish output is portable .NET assemblies, so it is built once on the machine
+# doing the build; only the runtime image below is per-platform (avoids slow QEMU emulation for arm64).
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 COPY PtcgpTracker.slnx .
