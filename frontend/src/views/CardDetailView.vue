@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ArrowLeft } from '@lucide/vue'
+import { ArrowLeft, Heart, Minus, Plus, Repeat } from '@lucide/vue'
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import CardArt from '@/components/cards/CardArt.vue'
 import EnergyIcon from '@/components/cards/EnergyIcon.vue'
 import EnergyText from '@/components/cards/EnergyText.vue'
+import { Button } from '@/components/ui/button'
 import { useCardCatalog } from '@/composables/useCardCatalog'
 import { useCollection } from '@/composables/useCollection'
 import { useTradeList } from '@/composables/useTradeList'
@@ -15,8 +16,8 @@ const router = useRouter()
 const cardId = computed(() => route.params.cardId as string)
 
 const { getCard, getGameplay, getMeta, getExpansion } = useCardCatalog()
-const { getOwnedCount, ensureLoaded: ensureCollectionLoaded } = useCollection()
-const { isWanted, isOffered, ensureLoaded: ensureTradeListLoaded } = useTradeList()
+const { getOwnedCount, setOwnedCount, ensureLoaded: ensureCollectionLoaded } = useCollection()
+const { isWanted, isOffered, toggle, ensureLoaded: ensureTradeListLoaded } = useTradeList()
 
 onMounted(() => Promise.all([ensureCollectionLoaded(), ensureTradeListLoaded()]))
 
@@ -42,6 +43,11 @@ const otherPrints = computed(() =>
   }))
 
 const ownedCount = computed(() => getOwnedCount(cardId.value))
+
+function changeOwned(delta: number) {
+  const next = Math.max(0, ownedCount.value + delta)
+  if (next !== ownedCount.value) void setOwnedCount(cardId.value, next)
+}
 
 function goBack() {
   // Prefer real history so "back" returns to the filtered list the user came from.
@@ -233,19 +239,35 @@ function goBack() {
           <h2 id="collection-heading" class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
             In your collection
           </h2>
-          <p class="mt-2 text-sm">
-            <template v-if="ownedCount > 0">
-              You own ×{{ ownedCount }}.
-            </template>
-            <template v-else>
-              You don't own this card yet.
-            </template>
-            <template v-if="isWanted(card.id)">
-              It's on your want list.
-            </template>
-            <template v-if="isOffered(card.id)">
-              It's on your offer list.
-            </template>
+          <div class="mt-2 flex items-center gap-3">
+            <Button variant="outline" size="icon" aria-label="Remove one copy" :disabled="ownedCount === 0" @click="changeOwned(-1)">
+              <Minus class="size-4" />
+            </Button>
+            <span class="min-w-10 text-center text-lg font-semibold tabular-nums" aria-live="polite" data-testid="owned-count">×{{ ownedCount }}</span>
+            <Button variant="outline" size="icon" aria-label="Add one copy" @click="changeOwned(1)">
+              <Plus class="size-4" />
+            </Button>
+          </div>
+          <div v-if="card.tradable" class="mt-3 flex flex-wrap gap-2">
+            <Button
+              :variant="isWanted(card.id) ? 'default' : 'outline'"
+              :aria-pressed="isWanted(card.id)"
+              @click="toggle(card.id, 'Want')"
+            >
+              <Heart class="size-4" />
+              {{ isWanted(card.id) ? 'On your want list' : 'Add to want list' }}
+            </Button>
+            <Button
+              :variant="isOffered(card.id) ? 'default' : 'outline'"
+              :aria-pressed="isOffered(card.id)"
+              @click="toggle(card.id, 'Offer')"
+            >
+              <Repeat class="size-4" />
+              {{ isOffered(card.id) ? 'On your offer list' : 'Offer for trade' }}
+            </Button>
+          </div>
+          <p v-else class="mt-2 text-sm text-muted-foreground">
+            This card can't be traded, so it can't go on your want or offer list.
           </p>
         </section>
 

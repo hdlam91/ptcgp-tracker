@@ -69,3 +69,51 @@ test('an unknown card id shows a not-found message', async ({ page }) => {
 
   await expect(page.getByText('Card not found')).toBeVisible()
 })
+
+test('the card page can add and remove copies, and the set page reflects it', async ({ page }) => {
+  await registerViaApi(page)
+  await page.goto('/cards/a1-001')
+  const count = page.getByTestId('owned-count')
+  const remove = page.getByRole('button', { name: 'Remove one copy' })
+  await expect(count).toHaveText('×0')
+  await expect(remove).toBeDisabled()
+
+  await page.getByRole('button', { name: 'Add one copy' }).click()
+  await page.getByRole('button', { name: 'Add one copy' }).click()
+  await expect(count).toHaveText('×2')
+
+  // Persisted: survives a reload.
+  await page.reload()
+  await expect(count).toHaveText('×2')
+
+  await remove.click()
+  await remove.click()
+  await expect(count).toHaveText('×0')
+  await expect(remove).toBeDisabled()
+  await page.reload()
+  await expect(count).toHaveText('×0')
+})
+
+test('the card page can put a card on the want and offer lists and take it off again', async ({ page }) => {
+  await registerViaApi(page)
+  await page.goto('/cards/a1-002')
+  const want = page.getByRole('button', { name: /want list/ })
+  const offer = page.getByRole('button', { name: /(Offer for trade|offer list)/ })
+  await expect(want).toHaveAttribute('aria-pressed', 'false')
+
+  await want.click()
+  await offer.click()
+  await expect(want).toHaveAttribute('aria-pressed', 'true')
+  await expect(offer).toHaveAttribute('aria-pressed', 'true')
+  await page.reload()
+  await expect(want).toHaveAttribute('aria-pressed', 'true')
+  await expect(offer).toHaveAttribute('aria-pressed', 'true')
+
+  await want.click()
+  await offer.click()
+  await expect(want).toHaveAttribute('aria-pressed', 'false')
+  await expect(offer).toHaveAttribute('aria-pressed', 'false')
+  await page.reload()
+  await expect(want).toHaveAttribute('aria-pressed', 'false')
+  await expect(offer).toHaveAttribute('aria-pressed', 'false')
+})
