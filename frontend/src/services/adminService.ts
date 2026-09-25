@@ -1,5 +1,5 @@
 import { httpClient } from '@/services/httpClient'
-import type { AdminSettingsResponse, AdminUserResponse, CatalogStatusResponse } from '@/types/api'
+import type { AdminSettingsResponse, AdminUserResponse, CatalogStatusResponse, ImageMirrorStatusResponse } from '@/types/api'
 
 export const adminService = {
   users: () => httpClient.get<AdminUserResponse[]>('/admin/users'),
@@ -12,4 +12,6 @@ export const adminService = {
     httpClient.put<AdminSettingsResponse>('/admin/settings', { registrationOpen }),
   catalog: () => httpClient.get<CatalogStatusResponse>('/admin/catalog'),
   refreshCatalog: () => httpClient.post<CatalogStatusResponse>('/admin/catalog/refresh'),
+  images: () => httpClient.get<ImageMirrorStatusResponse>('/admin/images'),
+  startImageDownload: () => httpClient.post<ImageMirrorStatusResponse>('/admin/images/download'),
 }

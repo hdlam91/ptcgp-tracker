@@ -61,3 +61,18 @@ export interface CatalogStatusResponse {
 export interface PublicConfigResponse {
   registrationOpen: boolean
 }
+
+export type ImageMirrorState = 'Idle' | 'Running' | 'Completed' | 'Failed'
+
+export interface ImageMirrorStatusResponse {
+  state: ImageMirrorState
+  total: number
+  completed: number
+  failed: number
+  startedAt: string | null
+  finishedAt: string | null
+  storedCards: number
+  storedPacks: number
+  storedBytes: number
+  error: string | null
+}

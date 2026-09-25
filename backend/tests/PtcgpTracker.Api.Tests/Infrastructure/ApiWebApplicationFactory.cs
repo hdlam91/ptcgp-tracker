@@ -17,6 +17,8 @@ internal class ApiWebApplicationFactory(string connectionString) : WebApplicatio
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["ConnectionStrings:Default"] = connectionString,
+                // Never the real /data/images volume path; image tests point this at their own folder.
+                ["Images:Directory"] = Path.Combine(Path.GetTempPath(), $"ptcgp-test-images-{Guid.NewGuid():N}"),
             });
         });
 

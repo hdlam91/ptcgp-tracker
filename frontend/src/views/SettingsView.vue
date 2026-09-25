@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import CatalogCard from '@/components/admin/CatalogCard.vue'
+import ImagesCard from '@/components/admin/ImagesCard.vue'
 import RegistrationCard from '@/components/admin/RegistrationCard.vue'
 import UsersTable from '@/components/admin/UsersTable.vue'
 import { Search } from '@lucide/vue'
@@ -11,8 +12,8 @@ import { useAuth } from '@/composables/useAuth'
 
 const { currentUser } = useAuth()
 const {
-  users, filteredUsers, search, registrationOpen, catalog, loading, error, busy,
-  load, toggleRegistration, setAdmin, deleteUser, disableShare, refreshCatalog,
+  users, filteredUsers, search, registrationOpen, catalog, images, loading, error, busy,
+  load, toggleRegistration, setAdmin, deleteUser, disableShare, refreshCatalog, startImageDownload,
 } = useAdmin()
 
 onMounted(load)
@@ -34,6 +35,7 @@ onMounted(load)
     <div class="mt-6 grid gap-4 md:grid-cols-2">
       <RegistrationCard :open="registrationOpen" :busy="busy" @toggle="toggleRegistration" />
       <CatalogCard :catalog="catalog" :busy="busy" @refresh="refreshCatalog" />
+      <ImagesCard :status="images" :busy="busy" @download="startImageDownload" />
     </div>
 
     <Card class="mt-4">

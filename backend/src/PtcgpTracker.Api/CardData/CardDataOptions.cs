@@ -12,4 +12,11 @@ public class CardDataOptions
     public int RefreshIntervalHours { get; set; } = 24;
 
     public string BuildCollectionPayloadUrl() => $"{BaseUrl}/{RepoTag}/data/v5/cards.collection.no-image.json";
+
+    public string BuildExpansionsUrl() => $"{BaseUrl}/{RepoTag}/data/v5/expansions.json";
+
+    /// <summary>Card art at the pinned release, e.g. set "a1" number "001".</summary>
+    public string BuildCardImageUrl(string setCode, string number) => $"{BaseUrl}/{RepoTag}/images/webp/cards/{setCode}/{number}.webp";
+
+    public string BuildPackImageUrl(string packId) => $"{BaseUrl}/{RepoTag}/images/webp/packs/{packId}.webp";
 }

@@ -23,7 +23,7 @@ See [CLAUDE.md](./CLAUDE.md) for the architecture and coding conventions.
 To **run** the app you only need:
 
 - [Docker](https://docs.docker.com/get-docker/) with Docker Compose
-- Internet access on first start. The backend downloads the card data from GitHub, and card images are loaded from GitHub too.
+- Internet access on first start. The backend downloads the card data from GitHub, and card images are loaded from GitHub too, unless you store them on your own server (see [Card art on your own server](#card-art-on-your-own-server)).
 
 To **develop** on it you also need:
 
@@ -64,6 +64,8 @@ services:
       Admin__Emails: ${ADMIN_EMAILS:-}                    # your email, so you become admin
       APPLY_MIGRATIONS_ON_STARTUP: "true"
       ASPNETCORE_URLS: "http://+:8080"
+    volumes:
+      - images:/data/images                               # card art downloaded from Settings
 
   frontend:
     image: ghcr.io/hdlam91/ptcgp-tracker-frontend:${PTCGP_VERSION:-latest}
@@ -75,6 +77,7 @@ services:
 
 volumes:
   pgdata:
+  images:
 ```
 
 Then, in the same folder, set your options and start it. Each option is either an environment variable or a value you edit in the file:
@@ -172,8 +175,20 @@ Admins see a gear icon in the header that opens **Settings**, where they can:
 - see who has a public share link and disable it
 - **close or open registration** so no new accounts can be created
 - view and refresh the server's copy of the card data
+- **download all card art to your server**, so the site stops depending on GitHub for images (see below)
 
 More admins can be added from that page. You can't change or delete your own account there, so a mistake can't remove the last admin. `ADMIN_EMAILS` only ever *adds* admins: if you demote someone who is still listed, they become admin again the next time the backend starts.
+
+## Card art on your own server
+
+By default the card and pack pictures are not stored on your server. Each visitor's browser loads them from GitHub, so the art needs GitHub to be reachable from their device, and a network that blocks it shows blank cards.
+
+To store the art yourself, sign in as an admin and open **Settings → Card images → Download card images**. The server downloads every card and pack image from the pinned release into its `images` volume (about 135 MB, roughly a minute on a normal connection) and shows the progress. From then on the site serves the pictures itself.
+
+- **It's safe to run again.** **Download missing images** only fetches what isn't stored yet, so it's the button to press after updating the card data or if a few downloads failed. Files already stored are never downloaded again.
+- **Anything not stored still works.** If a picture isn't on the server (or the backend can't be reached), the app falls back to GitHub for that one picture. The promo packs have no art of their own and always load from GitHub.
+- **Where it lives.** The `images` volume in the compose files. It only holds copies of public images, so you never need to back it up. To remove the copy, stop the stack and delete that volume (`docker volume rm <project>_images`, the project being your compose folder or `ptcgp-tracker-selfhost`).
+- **Downloading needs GitHub once**, from the server. After that the server doesn't need it for art.
 
 ## Installing it on your phone
 
@@ -237,7 +252,7 @@ cd frontend
 npm run download-card-images
 ```
 
-This copies the images into `frontend/public/card-images` and `frontend/public/pack-images`. It is safe to re-run and only downloads what is missing. The folders are gitignored and are not included in Docker images. If a local file is missing, the app falls back to the GitHub URL.
+This is only for `npm run dev`; a running server stores its art from the admin Settings page instead (see [Card art on your own server](#card-art-on-your-own-server)). It copies the images into `frontend/public/card-images` and `frontend/public/pack-images`. It is safe to re-run and only downloads what is missing. The folders are gitignored and are not included in Docker images. If a local file is missing, the app falls back to the GitHub URL.
 
 ### Tests
 
@@ -298,6 +313,7 @@ The compose file is set up for local use or a trusted network. If other people w
 ## Troubleshooting
 
 - **"Registration is closed" when signing up:** an admin closed it. Open it again from Settings, or ask an admin.
+- **Card pictures are blank or missing:** they load from GitHub in each visitor's browser, so this usually means GitHub is blocked or unreachable from that device. Store the art on your server (see [Card art on your own server](#card-art-on-your-own-server)) to avoid the dependency.
 - **Cards show, but saving your collection fails ("Unknown cardId"):** the backend hasn't loaded its card data. Check `docker compose logs backend` for "Card catalog cache populated"; the backend needs to reach GitHub to download it. Admins can retry from Settings → Card data → Refresh.
 - **Port already in use:** set `PTCGP_PORT` (self-host file), or change the left-hand port numbers in `docker-compose.yml`.
 - **`docker compose pull` says "denied" or "unauthorized":** the GHCR packages are still private. Make them public, or `docker login ghcr.io` (see [Publishing the images](#publishing-the-images-maintainers)).

@@ -39,6 +39,9 @@ services:
       Admin__Emails: ${ADMIN_EMAILS:-}
       APPLY_MIGRATIONS_ON_STARTUP: "true"
       ASPNETCORE_URLS: "http://+:8080"
+    volumes:
+      # Card art downloaded from Settings.
+      - images:/data/images
 
   frontend:
     image: ghcr.io/hdlam91/ptcgp-tracker-frontend:${PTCGP_VERSION:-latest}
@@ -51,3 +54,4 @@ services:
 
 volumes:
   pgdata:
+  images:

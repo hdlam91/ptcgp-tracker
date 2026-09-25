@@ -1,3 +1,5 @@
+using PtcgpTracker.Api.Images;
+
 namespace PtcgpTracker.Api.Models;
 
 public record AdminUserResponse(
@@ -20,3 +22,15 @@ public record UpdateAdminSettingsRequest(bool RegistrationOpen);
 public record CatalogStatusResponse(string RepoTag, int CardCount, DateTimeOffset? LastRefreshedAt, string? LastError);
 
 public record PublicConfigResponse(bool RegistrationOpen);
+
+public record ImageMirrorStatusResponse(
+    ImageMirrorState State,
+    int Total,
+    int Completed,
+    int Failed,
+    DateTimeOffset? StartedAt,
+    DateTimeOffset? FinishedAt,
+    int StoredCards,
+    int StoredPacks,
+    long StoredBytes,
+    string? Error);

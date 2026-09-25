@@ -36,3 +36,6 @@ docker-compose.override.yml
 
 # Database
 *.sql.bak
+
+# Card art downloaded by a locally run backend (see Images:Directory)
+backend/src/PtcgpTracker.Api/data/

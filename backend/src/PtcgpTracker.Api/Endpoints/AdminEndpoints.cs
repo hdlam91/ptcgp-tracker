@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using PtcgpTracker.Api.CardData;
 using PtcgpTracker.Api.Data;
 using PtcgpTracker.Api.Data.Entities;
+using PtcgpTracker.Api.Images;
 using PtcgpTracker.Api.Models;
 using PtcgpTracker.Api.Services;
 
@@ -131,6 +132,14 @@ public static class AdminEndpoints
 
         group.MapGet("/catalog", (ICardCatalogAdmin catalog) => Results.Ok(ToResponse(catalog.GetStatus())));
 
+        group.MapGet("/images", (ImageMirrorService images) => Results.Ok(ToResponse(images.GetStatus())));
+
+        // Starts the download and returns straight away; the page polls GET /images for progress.
+        group.MapPost("/images/download", (ImageMirrorService images) =>
+            images.TryStart()
+                ? Results.Accepted("/api/admin/images", ToResponse(images.GetStatus()))
+                : Results.Conflict(new { error = "A download is already running." }));
+
         group.MapPost("/catalog/refresh", async (ICardCatalogAdmin catalog, CancellationToken cancellationToken) =>
         {
             try
@@ -145,6 +154,10 @@ public static class AdminEndpoints
             return Results.Ok(ToResponse(catalog.GetStatus()));
         });
     }
+
+    private static ImageMirrorStatusResponse ToResponse(ImageMirrorStatus status) =>
+        new(status.State, status.Total, status.Completed, status.Failed, status.StartedAt, status.FinishedAt,
+            status.StoredCards, status.StoredPacks, status.StoredBytes, status.Error);
 
     private static CatalogStatusResponse ToResponse(CatalogStatus status) =>
         new(status.RepoTag, status.CardCount, status.LastRefreshedAt, status.LastError);

@@ -30,6 +30,9 @@ services:
       Admin__Emails: ${ADMIN_EMAILS:-}
       APPLY_MIGRATIONS_ON_STARTUP: "true"
       ASPNETCORE_URLS: "http://+:8080"
+    volumes:
+      # Card art downloaded from Settings (see the README).
+      - images:/data/images
     ports:
       - "8080:8080"
 
@@ -43,3 +46,4 @@ services:
 
 volumes:
   pgdata:
+  images:

@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using PtcgpTracker.Api.Data.Entities;
 using PtcgpTracker.Api.Services;
@@ -10,7 +11,7 @@ namespace PtcgpTracker.Api.Tests.Infrastructure;
 internal static class AuthTestHelper
 {
     public static async Task<HttpClient> CreateAuthenticatedClientAsync(
-        this ApiWebApplicationFactory factory, string? email = null, string displayName = "Test Trainer")
+        this WebApplicationFactory<Program> factory, string? email = null, string displayName = "Test Trainer")
     {
         var client = factory.CreateClient();
         client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
@@ -31,7 +32,7 @@ internal static class AuthTestHelper
     /// already-issued session cookie has no admin claim yet, so this also exercises
     /// the server-side role refresh on the next request.
     /// </summary>
-    public static async Task<HttpClient> CreateAdminClientAsync(this ApiWebApplicationFactory factory)
+    public static async Task<HttpClient> CreateAdminClientAsync(this WebApplicationFactory<Program> factory)
     {
         var client = await factory.CreateAuthenticatedClientAsync(displayName: "Admin");
         var me = await client.GetFromJsonAsync<JsonElement>("/api/auth/me");
@@ -39,7 +40,7 @@ internal static class AuthTestHelper
         return client;
     }
 
-    public static async Task SetAdminAsync(this ApiWebApplicationFactory factory, Guid userId, bool isAdmin)
+    public static async Task SetAdminAsync(this WebApplicationFactory<Program> factory, Guid userId, bool isAdmin)
     {
         using var scope = factory.Services.CreateScope();
         var user = await scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>()

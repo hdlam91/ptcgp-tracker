@@ -1,11 +1,14 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
 using PtcgpTracker.Api.CardData;
 using PtcgpTracker.Api.Data;
 using PtcgpTracker.Api.Data.Entities;
 using PtcgpTracker.Api.Endpoints;
+using PtcgpTracker.Api.Images;
 using PtcgpTracker.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +26,9 @@ builder.Services.AddSingleton<ICardCatalogProvider>(sp => sp.GetRequiredService<
 builder.Services.AddSingleton<ICardCatalogAdmin>(sp => sp.GetRequiredService<CardCatalogHostedService>());
 builder.Services.AddHostedService(sp => sp.GetRequiredService<CardCatalogHostedService>());
 builder.Services.AddScoped<CollectionSummaryService>();
+builder.Services.Configure<ImageMirrorOptions>(builder.Configuration.GetSection(ImageMirrorOptions.SectionName));
+builder.Services.AddHttpClient(ImageMirrorService.HttpClientName);
+builder.Services.AddSingleton<ImageMirrorService>();
 builder.Services.AddScoped<AppSettingsService>();
 builder.Services.AddScoped<AdminRoleService>();
 
@@ -111,6 +117,29 @@ app.Use(async (context, next) =>
 
     await next();
 });
+
+// Art downloaded from Settings, served from disk (the frontend's nginx maps /card-images and
+// /pack-images here). Before authentication: card art is public. Anything missing is a plain 404,
+// which the frontend answers by falling back to GitHub.
+var imageDirectory = Path.GetFullPath(app.Services.GetRequiredService<IOptions<ImageMirrorOptions>>().Value.Directory);
+try
+{
+    Directory.CreateDirectory(imageDirectory);
+}
+catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+{
+    app.Logger.LogWarning(ex, "Image storage {Directory} isn't writable; downloaded art won't be available", imageDirectory);
+}
+
+if (Directory.Exists(imageDirectory))
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(imageDirectory),
+        RequestPath = "/local-images",
+        OnPrepareResponse = context => context.Context.Response.Headers.CacheControl = "public, max-age=604800",
+    });
+}
 
 app.UseAuthentication();
 app.UseAuthorization();
