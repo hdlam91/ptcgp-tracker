@@ -17,7 +17,7 @@ export interface RarityGroup {
 const RARITY_GROUPS: { key: string, label: string, matches: (card: CardCatalogEntry) => boolean }[] = [
   { key: 'diamond', label: 'Diamond', matches: card => ['◊', '◊◊', '◊◊◊', '◊◊◊◊'].includes(card.rarity) },
   { key: 'star', label: 'Star', matches: card => ['☆', '☆☆', '☆☆☆'].includes(card.rarity) && !card.shiny },
-  { key: 'shiny', label: 'Shiny', matches: card => card.shiny },
+  { key: 'shiny', label: 'Shiny', matches: card => card.shiny === true },
   { key: 'crown', label: 'Crown', matches: card => card.rarity === 'Crown Rare' },
 ]
 
