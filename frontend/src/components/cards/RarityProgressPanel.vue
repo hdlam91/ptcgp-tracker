@@ -15,7 +15,7 @@ defineEmits<{
 </script>
 
 <template>
-  <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+  <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
     <div v-for="group in groups" :key="group.key" class="flex flex-col gap-2 rounded-lg border bg-card p-3">
       <div class="flex items-center justify-between gap-2">
         <span class="text-sm font-medium">{{ group.label }}</span>

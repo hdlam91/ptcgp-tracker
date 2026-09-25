@@ -36,7 +36,7 @@ const rarityGroupsFor = computed(() => {
 </script>
 
 <template>
-  <div class="mx-auto max-w-5xl p-4 sm:p-6">
+  <div class="mx-auto max-w-7xl p-4 sm:p-6">
     <h1 class="text-2xl font-semibold">
       Your sets
     </h1>
@@ -44,7 +44,7 @@ const rarityGroupsFor = computed(() => {
       Pick a set to view and update the cards you own.
     </p>
 
-    <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="mt-6 grid grid-cols-[repeat(auto-fill,minmax(min(100%,23rem),1fr))] gap-4">
       <RouterLink v-for="expansion in expansions" :key="expansion.id" :to="`/sets/${expansion.id}`">
         <Card class="h-full transition-colors hover:bg-accent">
           <CardHeader>

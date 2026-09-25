@@ -12,10 +12,13 @@ export interface RarityGroup {
 
 // Grouped rather than shown per-tier (◊ vs ◊◊◊◊ etc.) since "diamond/star/crown
 // completion" is how players talk about a set's rarity ladder, not the individual tiers.
-const RARITY_GROUPS: { key: string, label: string, rarities: CardCatalogEntry['rarity'][] }[] = [
-  { key: 'diamond', label: 'Diamond', rarities: ['◊', '◊◊', '◊◊◊', '◊◊◊◊'] },
-  { key: 'star', label: 'Star', rarities: ['☆', '☆☆', '☆☆☆'] },
-  { key: 'crown', label: 'Crown', rarities: ['Crown Rare'] },
+// Shiny cards carry a ☆/☆☆ rarity in the dataset but are their own collecting goal, so they
+// count under "shiny" only, not under "star".
+const RARITY_GROUPS: { key: string, label: string, matches: (card: CardCatalogEntry) => boolean }[] = [
+  { key: 'diamond', label: 'Diamond', matches: card => ['◊', '◊◊', '◊◊◊', '◊◊◊◊'].includes(card.rarity) },
+  { key: 'star', label: 'Star', matches: card => ['☆', '☆☆', '☆☆☆'].includes(card.rarity) && !card.shiny },
+  { key: 'shiny', label: 'Shiny', matches: card => card.shiny },
+  { key: 'crown', label: 'Crown', matches: card => card.rarity === 'Crown Rare' },
 ]
 
 /**
@@ -28,8 +31,8 @@ export function computeRarityGroups(
   getOwnedCount: (cardId: string) => number,
 ): RarityGroup[] {
   return RARITY_GROUPS
-    .map(({ key, label, rarities }) => {
-      const cardsInGroup = cards.filter(card => rarities.includes(card.rarity))
+    .map(({ key, label, matches }) => {
+      const cardsInGroup = cards.filter(matches)
       const missingCardIds = cardsInGroup.filter(card => getOwnedCount(card.id) === 0).map(card => card.id)
       return {
         key,
