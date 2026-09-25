@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Check, Copy } from '@lucide/vue'
+import { Check, Copy, ExternalLink } from '@lucide/vue'
 import { computed, onMounted, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -67,6 +67,13 @@ async function copyLink() {
           @focus="($event.target as HTMLInputElement).select()"
         >
         <div class="flex gap-2">
+          <!-- A real link (not a button) so it can be opened in a new tab, copied, or middle-clicked. -->
+          <Button as-child variant="outline" size="sm">
+            <a :href="shareUrl ?? undefined" target="_blank" rel="noopener">
+              <ExternalLink class="size-3.5" />
+              Open
+            </a>
+          </Button>
           <Button variant="outline" size="sm" @click="copyLink">
             <Check v-if="copied" class="size-3.5" />
             <Copy v-else class="size-3.5" />

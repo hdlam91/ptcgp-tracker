@@ -15,6 +15,11 @@ test('sharing a trade list produces a working public read-only link that revokes
   // Short, readable link built from the display name — "Test Trainer" → /share/test-trainer[-N].
   expect(shareUrl).toMatch(/\/share\/test-trainer(-\d+)?$/)
 
+  // "Open" goes straight to the shared page, in a new tab.
+  const openLink = page.getByRole('link', { name: 'Open' })
+  await expect(openLink).toHaveAttribute('href', shareUrl)
+  await expect(openLink).toHaveAttribute('target', '_blank')
+
   // A completely separate, unauthenticated browser context — like a friend clicking the link.
   const anonContext = await browser.newContext()
   const anonPage = await anonContext.newPage()

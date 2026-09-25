@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import CardGrid from '@/components/cards/CardGrid.vue'
+import SetRarityFilter from '@/components/cards/SetRarityFilter.vue'
 import { Button } from '@/components/ui/button'
 import { useCardCatalog } from '@/composables/useCardCatalog'
+import { useCardFilters } from '@/composables/useCardFilters'
 import { getSharedTradeList } from '@/services/tradeListService'
 import type { SharedTradeListResponse, TradeDirection } from '@/types/api'
 
@@ -33,6 +35,19 @@ const activeCards = computed(() => {
     .map(e => getCard(e.cardId))
     .filter(card => card !== undefined)
 })
+
+// Set and rarity only. The composable's other filters (search, pack, energy...) stay unused.
+const { setCode, rarity, setOptions, rarityOptions, filteredCards, hasActiveFilters, resetFilters } = useCardFilters(activeCards)
+
+// A set or rarity picked on one tab may not exist on the other, so start each tab unfiltered.
+watch(activeTab, resetFilters)
+
+// A shared list can be huge (e.g. everything missing); rendering thousands of cards at once
+// visibly lags, so show a page at a time, same as your own trade list.
+const PAGE_SIZE = 60
+const visibleCount = ref(PAGE_SIZE)
+watch([setCode, rarity, activeTab], () => { visibleCount.value = PAGE_SIZE })
+const visibleCards = computed(() => filteredCards.value.slice(0, visibleCount.value))
 
 const wantedCount = computed(() => shared.value?.entries.filter(e => e.direction === 'Want').length ?? 0)
 const offeredCount = computed(() => shared.value?.entries.filter(e => e.direction === 'Offer').length ?? 0)
@@ -64,15 +79,39 @@ const offeredCount = computed(() => shared.value?.entries.filter(e => e.directio
       <p v-if="activeCards.length === 0" class="mt-8 text-sm text-muted-foreground">
         Nothing here yet.
       </p>
-      <div v-else class="mt-6">
-        <CardGrid
-          :cards="activeCards"
-          :owned-counts="emptyMap"
-          :wanted-card-ids="emptySet"
-          :offered-card-ids="emptySet"
-          readonly
+      <template v-else>
+        <SetRarityFilter
+          v-model:set-code="setCode"
+          v-model:rarity="rarity"
+          class="mt-4"
+          :set-options="setOptions"
+          :rarity-options="rarityOptions"
+          :result-count="filteredCards.length"
+          :total-count="activeCards.length"
+          :has-active-filters="hasActiveFilters"
+          @reset="resetFilters"
         />
-      </div>
+
+        <p v-if="filteredCards.length === 0" class="mt-8 text-sm text-muted-foreground">
+          No cards match these filters.
+        </p>
+        <template v-else>
+          <div class="mt-6">
+            <CardGrid
+              :cards="visibleCards"
+              :owned-counts="emptyMap"
+              :wanted-card-ids="emptySet"
+              :offered-card-ids="emptySet"
+              readonly
+            />
+          </div>
+          <div v-if="visibleCards.length < filteredCards.length" class="mt-4 flex justify-center">
+            <Button variant="outline" @click="visibleCount += PAGE_SIZE">
+              Show more ({{ visibleCards.length }} / {{ filteredCards.length }})
+            </Button>
+          </div>
+        </template>
+      </template>
     </template>
   </div>
 </template>
