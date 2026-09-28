@@ -21,10 +21,36 @@ export type OwnershipFilter = 'all' | 'owned' | 'missing'
 export type PackOption = ExpansionEntry['packs'][number]
 
 type Rarity = CardCatalogEntry['rarity']
+// Shiny cards carry a ☆/☆☆/☆☆☆ rarity in the dataset but are their own collecting goal (see
+// useRarityGroups). Each star tier's shiny cards get their own synthetic option — "☆ Shiny" is
+// a different filter than "☆☆ Shiny" — rather than lumping every shiny card together. This
+// string is an internal id only; RarityIcon/RaritySelect render it as icons, never as text.
+export type RarityFilter = Rarity | `${'☆' | '☆☆' | '☆☆☆'} Shiny`
+export function shinyRarityLabel(rarity: '☆' | '☆☆' | '☆☆☆'): RarityFilter {
+  return `${rarity} Shiny`
+}
 
-// Dataset rarity values in ascending order, so the dropdown reads low-to-high
-// instead of following whatever order cards happen to appear in a set.
-const RARITY_ORDER = ['◊', '◊◊', '◊◊◊', '◊◊◊◊', '☆', '☆☆', '☆☆☆', 'Crown Rare', 'Promo']
+const DIAMOND_TIERS: Record<string, number> = { '◊': 1, '◊◊': 2, '◊◊◊': 3, '◊◊◊◊': 4 }
+const STAR_TIERS: Record<string, number> = { '☆': 1, '☆☆': 2, '☆☆☆': 3 }
+
+/** Plain-English name for a rarity filter value, for accessible labels — never shown as visible text. */
+export function rarityFilterLabel(rarity: RarityFilter | ''): string {
+  if (rarity === '') return 'Any rarity'
+  if (rarity === 'Crown Rare' || rarity === 'Promo') return rarity
+  if (rarity.endsWith(' Shiny')) {
+    const n = STAR_TIERS[rarity.slice(0, -' Shiny'.length)] ?? 1
+    return `${n} star${n > 1 ? 's' : ''} Shiny`
+  }
+  if (rarity in DIAMOND_TIERS) return `${DIAMOND_TIERS[rarity]} diamond${DIAMOND_TIERS[rarity] > 1 ? 's' : ''}`
+  const n = STAR_TIERS[rarity] ?? 1
+  return `${n} star${n > 1 ? 's' : ''}`
+}
+
+// Dropdown order: all diamond tiers, then all star tiers, then all shiny tiers (grouped
+// together rather than interleaved with their non-shiny counterpart), then crown/promo.
+const DIAMOND_ORDER: Rarity[] = ['◊', '◊◊', '◊◊◊', '◊◊◊◊']
+const STAR_ORDER: Rarity[] = ['☆', '☆☆', '☆☆☆']
+const TAIL_ORDER: Rarity[] = ['Crown Rare', 'Promo']
 
 /**
  * Search (name, number, attack/ability names and effect text) plus set, pack, rarity,
@@ -42,7 +68,7 @@ export function useCardFilters(
 
   const search = ref('')
   const setCode = ref('')
-  const rarity = ref<Rarity | ''>('')
+  const rarity = ref<RarityFilter | ''>('')
   const pack = ref('')
   const ownership = ref<OwnershipFilter>('all')
   const cardType = ref<CardTypeFilter | ''>('')
@@ -57,8 +83,15 @@ export function useCardFilters(
   })
 
   const rarityOptions = computed(() => {
-    const present = new Set(cards.value.map(card => card.rarity))
-    return RARITY_ORDER.filter((r): r is Rarity => present.has(r as Rarity))
+    const nonShinyPresent = new Set(cards.value.filter(card => !card.shiny).map(card => card.rarity))
+    const shinyPresent = new Set(cards.value.filter(card => card.shiny).map(card => card.rarity))
+
+    const diamonds = DIAMOND_ORDER.filter(r => nonShinyPresent.has(r))
+    const stars = STAR_ORDER.filter(r => nonShinyPresent.has(r))
+    const shinies = STAR_ORDER.filter(r => shinyPresent.has(r)).map(r => shinyRarityLabel(r as '☆' | '☆☆' | '☆☆☆'))
+    const tail = TAIL_ORDER.filter(r => nonShinyPresent.has(r))
+
+    return [...diamonds, ...stars, ...shinies, ...tail]
   })
 
   // The pack dropdown is only meaningful once exactly one set is in view —
@@ -118,7 +151,10 @@ export function useCardFilters(
       if (setCode.value && card.set_code !== setCode.value) {
         return false
       }
-      if (rarity.value && card.rarity !== rarity.value) {
+      if (rarity.value.endsWith(' Shiny')) {
+        if (!card.shiny || rarity.value !== shinyRarityLabel(card.rarity as '☆' | '☆☆' | '☆☆☆')) return false
+      }
+      else if (rarity.value !== '' && (card.rarity !== rarity.value || card.shiny)) {
         return false
       }
       if (pack.value && card.pack !== pack.value) {

@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import { Search, SlidersHorizontal, X } from '@lucide/vue'
 import { computed, ref } from 'vue'
+import RaritySelect from '@/components/cards/RaritySelect.vue'
 import SetTile from '@/components/cards/SetTile.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import type { OwnershipFilter, PackOption } from '@/composables/useCardFilters'
+import type { OwnershipFilter, PackOption, RarityFilter } from '@/composables/useCardFilters'
 import type { AbilityFilter, CardTypeFilter, EnergyType, EvolutionFilter, FilterOption } from '@/lib/cardMetadata'
 import { cn } from '@/lib/utils'
-import type { CardCatalogEntry, ExpansionEntry } from '@/types/catalog'
+import type { ExpansionEntry } from '@/types/catalog'
 
 const props = withDefaults(defineProps<{
   setOptions: ExpansionEntry[]
-  rarityOptions: CardCatalogEntry['rarity'][]
+  rarityOptions: RarityFilter[]
   packOptions: PackOption[]
   advancedOptions: {
     cardTypes: FilterOption<CardTypeFilter>[]
@@ -36,7 +37,7 @@ const emit = defineEmits<{ (e: 'reset'): void }>()
 
 const search = defineModel<string>('search', { required: true })
 const setCode = defineModel<string>('setCode', { required: true })
-const rarity = defineModel<CardCatalogEntry['rarity'] | ''>('rarity', { required: true })
+const rarity = defineModel<RarityFilter | ''>('rarity', { required: true })
 const pack = defineModel<string>('pack', { required: true })
 const ownership = defineModel<OwnershipFilter>('ownership', { required: true })
 const cardType = defineModel<CardTypeFilter | ''>('cardType', { required: true })
@@ -71,14 +72,7 @@ const selectClass = 'h-10 rounded-md border border-input bg-background px-3 text
         </option>
       </select>
 
-      <select v-model="rarity" :class="selectClass" aria-label="Filter by rarity">
-        <option value="">
-          Any rarity
-        </option>
-        <option v-for="option in rarityOptions" :key="option" :value="option">
-          {{ option }}
-        </option>
-      </select>
+      <RaritySelect v-model="rarity" :options="rarityOptions" />
 
       <select v-if="packOptions.length > 1" v-model="pack" :class="selectClass" aria-label="Filter by pack">
         <option value="">
