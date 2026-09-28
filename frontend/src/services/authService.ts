@@ -1,5 +1,5 @@
 import { httpClient } from '@/services/httpClient'
-import type { UserResponse } from '@/types/api'
+import type { LoginResponse, UserResponse } from '@/types/api'
 
 export interface RegisterPayload {
   email: string
@@ -12,9 +12,16 @@ export interface LoginPayload {
   password: string
 }
 
+export interface TwoFactorLoginPayload {
+  code: string
+  isRecoveryCode: boolean
+  rememberDevice: boolean
+}
+
 export const authService = {
   register: (payload: RegisterPayload) => httpClient.post<UserResponse>('/auth/register', payload),
-  login: (payload: LoginPayload) => httpClient.post<UserResponse>('/auth/login', payload),
+  login: (payload: LoginPayload) => httpClient.post<LoginResponse>('/auth/login', payload),
+  loginTwoFactor: (payload: TwoFactorLoginPayload) => httpClient.post<UserResponse>('/auth/login/2fa', payload),
   logout: () => httpClient.post<void>('/auth/logout'),
   me: () => httpClient.get<UserResponse>('/auth/me'),
 }

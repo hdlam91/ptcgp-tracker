@@ -5,6 +5,26 @@ export interface UserResponse {
   isAdmin: boolean
 }
 
+/** `user` is null exactly when `requiresTwoFactor` is true — the password was right, but the
+ * login isn't complete until the 2FA step succeeds. */
+export interface LoginResponse {
+  requiresTwoFactor: boolean
+  user: UserResponse | null
+}
+
+export interface TwoFactorStatusResponse {
+  enabled: boolean
+}
+
+export interface TwoFactorSetupResponse {
+  sharedKey: string
+  otpAuthUri: string
+}
+
+export interface RecoveryCodesResponse {
+  recoveryCodes: string[]
+}
+
 export type TradeDirection = 'Want' | 'Offer'
 
 export interface CollectionEntryResponse {

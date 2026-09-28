@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useEventListener, useResizeObserver } from '@vueuse/core'
-import { LogOut, Menu, Moon, Settings, Sun, X } from '@lucide/vue'
+import { LogOut, Menu, Moon, Settings, Sun, UserCog, X } from '@lucide/vue'
 import { nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppNav from '@/components/layout/AppNav.vue'
@@ -121,6 +121,14 @@ useEventListener(document, 'keydown', (event: KeyboardEvent) => {
         <p v-if="currentUser?.displayName" class="px-4 pb-1 pt-2 text-sm text-muted-foreground">
           {{ currentUser.displayName }}
         </p>
+        <RouterLink
+          to="/account"
+          class="flex items-center gap-3 px-4 py-3 text-base hover:bg-accent"
+          active-class="font-medium text-foreground"
+        >
+          <UserCog class="size-4" />
+          Account
+        </RouterLink>
         <RouterLink
           v-if="isAdmin"
           to="/settings"

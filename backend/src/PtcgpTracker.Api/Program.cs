@@ -31,6 +31,7 @@ builder.Services.AddHttpClient(ImageMirrorService.HttpClientName);
 builder.Services.AddSingleton<ImageMirrorService>();
 builder.Services.AddScoped<AppSettingsService>();
 builder.Services.AddScoped<AdminRoleService>();
+builder.Services.AddScoped<AccountDeletionService>();
 
 builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
     .AddCookie(IdentityConstants.ApplicationScheme, options =>
@@ -77,6 +78,22 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
                 context.ShouldRenew = true;
             }
         };
+    })
+    // SignInManager signs into these two schemes itself for the 2FA login step — short-lived
+    // "who's mid-login" state, and the optional "remember this device" cookie — so both need a
+    // registered handler even though nothing here reads them directly. AddIdentityCore doesn't
+    // register them the way the full AddIdentity() does.
+    .AddCookie(IdentityConstants.TwoFactorUserIdScheme, options =>
+    {
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+    })
+    .AddCookie(IdentityConstants.TwoFactorRememberMeScheme, options =>
+    {
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.ExpireTimeSpan = TimeSpan.FromDays(30);
     });
 
 builder.Services.AddAuthorizationBuilder()
@@ -147,6 +164,7 @@ app.UseAuthorization();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 app.MapAuthEndpoints();
+app.MapAccountEndpoints();
 app.MapCollectionEndpoints();
 app.MapTradeListEndpoints();
 app.MapTradeListShareEndpoints();

@@ -42,6 +42,22 @@ public class AuthEndpointsTests(PostgresApiFixture fixture)
     }
 
     [Fact]
+    public async Task Login_WithoutTwoFactor_ReturnsTheUserDirectly()
+    {
+        var client = fixture.Factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+        var email = $"{Guid.NewGuid()}@example.com";
+        await client.PostAsJsonAsync("/api/auth/register", new { email, password = "Password1", displayName = "Ash" });
+
+        var login = await client.PostAsJsonAsync("/api/auth/login", new { email, password = "Password1" });
+
+        Assert.Equal(HttpStatusCode.OK, login.StatusCode);
+        var body = await login.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.False(body.GetProperty("requiresTwoFactor").GetBoolean());
+        Assert.Equal(email, body.GetProperty("user").GetProperty("email").GetString());
+    }
+
+    [Fact]
     public async Task Login_WithWrongPassword_ReturnsUnauthorized()
     {
         var client = fixture.Factory.CreateClient();

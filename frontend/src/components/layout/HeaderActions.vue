@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LogOut, Settings } from '@lucide/vue'
+import { LogOut, Settings, UserCog } from '@lucide/vue'
 import { useRouter } from 'vue-router'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 import { Button } from '@/components/ui/button'
@@ -17,6 +17,13 @@ async function onLogout() {
 <template>
   <div class="flex shrink-0 items-center gap-3">
     <span class="hidden text-sm text-muted-foreground sm:inline">{{ currentUser?.displayName }}</span>
+    <RouterLink v-slot="{ isActive, href, navigate }" to="/account" custom>
+      <Button as-child :variant="isActive ? 'default' : 'outline'" size="icon" title="Account">
+        <a :href="href" aria-label="Account" @click="navigate">
+          <UserCog class="size-4" />
+        </a>
+      </Button>
+    </RouterLink>
     <RouterLink v-if="isAdmin" v-slot="{ isActive, href, navigate }" to="/settings" custom>
       <Button as-child :variant="isActive ? 'default' : 'outline'" size="icon" title="Settings">
         <a :href="href" aria-label="Settings" @click="navigate">

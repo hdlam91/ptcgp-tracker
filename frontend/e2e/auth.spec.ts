@@ -12,7 +12,8 @@ test('a visitor can register, stay logged in across a reload, and log out', asyn
 
   await expect(page).toHaveURL('/')
   await expect(page.getByRole('heading', { name: 'Your sets' })).toBeVisible()
-  await expect(page.getByText(user.displayName)).toBeVisible()
+  // The header renders an invisible measuring copy of the actions cluster too, so this matches twice.
+  await expect(page.getByText(user.displayName).first()).toBeVisible()
 
   // Session should survive a reload (cookie-based auth, not client-only state).
   await page.reload()

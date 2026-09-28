@@ -78,8 +78,8 @@ public static class AdminEndpoints
         group.MapDelete("/users/{id:guid}", async (
             Guid id,
             ClaimsPrincipal principal,
-            ApplicationDbContext db,
-            UserManager<ApplicationUser> userManager) =>
+            UserManager<ApplicationUser> userManager,
+            AccountDeletionService accountDeletion) =>
         {
             if (id == GetUserId(principal))
             {
@@ -92,19 +92,12 @@ public static class AdminEndpoints
                 return Results.NotFound();
             }
 
-            // Collection and trade-list rows hold a plain UserId (no FK), so they don't
-            // cascade — delete them explicitly, atomically with the user.
-            await using var transaction = await db.Database.BeginTransactionAsync();
-            await db.CollectionEntries.Where(e => e.UserId == id).ExecuteDeleteAsync();
-            await db.TradeListEntries.Where(e => e.UserId == id).ExecuteDeleteAsync();
-
-            var result = await userManager.DeleteAsync(user);
+            var result = await accountDeletion.DeleteAsync(user);
             if (!result.Succeeded)
             {
                 return Results.Problem(string.Join("; ", result.Errors.Select(e => e.Description)));
             }
 
-            await transaction.CommitAsync();
             return Results.NoContent();
         });
 

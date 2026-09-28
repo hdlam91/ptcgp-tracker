@@ -14,24 +14,56 @@ const password = ref('')
 const errorMessage = ref('')
 const isSubmitting = ref(false)
 
-const { login } = useAuth()
+// The password step and the 2FA step are separate forms, but only one is ever showing.
+const awaitingTwoFactor = ref(false)
+const code = ref('')
+const isRecoveryCode = ref(false)
+const rememberDevice = ref(false)
+
+const { login, loginTwoFactor } = useAuth()
 const { registrationOpen, load: loadConfig } = useAppConfig()
 
 onMounted(loadConfig)
 const router = useRouter()
 const route = useRoute()
 
+async function afterLogin() {
+  const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
+  await router.push(redirect)
+}
+
 async function onSubmit() {
   errorMessage.value = ''
   isSubmitting.value = true
   try {
-    await login({ email: email.value, password: password.value })
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
-    await router.push(redirect)
+    const result = await login({ email: email.value, password: password.value })
+    if (result.requiresTwoFactor) {
+      awaitingTwoFactor.value = true
+    }
+    else {
+      await afterLogin()
+    }
   }
   catch (error) {
     errorMessage.value = error instanceof ApiError && error.status === 401
       ? 'Incorrect email or password.'
+      : 'Something went wrong. Please try again.'
+  }
+  finally {
+    isSubmitting.value = false
+  }
+}
+
+async function onSubmitTwoFactor() {
+  errorMessage.value = ''
+  isSubmitting.value = true
+  try {
+    await loginTwoFactor({ code: code.value, isRecoveryCode: isRecoveryCode.value, rememberDevice: rememberDevice.value })
+    await afterLogin()
+  }
+  catch (error) {
+    errorMessage.value = error instanceof ApiError && error.status === 401
+      ? (isRecoveryCode.value ? 'That recovery code isn\'t valid.' : 'That code isn\'t valid.')
       : 'Something went wrong. Please try again.'
   }
   finally {
@@ -43,34 +75,73 @@ async function onSubmit() {
 <template>
   <div class="flex min-h-screen items-center justify-center bg-muted/40 px-4">
     <Card class="w-full max-w-sm">
-      <CardHeader>
-        <CardTitle>Log in</CardTitle>
-        <CardDescription>Track your Pokémon TCG Pocket collection.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form class="flex flex-col gap-4" @submit.prevent="onSubmit">
-          <div class="flex flex-col gap-1.5">
-            <Label for="email">Email</Label>
-            <Input id="email" v-model="email" type="email" autocomplete="email" required />
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <Label for="password">Password</Label>
-            <Input id="password" v-model="password" type="password" autocomplete="current-password" required />
-          </div>
-          <p v-if="errorMessage" class="text-sm text-destructive">
-            {{ errorMessage }}
+      <template v-if="!awaitingTwoFactor">
+        <CardHeader>
+          <CardTitle>Log in</CardTitle>
+          <CardDescription>Track your Pokémon TCG Pocket collection.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form class="flex flex-col gap-4" @submit.prevent="onSubmit">
+            <div class="flex flex-col gap-1.5">
+              <Label for="email">Email</Label>
+              <Input id="email" v-model="email" type="email" autocomplete="email" required />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <Label for="password">Password</Label>
+              <Input id="password" v-model="password" type="password" autocomplete="current-password" required />
+            </div>
+            <p v-if="errorMessage" class="text-sm text-destructive">
+              {{ errorMessage }}
+            </p>
+            <Button type="submit" :disabled="isSubmitting">
+              {{ isSubmitting ? 'Logging in…' : 'Log in' }}
+            </Button>
+          </form>
+          <p v-if="registrationOpen" class="mt-4 text-center text-sm text-muted-foreground">
+            Don't have an account?
+            <RouterLink to="/register" class="font-medium text-primary underline-offset-4 hover:underline">
+              Sign up
+            </RouterLink>
           </p>
-          <Button type="submit" :disabled="isSubmitting">
-            {{ isSubmitting ? 'Logging in…' : 'Log in' }}
-          </Button>
-        </form>
-        <p v-if="registrationOpen" class="mt-4 text-center text-sm text-muted-foreground">
-          Don't have an account?
-          <RouterLink to="/register" class="font-medium text-primary underline-offset-4 hover:underline">
-            Sign up
-          </RouterLink>
-        </p>
-      </CardContent>
+        </CardContent>
+      </template>
+
+      <template v-else>
+        <CardHeader>
+          <CardTitle>Two-factor authentication</CardTitle>
+          <CardDescription>
+            {{ isRecoveryCode ? 'Enter one of your recovery codes.' : 'Enter the 6-digit code from your authenticator app.' }}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form class="flex flex-col gap-4" @submit.prevent="onSubmitTwoFactor">
+            <div class="flex flex-col gap-1.5">
+              <Label for="code">{{ isRecoveryCode ? 'Recovery code' : 'Code' }}</Label>
+              <Input
+                id="code" v-model="code" :inputmode="isRecoveryCode ? 'text' : 'numeric'"
+                autocomplete="one-time-code" autofocus required
+              />
+            </div>
+            <label class="flex items-center gap-2 text-sm">
+              <input v-model="rememberDevice" type="checkbox" class="size-4 rounded border-input">
+              Remember this device for 30 days
+            </label>
+            <p v-if="errorMessage" class="text-sm text-destructive">
+              {{ errorMessage }}
+            </p>
+            <Button type="submit" :disabled="isSubmitting">
+              {{ isSubmitting ? 'Verifying…' : 'Verify' }}
+            </Button>
+          </form>
+          <button
+            type="button"
+            class="mt-4 w-full text-center text-sm font-medium text-primary underline-offset-4 hover:underline"
+            @click="isRecoveryCode = !isRecoveryCode; code = ''; errorMessage = ''"
+          >
+            {{ isRecoveryCode ? 'Use an authenticator code instead' : 'Use a recovery code instead' }}
+          </button>
+        </CardContent>
+      </template>
     </Card>
   </div>
 </template>

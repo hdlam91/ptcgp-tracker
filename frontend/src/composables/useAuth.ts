@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue'
 import { ApiError } from '@/services/httpClient'
-import { authService, type LoginPayload, type RegisterPayload } from '@/services/authService'
+import { authService, type LoginPayload, type RegisterPayload, type TwoFactorLoginPayload } from '@/services/authService'
 import type { UserResponse } from '@/types/api'
 
 // Module-scoped singleton: every component that calls useAuth() shares the same
@@ -40,8 +40,19 @@ async function register(payload: RegisterPayload) {
   initialized.value = true
 }
 
+/** Returns the raw response so the login view can branch on `requiresTwoFactor` — `currentUser`
+ * is only set once a login (with or without a 2FA step) actually completes. */
 async function login(payload: LoginPayload) {
-  currentUser.value = await authService.login(payload)
+  const response = await authService.login(payload)
+  if (response.user) {
+    currentUser.value = response.user
+    initialized.value = true
+  }
+  return response
+}
+
+async function loginTwoFactor(payload: TwoFactorLoginPayload) {
+  currentUser.value = await authService.loginTwoFactor(payload)
   initialized.value = true
 }
 
@@ -60,6 +71,7 @@ export function useAuth() {
     fetchCurrentUser,
     register,
     login,
+    loginTwoFactor,
     logout,
   }
 }

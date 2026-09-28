@@ -57,6 +57,13 @@ public static class AuthEndpoints
             var result = await signInManager.PasswordSignInAsync(
                 request.Email, request.Password, isPersistent: true, lockoutOnFailure: false);
 
+            if (result.RequiresTwoFactor)
+            {
+                // The password was right, but SignInManager hasn't completed the sign-in — it's
+                // stashed who's mid-login in its own short-lived cookie for /login/2fa to finish.
+                return Results.Ok(new LoginResponse(true, null));
+            }
+
             if (!result.Succeeded)
             {
                 return Results.Unauthorized();
@@ -64,7 +71,33 @@ public static class AuthEndpoints
 
             var user = await userManager.FindByEmailAsync(request.Email);
             var isAdmin = await userManager.IsInRoleAsync(user!, AppRoles.Admin);
-            return Results.Ok(new UserResponse(user!.Id, user.Email!, user.DisplayName, isAdmin));
+            return Results.Ok(new LoginResponse(false, new UserResponse(user!.Id, user.Email!, user.DisplayName, isAdmin)));
+        });
+
+        group.MapPost("/login/2fa", async (
+            TwoFactorLoginRequest request,
+            SignInManager<ApplicationUser> signInManager,
+            UserManager<ApplicationUser> userManager) =>
+        {
+            // Fetched before the sign-in call below, which clears the intermediate "who's
+            // mid-login" cookie this reads from once it succeeds.
+            var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
+            if (user is null)
+            {
+                return Results.Unauthorized();
+            }
+
+            var result = request.IsRecoveryCode
+                ? await signInManager.TwoFactorRecoveryCodeSignInAsync(request.Code)
+                : await signInManager.TwoFactorAuthenticatorSignInAsync(request.Code, isPersistent: true, rememberClient: request.RememberDevice);
+
+            if (!result.Succeeded)
+            {
+                return Results.Unauthorized();
+            }
+
+            var isAdmin = await userManager.IsInRoleAsync(user, AppRoles.Admin);
+            return Results.Ok(new UserResponse(user.Id, user.Email!, user.DisplayName, isAdmin));
         });
 
         group.MapPost("/logout", async (SignInManager<ApplicationUser> signInManager) =>
