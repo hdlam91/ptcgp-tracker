@@ -17,7 +17,8 @@ const mismatch = ref(false)
 async function onSubmit() {
   done.value = false
   mismatch.value = newPassword.value !== confirmPassword.value
-  if (mismatch.value) return
+  if (mismatch.value)
+    return
 
   const result = await changePassword(currentPassword.value, newPassword.value)
   if (result.ok) {

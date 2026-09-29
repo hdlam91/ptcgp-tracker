@@ -26,17 +26,20 @@ const currentPassword = ref('')
 
 onMounted(async () => {
   const status = await getTwoFactorStatus()
-  if (status.ok) enabled.value = status.data.enabled
+  if (status.ok)
+    enabled.value = status.data.enabled
 })
 
 async function startSetup() {
   settingUp.value = true
   const setup = await setupTwoFactor()
-  if (!setup.ok) return
+  if (!setup.ok)
+    return
   sharedKey.value = setup.data.sharedKey
   await nextTick()
   const qrcode = await import('qrcode')
-  if (qrCanvas.value) await qrcode.toCanvas(qrCanvas.value, setup.data.otpAuthUri, { width: 200 })
+  if (qrCanvas.value)
+    await qrcode.toCanvas(qrCanvas.value, setup.data.otpAuthUri, { width: 200 })
 }
 
 function cancelSetup() {

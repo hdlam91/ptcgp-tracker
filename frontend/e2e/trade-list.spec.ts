@@ -6,8 +6,8 @@ test('adding and removing a card from the want and offer lists', async ({ page }
 
   await page.goto('/sets/a1')
   const cards = page.locator('.grid > div').filter({ has: page.locator('img') })
-  const wantedCardName = await cards.nth(1).locator('p').first().innerText()
-  const offeredCardName = await cards.nth(2).locator('p').first().innerText()
+  const wantedCardName = (await cards.nth(1).locator('p').first().textContent()) ?? ''
+  const offeredCardName = (await cards.nth(2).locator('p').first().textContent()) ?? ''
 
   await cards.nth(1).getByTitle('Want this card').click()
   await cards.nth(2).getByTitle('Offer this card for trade').click()
@@ -22,8 +22,7 @@ test('adding and removing a card from the want and offer lists', async ({ page }
   await expect(page.getByText(offeredCardName, { exact: true })).toBeVisible()
 
   // Remove the offered card by toggling it again.
-  await page.locator('.grid > div').filter({ has: page.locator('img') }).first()
-    .getByTitle('Offer this card for trade').click()
+  await page.locator('.grid > div').filter({ has: page.locator('img') }).first().getByTitle('Offer this card for trade').click()
   await expect(page.getByRole('button', { name: 'Offer (0)' })).toBeVisible()
   await expect(page.getByText('No cards here yet.')).toBeVisible()
 })

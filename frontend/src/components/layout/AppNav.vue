@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { cn } from '@/lib/utils'
 import { navLinks } from '@/components/layout/navLinks'
+import { cn } from '@/lib/utils'
 
 // Horizontal by default (the inline header menu); vertical is the list inside the hamburger dropdown.
 defineProps<{ vertical?: boolean }>()
 
-const linkClass = ({ isActive }: { isActive: boolean }) =>
-  isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+function linkClass({ isActive }: { isActive: boolean }) {
+  return isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+}
 </script>
 
 <template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useEventListener, useResizeObserver } from '@vueuse/core'
 import { LogOut, Menu, Moon, Settings, Sun, UserCog, X } from '@lucide/vue'
+import { useEventListener, useResizeObserver } from '@vueuse/core'
 import { nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppNav from '@/components/layout/AppNav.vue'
@@ -13,12 +13,6 @@ const { currentUser, isAdmin, logout } = useAuth()
 const { isDark, toggleTheme } = useTheme()
 const router = useRouter()
 const route = useRoute()
-
-async function onLogout() {
-  open.value = false
-  await logout()
-  await router.push('/login')
-}
 
 // The menu sits inline while the whole thing fits, and turns into a hamburger dropdown only when it
 // doesn't. "Fits" is measured rather than guessed from a screen width, because what it needs
@@ -40,7 +34,8 @@ function updateCollapsed() {
   const brand = brandEl.value
   const actions = measureActionsEl.value
   const measure = measureEl.value
-  if (!row || !left || !brand || !actions || !measure) return
+  if (!row || !left || !brand || !actions || !measure)
+    return
 
   const rowStyle = getComputedStyle(row)
   const available = row.clientWidth - px(rowStyle.paddingLeft) - px(rowStyle.paddingRight)
@@ -62,18 +57,30 @@ onMounted(() => nextTick(updateCollapsed))
 
 const open = ref(false)
 
+async function onLogout() {
+  open.value = false
+  await logout()
+  await router.push('/login')
+}
+
 watch(collapsed, (isCollapsed) => {
-  if (!isCollapsed) open.value = false
+  if (!isCollapsed)
+    open.value = false
 })
-watch(() => route.fullPath, () => { open.value = false })
+watch(() => route.fullPath, () => {
+  open.value = false
+})
 // Any press that isn't on the dropdown itself or on the button that toggles it closes the menu.
 useEventListener(document, 'pointerdown', (event: PointerEvent) => {
-  if (!open.value) return
-  if ((event.target as Element | null)?.closest('#app-menu, [aria-controls="app-menu"]')) return
+  if (!open.value)
+    return
+  if ((event.target as Element | null)?.closest('#app-menu, [aria-controls="app-menu"]'))
+    return
   open.value = false
 })
 useEventListener(document, 'keydown', (event: KeyboardEvent) => {
-  if (event.key === 'Escape') open.value = false
+  if (event.key === 'Escape')
+    open.value = false
 })
 </script>
 
@@ -106,8 +113,12 @@ useEventListener(document, 'keydown', (event: KeyboardEvent) => {
     <!-- Invisible, out of the layout and out of reach of screen readers and the keyboard: only here so we
          can measure how wide the full menu and the actions want to be. -->
     <div class="pointer-events-none invisible absolute left-0 top-0 -z-10 flex w-max" aria-hidden="true" inert>
-      <div ref="measureEl"><AppNav /></div>
-      <div ref="measureActionsEl"><HeaderActions /></div>
+      <div ref="measureEl">
+        <AppNav />
+      </div>
+      <div ref="measureActionsEl">
+        <HeaderActions />
+      </div>
     </div>
 
     <!-- The hamburger dropdown, sliding out under the header. -->

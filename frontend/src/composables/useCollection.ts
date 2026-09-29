@@ -1,6 +1,6 @@
+import type { SetSummaryResponse } from '@/types/api'
 import { computed, ref } from 'vue'
 import { collectionService } from '@/services/collectionService'
-import type { SetSummaryResponse } from '@/types/api'
 
 // Module-scoped singleton so every view (the sets overview and each set's card
 // grid) shares one up-to-date picture of what the user owns, without a state
@@ -13,7 +13,8 @@ const loaded = ref(false)
 const latestRequestSeq = new Map<string, number>()
 
 async function ensureLoaded() {
-  if (loaded.value) return
+  if (loaded.value)
+    return
   await reload()
 }
 

@@ -14,8 +14,23 @@ const { wantedCardIds, offeredCardIds, toggle, ensureLoaded: ensureTradeListLoad
 const cards = computed(() => getAllCards())
 
 const {
-  search, setCode, rarity, pack, ownership, cardType, pokemonType, evolution, ability, moveType, advancedOptions,
-  setOptions, rarityOptions, packOptions, filteredCards, hasActiveFilters, resetFilters,
+  search,
+  setCode,
+  rarity,
+  pack,
+  ownership,
+  cardType,
+  pokemonType,
+  evolution,
+  ability,
+  moveType,
+  advancedOptions,
+  setOptions,
+  rarityOptions,
+  packOptions,
+  filteredCards,
+  hasActiveFilters,
+  resetFilters,
 } = useCardFilters(cards, getOwnedCount)
 
 onMounted(async () => {

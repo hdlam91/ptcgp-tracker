@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { TradeDirection } from '@/types/api'
 import { computed, onMounted, ref, watch } from 'vue'
 import CardFilterBar from '@/components/cards/CardFilterBar.vue'
 import CardGrid from '@/components/cards/CardGrid.vue'
@@ -9,7 +10,6 @@ import { useCardFilters } from '@/composables/useCardFilters'
 import { useCollection } from '@/composables/useCollection'
 import { useTradeList } from '@/composables/useTradeList'
 import { runInBatches } from '@/lib/batch'
-import type { TradeDirection } from '@/types/api'
 
 const { getCard, getAllCards } = useCardCatalog()
 const { getOwnedCount, ownedCounts, setOwnedCount, ensureLoaded: ensureCollectionLoaded } = useCollection()
@@ -39,7 +39,8 @@ const missingCardIds = computed(() =>
 const addingAllMissing = ref(false)
 
 async function addAllMissingToWishlist() {
-  if (missingCardIds.value.length === 0) return
+  if (missingCardIds.value.length === 0)
+    return
   addingAllMissing.value = true
   try {
     await runInBatches(missingCardIds.value, 8, cardId => add(cardId, 'Want'))
@@ -58,7 +59,8 @@ const ownedWantedCardIds = computed(() =>
 const removingOwned = ref(false)
 
 async function removeOwnedFromWishlist() {
-  if (ownedWantedCardIds.value.length === 0) return
+  if (ownedWantedCardIds.value.length === 0)
+    return
   removingOwned.value = true
   try {
     await runInBatches(ownedWantedCardIds.value, 8, cardId => remove(cardId, 'Want'))
@@ -69,8 +71,23 @@ async function removeOwnedFromWishlist() {
 }
 
 const {
-  search, setCode, rarity, pack, ownership, cardType, pokemonType, evolution, ability, moveType, advancedOptions,
-  setOptions, rarityOptions, packOptions, filteredCards, hasActiveFilters, resetFilters,
+  search,
+  setCode,
+  rarity,
+  pack,
+  ownership,
+  cardType,
+  pokemonType,
+  evolution,
+  ability,
+  moveType,
+  advancedOptions,
+  setOptions,
+  rarityOptions,
+  packOptions,
+  filteredCards,
+  hasActiveFilters,
+  resetFilters,
 } = useCardFilters(activeCards)
 
 // The want list should show cards by default, unlike the "search everything"
@@ -79,7 +96,9 @@ const {
 // click). Paginate instead of gating the whole grid behind a required filter.
 const PAGE_SIZE = 60
 const visibleCount = ref(PAGE_SIZE)
-watch([search, setCode, rarity, pack, cardType, pokemonType, evolution, ability, moveType, activeTab], () => { visibleCount.value = PAGE_SIZE })
+watch([search, setCode, rarity, pack, cardType, pokemonType, evolution, ability, moveType, activeTab], () => {
+  visibleCount.value = PAGE_SIZE
+})
 const visibleCards = computed(() => filteredCards.value.slice(0, visibleCount.value))
 </script>
 

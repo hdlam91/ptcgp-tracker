@@ -1,8 +1,9 @@
+import type { CardMeta } from '@/lib/cardMetadata'
+import type { CardCatalogEntry, ExpansionEntry, GameplayEntry } from '@/types/catalog'
 import cardRecords from 'pokemon-tcg-pocket-cards/v5/collection'
 import expansionRecords from 'pokemon-tcg-pocket-cards/v5/expansions'
 import gameplayRecords from 'pokemon-tcg-pocket-cards/v5/gameplay/no-image'
-import { type CardMeta, deriveCardMeta, printCardId } from '@/lib/cardMetadata'
-import type { CardCatalogEntry, ExpansionEntry, GameplayEntry } from '@/types/catalog'
+import { deriveCardMeta, printCardId } from '@/lib/cardMetadata'
 
 const cardsById = new Map<string, CardCatalogEntry>(
   (cardRecords as CardCatalogEntry[]).map(card => [card.id, card]),
@@ -45,7 +46,8 @@ const gameplayById = new Map<string, GameplayEntry>(
 
 const gameplayIdByPrintId = new Map<string, string>()
 for (const card of cardsById.values()) {
-  if (!gameplayById.has(card.id)) continue
+  if (!gameplayById.has(card.id))
+    continue
   for (const print of card.alternate_versions ?? []) {
     gameplayIdByPrintId.set(printCardId(print.set_code, print.id), card.id)
   }
@@ -58,7 +60,8 @@ function gameplayFor(cardId: string): GameplayEntry | undefined {
 const metaById = new Map<string, CardMeta>()
 for (const card of cardsById.values()) {
   const gameplay = gameplayFor(card.id)
-  if (gameplay) metaById.set(card.id, deriveCardMeta(gameplay))
+  if (gameplay)
+    metaById.set(card.id, deriveCardMeta(gameplay))
 }
 
 const cardsBySetCode = new Map<string, CardCatalogEntry[]>()

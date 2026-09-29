@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import type { RarityGroup } from '@/composables/useRarityGroups'
 import { Check } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
-import type { RarityGroup } from '@/composables/useRarityGroups'
 
 defineProps<{
   groups: RarityGroup[]

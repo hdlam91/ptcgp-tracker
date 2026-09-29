@@ -1,21 +1,21 @@
 import type { ComputedRef, Ref } from 'vue'
+import type { AbilityFilter, CardTypeFilter, EnergyType, EvolutionFilter, FilterOption } from '@/lib/cardMetadata'
+import type { CardCatalogEntry, ExpansionEntry } from '@/types/catalog'
 import { computed, ref, watch } from 'vue'
 import { useCardCatalog } from '@/composables/useCardCatalog'
 import {
   ABILITY_OPTIONS,
-  type AbilityFilter,
+
   CARD_TYPE_OPTIONS,
-  type CardTypeFilter,
+
   ENERGY_TYPES,
-  type EnergyType,
+
   EVOLUTION_OPTIONS,
-  type EvolutionFilter,
-  type FilterOption,
+
   matchesAbility,
   matchesCardType,
   matchesEvolution,
 } from '@/lib/cardMetadata'
-import type { CardCatalogEntry, ExpansionEntry } from '@/types/catalog'
 
 export type OwnershipFilter = 'all' | 'owned' | 'missing'
 export type PackOption = ExpansionEntry['packs'][number]
@@ -35,13 +35,16 @@ const STAR_TIERS: Record<string, number> = { '☆': 1, '☆☆': 2, '☆☆☆':
 
 /** Plain-English name for a rarity filter value, for accessible labels — never shown as visible text. */
 export function rarityFilterLabel(rarity: RarityFilter | ''): string {
-  if (rarity === '') return 'Any rarity'
-  if (rarity === 'Crown Rare' || rarity === 'Promo') return rarity
+  if (rarity === '')
+    return 'Any rarity'
+  if (rarity === 'Crown Rare' || rarity === 'Promo')
+    return rarity
   if (rarity.endsWith(' Shiny')) {
     const n = STAR_TIERS[rarity.slice(0, -' Shiny'.length)] ?? 1
     return `${n} star${n > 1 ? 's' : ''} Shiny`
   }
-  if (rarity in DIAMOND_TIERS) return `${DIAMOND_TIERS[rarity]} diamond${DIAMOND_TIERS[rarity] > 1 ? 's' : ''}`
+  if (rarity in DIAMOND_TIERS)
+    return `${DIAMOND_TIERS[rarity]} diamond${DIAMOND_TIERS[rarity] > 1 ? 's' : ''}`
   const n = STAR_TIERS[rarity] ?? 1
   return `${n} star${n > 1 ? 's' : ''}`
 }
@@ -98,15 +101,18 @@ export function useCardFilters(
   // either because the set filter picked one, or because the incoming card
   // list already happens to be scoped to a single set (e.g. a set's own page).
   const packSetCode = computed(() => {
-    if (setCode.value) return setCode.value
+    if (setCode.value)
+      return setCode.value
     const codes = new Set(cards.value.map(card => card.set_code))
     return codes.size === 1 ? [...codes][0] : undefined
   })
 
   const packOptions = computed<PackOption[]>(() => {
-    if (!packSetCode.value) return []
+    if (!packSetCode.value)
+      return []
     const expansion = getExpansion(packSetCode.value)
-    if (!expansion) return []
+    if (!expansion)
+      return []
 
     const present = new Set(
       cards.value
@@ -152,7 +158,8 @@ export function useCardFilters(
         return false
       }
       if (rarity.value.endsWith(' Shiny')) {
-        if (!card.shiny || rarity.value !== shinyRarityLabel(card.rarity as '☆' | '☆☆' | '☆☆☆')) return false
+        if (!card.shiny || rarity.value !== shinyRarityLabel(card.rarity as '☆' | '☆☆' | '☆☆☆'))
+          return false
       }
       else if (rarity.value !== '' && (card.rarity !== rarity.value || card.shiny)) {
         return false
@@ -160,15 +167,22 @@ export function useCardFilters(
       if (pack.value && card.pack !== pack.value) {
         return false
       }
-      if (cardType.value && !(meta && matchesCardType(meta, cardType.value))) return false
-      if (pokemonType.value && meta?.pokemonType !== pokemonType.value) return false
-      if (evolution.value && !(meta && matchesEvolution(meta, evolution.value))) return false
-      if (ability.value && !(meta && matchesAbility(meta, ability.value))) return false
-      if (moveType.value && !meta?.moveTypes.includes(moveType.value)) return false
+      if (cardType.value && !(meta && matchesCardType(meta, cardType.value)))
+        return false
+      if (pokemonType.value && meta?.pokemonType !== pokemonType.value)
+        return false
+      if (evolution.value && !(meta && matchesEvolution(meta, evolution.value)))
+        return false
+      if (ability.value && !(meta && matchesAbility(meta, ability.value)))
+        return false
+      if (moveType.value && !meta?.moveTypes.includes(moveType.value))
+        return false
       if (ownership.value !== 'all' && getOwnedCount) {
         const owned = getOwnedCount(card.id) > 0
-        if (ownership.value === 'owned' && !owned) return false
-        if (ownership.value === 'missing' && owned) return false
+        if (ownership.value === 'owned' && !owned)
+          return false
+        if (ownership.value === 'missing' && owned)
+          return false
       }
       return true
     })
@@ -192,7 +206,9 @@ export function useCardFilters(
   }
 
   // Changing the set invalidates whatever pack was selected for the old set.
-  watch(setCode, () => { pack.value = '' })
+  watch(setCode, () => {
+    pack.value = ''
+  })
 
   return {
     search,

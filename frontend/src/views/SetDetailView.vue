@@ -22,8 +22,23 @@ const cards = computed(() => getCardsBySet(setCode.value))
 const expansion = computed(() => getExpansion(setCode.value))
 
 const {
-  search, setCode: setCodeFilter, rarity, pack, ownership, cardType, pokemonType, evolution, ability, moveType, advancedOptions,
-  setOptions, rarityOptions, packOptions, filteredCards, hasActiveFilters, resetFilters,
+  search,
+  setCode: setCodeFilter,
+  rarity,
+  pack,
+  ownership,
+  cardType,
+  pokemonType,
+  evolution,
+  ability,
+  moveType,
+  advancedOptions,
+  setOptions,
+  rarityOptions,
+  packOptions,
+  filteredCards,
+  hasActiveFilters,
+  resetFilters,
 } = useCardFilters(cards, getOwnedCount)
 
 const { groups: rarityGroups } = useRarityGroups(cards, getOwnedCount)
@@ -32,7 +47,8 @@ const completingKey = ref<string | null>(null)
 
 async function completeGroup(key: string) {
   const group = rarityGroups.value.find(g => g.key === key)
-  if (!group || group.missingCardIds.length === 0) return
+  if (!group || group.missingCardIds.length === 0)
+    return
 
   completingKey.value = key
   try {

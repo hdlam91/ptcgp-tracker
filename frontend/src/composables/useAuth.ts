@@ -1,7 +1,8 @@
-import { computed, ref } from 'vue'
-import { ApiError } from '@/services/httpClient'
-import { authService, type LoginPayload, type RegisterPayload, type TwoFactorLoginPayload } from '@/services/authService'
+import type { LoginPayload, RegisterPayload, TwoFactorLoginPayload } from '@/services/authService'
 import type { UserResponse } from '@/types/api'
+import { computed, ref } from 'vue'
+import { authService } from '@/services/authService'
+import { ApiError } from '@/services/httpClient'
 
 // Module-scoped singleton: every component that calls useAuth() shares the same
 // reactive state, so there's one source of truth for "who's logged in" without
@@ -40,8 +41,10 @@ async function register(payload: RegisterPayload) {
   initialized.value = true
 }
 
-/** Returns the raw response so the login view can branch on `requiresTwoFactor` — `currentUser`
- * is only set once a login (with or without a 2FA step) actually completes. */
+/**
+ * Returns the raw response so the login view can branch on `requiresTwoFactor` — `currentUser`
+ * is only set once a login (with or without a 2FA step) actually completes.
+ */
 async function login(payload: LoginPayload) {
   const response = await authService.login(payload)
   if (response.user) {

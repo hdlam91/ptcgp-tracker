@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import type { RarityFilter } from '@/composables/useCardFilters'
+import type { ExpansionEntry } from '@/types/catalog'
 import { X } from '@lucide/vue'
 import RaritySelect from '@/components/cards/RaritySelect.vue'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import type { RarityFilter } from '@/composables/useCardFilters'
-import type { ExpansionEntry } from '@/types/catalog'
 
 // Just set and rarity — the lean filter for read-only views like the shared trade list,
 // where CardFilterBar's search, pack, ownership and metadata filters would be noise.

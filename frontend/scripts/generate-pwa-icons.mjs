@@ -21,16 +21,19 @@ const BACKGROUND = 'radial-gradient(circle at 28% 22%, rgba(255,255,255,0.35), r
 // The favicon without its rounded background tile (gradient + glow rects), so the cards and badge
 // sit straight on the full-bleed background instead of showing a tile-inside-a-tile edge.
 const artwork = favicon.replace(/<rect width="64" height="64" rx="14" fill="url\(#bg(?:Grad|Glow)\)"\/>\s*/g, '')
-if (artwork === favicon) throw new Error('favicon.svg no longer has the background rects this script strips; update the pattern')
+if (artwork === favicon)
+  throw new Error('favicon.svg no longer has the background rects this script strips; update the pattern')
 
 const sized = (size, svg = favicon) => svg.replace('<svg ', `<svg width="${size}" height="${size}" style="display:block" `)
 
 const plain = size => `<div style="width:${size}px;height:${size}px">${sized(size)}</div>`
 
-const fullBleed = (size, insetPercent) => `
+function fullBleed(size, insetPercent) {
+  return `
   <div style="position:relative;width:${size}px;height:${size}px;background:${BACKGROUND}">
     <div style="position:absolute;inset:${insetPercent}%">${sized(size * (1 - (insetPercent * 2) / 100), artwork)}</div>
   </div>`
+}
 
 const icons = [
   { file: 'pwa-192x192.png', size: 192, html: plain(192), transparent: true },

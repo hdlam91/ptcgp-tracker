@@ -1,7 +1,7 @@
+import type { AdminUserResponse, CatalogStatusResponse, ImageMirrorStatusResponse } from '@/types/api'
 import { computed, onScopeDispose, ref } from 'vue'
 import { adminService } from '@/services/adminService'
 import { ApiError } from '@/services/httpClient'
-import type { AdminUserResponse, CatalogStatusResponse, ImageMirrorStatusResponse } from '@/types/api'
 
 function describe(error: unknown): string {
   if (error instanceof ApiError) {
@@ -24,7 +24,8 @@ export function useAdmin() {
 
   const filteredUsers = computed(() => {
     const term = search.value.trim().toLowerCase()
-    if (!term) return users.value
+    if (!term)
+      return users.value
     return users.value.filter(u => u.displayName.toLowerCase().includes(term) || u.email.toLowerCase().includes(term))
   })
 
@@ -32,12 +33,14 @@ export function useAdmin() {
   let pollTimer: ReturnType<typeof setInterval> | undefined
 
   function stopPolling() {
-    if (pollTimer !== undefined) clearInterval(pollTimer)
+    if (pollTimer !== undefined)
+      clearInterval(pollTimer)
     pollTimer = undefined
   }
 
   function pollWhileRunning() {
-    if (pollTimer !== undefined || images.value?.state !== 'Running') return
+    if (pollTimer !== undefined || images.value?.state !== 'Running')
+      return
     pollTimer = setInterval(async () => {
       try {
         images.value = await adminService.images()
@@ -45,7 +48,8 @@ export function useAdmin() {
       catch {
         // A blip shouldn't end the progress display; the next tick tries again.
       }
-      if (images.value?.state !== 'Running') stopPolling()
+      if (images.value?.state !== 'Running')
+        stopPolling()
     }, 1000)
   }
 

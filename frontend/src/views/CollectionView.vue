@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { SetSummaryResponse } from '@/types/api'
 import { computed, onMounted, ref } from 'vue'
 import PackThumbnail from '@/components/cards/PackThumbnail.vue'
 import RarityBadgeRow from '@/components/cards/RarityBadgeRow.vue'
@@ -7,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useCardCatalog } from '@/composables/useCardCatalog'
 import { useCollection } from '@/composables/useCollection'
 import { computeRarityGroups } from '@/composables/useRarityGroups'
-import type { SetSummaryResponse } from '@/types/api'
 
 const { getExpansions, getCardsBySet } = useCardCatalog()
 const { getSummary, getOwnedCount, ensureLoaded: ensureCollectionLoaded } = useCollection()

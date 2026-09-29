@@ -1,11 +1,11 @@
 <script setup lang="ts">
+import type { CardCatalogEntry } from '@/types/catalog'
 import { Heart, Info, Minus, Plus, Repeat } from '@lucide/vue'
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { useLocalImage } from '@/composables/useLocalImage'
 import { cn } from '@/lib/utils'
-import type { CardCatalogEntry } from '@/types/catalog'
 
 const props = withDefaults(defineProps<{
   card: CardCatalogEntry
@@ -23,13 +23,14 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:ownedCount', count: number): void
-  (e: 'toggle-want'): void
-  (e: 'toggle-offer'): void
+  (e: 'toggleWant'): void
+  (e: 'toggleOffer'): void
 }>()
 
 const remoteImageUrl = computed(() => props.card.image ?? props.card.image_png)
 const localImageUrl = computed(() => {
-  if (!remoteImageUrl.value) return undefined
+  if (!remoteImageUrl.value)
+    return undefined
   const ext = remoteImageUrl.value.slice(remoteImageUrl.value.lastIndexOf('.'))
   return `/card-images/${props.card.id}${ext}`
 })
@@ -156,7 +157,7 @@ function decrement() {
             size="icon"
             class="h-7 w-7"
             title="Want this card"
-            @click="emit('toggle-want')"
+            @click="emit('toggleWant')"
           >
             <Heart class="size-3.5" />
           </Button>
@@ -165,7 +166,7 @@ function decrement() {
             size="icon"
             class="h-7 w-7"
             title="Offer this card for trade"
-            @click="emit('toggle-offer')"
+            @click="emit('toggleOffer')"
           >
             <Repeat class="size-3.5" />
           </Button>

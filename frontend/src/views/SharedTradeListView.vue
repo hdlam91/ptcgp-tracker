@@ -1,14 +1,14 @@
 <script setup lang="ts">
+import type { SharedTradeListResponse, TradeDirection } from '@/types/api'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import CardGrid from '@/components/cards/CardGrid.vue'
 import SetRarityFilter from '@/components/cards/SetRarityFilter.vue'
 import { Button } from '@/components/ui/button'
-import { useCardCatalog } from '@/composables/useCardCatalog'
 import { useAuth } from '@/composables/useAuth'
+import { useCardCatalog } from '@/composables/useCardCatalog'
 import { useCardFilters } from '@/composables/useCardFilters'
 import { getSharedTradeList } from '@/services/tradeListService'
-import type { SharedTradeListResponse, TradeDirection } from '@/types/api'
 
 const route = useRoute()
 const { getCard } = useCardCatalog()
@@ -31,7 +31,8 @@ onMounted(async () => {
 })
 
 const activeCards = computed(() => {
-  if (!shared.value) return []
+  if (!shared.value)
+    return []
   return shared.value.entries
     .filter(e => e.direction === activeTab.value)
     .map(e => getCard(e.cardId))
@@ -48,7 +49,9 @@ watch(activeTab, resetFilters)
 // visibly lags, so show a page at a time, same as your own trade list.
 const PAGE_SIZE = 60
 const visibleCount = ref(PAGE_SIZE)
-watch([setCode, rarity, activeTab], () => { visibleCount.value = PAGE_SIZE })
+watch([setCode, rarity, activeTab], () => {
+  visibleCount.value = PAGE_SIZE
+})
 const visibleCards = computed(() => filteredCards.value.slice(0, visibleCount.value))
 
 const wantedCount = computed(() => shared.value?.entries.filter(e => e.direction === 'Want').length ?? 0)

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import CardGridItem from '@/components/cards/CardGridItem.vue'
 import type { CardCatalogEntry } from '@/types/catalog'
+import CardGridItem from '@/components/cards/CardGridItem.vue'
 
 withDefaults(defineProps<{
   cards: CardCatalogEntry[]
@@ -17,8 +17,8 @@ withDefaults(defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:ownedCount', cardId: string, count: number): void
-  (e: 'toggle-want', cardId: string): void
-  (e: 'toggle-offer', cardId: string): void
+  (e: 'toggleWant', cardId: string): void
+  (e: 'toggleOffer', cardId: string): void
 }>()
 </script>
 
@@ -34,8 +34,8 @@ const emit = defineEmits<{
       :readonly="readonly"
       :dim-missing="dimMissing"
       @update:owned-count="(count) => emit('update:ownedCount', card.id, count)"
-      @toggle-want="emit('toggle-want', card.id)"
-      @toggle-offer="emit('toggle-offer', card.id)"
+      @toggle-want="emit('toggleWant', card.id)"
+      @toggle-offer="emit('toggleOffer', card.id)"
     />
   </div>
 </template>

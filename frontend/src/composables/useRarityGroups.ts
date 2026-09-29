@@ -1,6 +1,6 @@
 import type { ComputedRef, Ref } from 'vue'
-import { computed } from 'vue'
 import type { CardCatalogEntry } from '@/types/catalog'
+import { computed } from 'vue'
 
 export interface RarityGroup {
   key: string

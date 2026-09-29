@@ -1,5 +1,5 @@
-import { httpClient } from '@/services/httpClient'
 import type { CollectionEntryResponse, SetSummaryResponse } from '@/types/api'
+import { httpClient } from '@/services/httpClient'
 
 export const collectionService = {
   list: (setCode?: string) =>

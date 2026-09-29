@@ -1,5 +1,5 @@
-import { httpClient } from '@/services/httpClient'
 import type { RecoveryCodesResponse, TwoFactorSetupResponse, TwoFactorStatusResponse } from '@/types/api'
+import { httpClient } from '@/services/httpClient'
 
 export const accountService = {
   changePassword: (currentPassword: string, newPassword: string) =>

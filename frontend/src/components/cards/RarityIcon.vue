@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import type { RarityFilter } from '@/composables/useCardFilters'
 import { Crown, Diamond, Sparkles, Star } from '@lucide/vue'
 import { computed } from 'vue'
-import type { RarityFilter } from '@/composables/useCardFilters'
 
 const props = defineProps<{
   rarity: RarityFilter
@@ -22,13 +22,16 @@ const TONE_CLASS = {
 } as const
 
 const parsed = computed(() => {
-  if (props.rarity === 'Crown Rare') return { icon: Crown, count: 1, tone: 'crown' as const }
-  if (props.rarity === 'Promo') return null
+  if (props.rarity === 'Crown Rare')
+    return { icon: Crown, count: 1, tone: 'crown' as const }
+  if (props.rarity === 'Promo')
+    return null
   if (props.rarity.endsWith(' Shiny')) {
     const base = props.rarity.slice(0, -' Shiny'.length)
     return { icon: Sparkles, count: STAR_TIERS[base] ?? 1, tone: 'shiny' as const }
   }
-  if (props.rarity in DIAMOND_TIERS) return { icon: Diamond, count: DIAMOND_TIERS[props.rarity], tone: 'diamond' as const }
+  if (props.rarity in DIAMOND_TIERS)
+    return { icon: Diamond, count: DIAMOND_TIERS[props.rarity], tone: 'diamond' as const }
   return { icon: Star, count: STAR_TIERS[props.rarity] ?? 1, tone: 'star' as const }
 })
 </script>

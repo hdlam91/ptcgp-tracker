@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import type { AdminUserResponse } from '@/types/api'
 import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
-import type { AdminUserResponse } from '@/types/api'
 
 defineProps<{
   users: AdminUserResponse[]
@@ -10,8 +10,8 @@ defineProps<{
 }>()
 
 defineEmits<{
-  (e: 'set-admin', user: AdminUserResponse, isAdmin: boolean): void
-  (e: 'disable-share', user: AdminUserResponse): void
+  (e: 'setAdmin', user: AdminUserResponse, isAdmin: boolean): void
+  (e: 'disableShare', user: AdminUserResponse): void
   (e: 'delete', user: AdminUserResponse): void
 }>()
 
@@ -77,7 +77,7 @@ const confirmingDeleteId = ref<string | null>(null)
           <td class="py-3 pr-4">
             <div v-if="user.shareHandle" class="flex items-center gap-2">
               <a :href="`/share/${user.shareHandle}`" target="_blank" rel="noopener" class="text-primary underline-offset-4 hover:underline">/share/{{ user.shareHandle }}</a>
-              <Button variant="ghost" size="sm" :disabled="busy" @click="$emit('disable-share', user)">
+              <Button variant="ghost" size="sm" :disabled="busy" @click="$emit('disableShare', user)">
                 Disable
               </Button>
             </div>
@@ -95,7 +95,7 @@ const confirmingDeleteId = ref<string | null>(null)
               </Button>
             </div>
             <div v-else class="flex items-center justify-end gap-2">
-              <Button variant="outline" size="sm" :disabled="busy" @click="$emit('set-admin', user, !user.isAdmin)">
+              <Button variant="outline" size="sm" :disabled="busy" @click="$emit('setAdmin', user, !user.isAdmin)">
                 {{ user.isAdmin ? 'Remove admin' : 'Make admin' }}
               </Button>
               <Button variant="outline" size="sm" :disabled="busy" @click="confirmingDeleteId = user.id">

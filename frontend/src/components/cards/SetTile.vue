@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import type { ExpansionEntry } from '@/types/catalog'
 import PackThumbnail from '@/components/cards/PackThumbnail.vue'
 import { cn } from '@/lib/utils'
-import type { ExpansionEntry } from '@/types/catalog'
 
 defineProps<{
   set: ExpansionEntry

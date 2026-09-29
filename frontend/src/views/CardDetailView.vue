@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { EnergyType } from '@/lib/cardMetadata'
 import { ArrowLeft, Heart, Minus, Plus, Repeat } from '@lucide/vue'
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -9,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { useCardCatalog } from '@/composables/useCardCatalog'
 import { useCollection } from '@/composables/useCollection'
 import { useTradeList } from '@/composables/useTradeList'
-import { type EnergyType, parseEnergyCost, printCardId } from '@/lib/cardMetadata'
+import { parseEnergyCost, printCardId } from '@/lib/cardMetadata'
 
 const route = useRoute()
 const router = useRouter()
@@ -46,12 +47,14 @@ const ownedCount = computed(() => getOwnedCount(cardId.value))
 
 function changeOwned(delta: number) {
   const next = Math.max(0, ownedCount.value + delta)
-  if (next !== ownedCount.value) void setOwnedCount(cardId.value, next)
+  if (next !== ownedCount.value)
+    void setOwnedCount(cardId.value, next)
 }
 
 function goBack() {
   // Prefer real history so "back" returns to the filtered list the user came from.
-  if (window.history.state?.back) router.back()
+  if (window.history.state?.back)
+    router.back()
   else router.push('/cards')
 }
 </script>
@@ -76,7 +79,9 @@ function goBack() {
           </h1>
           <p class="mt-1 text-sm text-muted-foreground">
             <template v-if="isPokemon">
-              {{ gameplay?.stage }}<template v-if="gameplay?.evolves_from"> · Evolves from {{ gameplay.evolves_from }}</template>
+              {{ gameplay?.stage }}<template v-if="gameplay?.evolves_from">
+                · Evolves from {{ gameplay.evolves_from }}
+              </template>
             </template>
             <template v-else-if="gameplay">
               Trainer · {{ gameplay.subtype }}

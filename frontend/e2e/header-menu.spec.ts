@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import { registerViaApi } from './testUsers'
 
 // The header menu collapses into a hamburger only when it no longer fits, so instead of pinning a
@@ -15,7 +15,8 @@ async function menuIsConsistent(page: Page): Promise<boolean> {
   }
   // Inline: it must all be there and unclipped.
   const links = inlineNav.getByRole('link')
-  if (await links.count() < 3) return false
+  if (await links.count() < 3)
+    return false
   return inlineNav.evaluate(nav => nav.scrollWidth <= nav.clientWidth)
 }
 
@@ -28,7 +29,8 @@ test('the menu is inline while it fits and a hamburger when it does not, at ever
   for (const width of [1400, 1024, 800, 700, 620, 560, 500, 440, 400, 360, 320]) {
     await page.setViewportSize({ width, height: 800 })
     await expect.poll(() => menuIsConsistent(page), { message: `header at ${width}px` }).toBe(true)
-    if (await page.getByRole('button', { name: 'Open menu' }).count() > 0) seen.hamburger = true
+    if (await page.getByRole('button', { name: 'Open menu' }).count() > 0)
+      seen.hamburger = true
     else seen.inline = true
   }
   // Both modes really were exercised across that range.

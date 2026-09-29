@@ -1,5 +1,5 @@
-import { httpClient } from '@/services/httpClient'
 import type { SharedTradeListResponse, TradeDirection, TradeListEntryResponse, TradeListShareStatusResponse } from '@/types/api'
+import { httpClient } from '@/services/httpClient'
 
 export const tradeListService = {
   list: (direction?: TradeDirection) =>

@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { useEventListener } from '@vueuse/core'
+import type { RarityFilter } from '@/composables/useCardFilters'
 import { ChevronDown } from '@lucide/vue'
+import { useEventListener } from '@vueuse/core'
 import { ref } from 'vue'
 import RarityIcon from '@/components/cards/RarityIcon.vue'
-import { rarityFilterLabel, type RarityFilter } from '@/composables/useCardFilters'
+import { rarityFilterLabel } from '@/composables/useCardFilters'
 
 // A native <select> can't render an icon inside an <option>, so rarity gets its own
 // button + listbox instead — the same tier icons (diamond/star/shiny/crown) shown
@@ -23,12 +24,15 @@ function pick(value: RarityFilter | '') {
 }
 
 useEventListener(document, 'pointerdown', (event: PointerEvent) => {
-  if (!open.value) return
-  if ((event.target as Element | null)?.closest('#rarity-listbox, [aria-controls="rarity-listbox"]')) return
+  if (!open.value)
+    return
+  if ((event.target as Element | null)?.closest('#rarity-listbox, [aria-controls="rarity-listbox"]'))
+    return
   open.value = false
 })
 useEventListener(document, 'keydown', (event: KeyboardEvent) => {
-  if (event.key === 'Escape') open.value = false
+  if (event.key === 'Escape')
+    open.value = false
 })
 </script>
 

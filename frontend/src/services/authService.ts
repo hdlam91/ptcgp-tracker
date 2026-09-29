@@ -1,5 +1,5 @@
-import { httpClient } from '@/services/httpClient'
 import type { LoginResponse, UserResponse } from '@/types/api'
+import { httpClient } from '@/services/httpClient'
 
 export interface RegisterPayload {
   email: string

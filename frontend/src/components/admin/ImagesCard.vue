@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import type { ImageMirrorStatusResponse } from '@/types/api'
 import { computed } from 'vue'
 import SetProgressBar from '@/components/cards/SetProgressBar.vue'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import type { ImageMirrorStatusResponse } from '@/types/api'
 
 const props = defineProps<{
   status: ImageMirrorStatusResponse | null

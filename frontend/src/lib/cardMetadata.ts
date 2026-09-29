@@ -66,11 +66,11 @@ export const ABILITY_OPTIONS: FilterOption<AbilityFilter>[] = [
 ]
 
 const TRAINER_KINDS: Record<string, TrainerKind> = {
-  Item: 'item',
-  Supporter: 'supporter',
+  'Item': 'item',
+  'Supporter': 'supporter',
   'Pokémon Tool': 'tool',
-  Tool: 'tool',
-  Stadium: 'stadium',
+  'Tool': 'tool',
+  'Stadium': 'stadium',
 }
 
 const POKEMON_STAGES: readonly string[] = ['Basic', 'Stage 1', 'Stage 2']
@@ -87,7 +87,8 @@ export function deriveCardMeta(entry: GameplayEntry): CardMeta {
   for (const attack of attacks) {
     for (const letter of attack?.cost ?? '') {
       const energy = ENERGY_BY_COST_LETTER[letter]
-      if (energy) moveTypes.add(energy)
+      if (energy)
+        moveTypes.add(energy)
     }
   }
 
@@ -122,8 +123,10 @@ export function matchesCardType(meta: CardMeta, filter: CardTypeFilter): boolean
 }
 
 export function matchesEvolution(meta: CardMeta, filter: EvolutionFilter): boolean {
-  if (filter === 'ex') return meta.ex
-  if (filter === 'Mega') return meta.mega
+  if (filter === 'ex')
+    return meta.ex
+  if (filter === 'Mega')
+    return meta.mega
   return meta.stage === filter
 }
 
@@ -147,11 +150,13 @@ export function splitEnergyText(text: string): EnergyTextPart[] {
   const parts: EnergyTextPart[] = []
   let cursor = 0
   for (const match of text.matchAll(/\[\s*([GRWLPFDMC])\s*\]/g)) {
-    if (match.index > cursor) parts.push({ text: text.slice(cursor, match.index) })
+    if (match.index > cursor)
+      parts.push({ text: text.slice(cursor, match.index) })
     parts.push({ energy: ENERGY_BY_COST_LETTER[match[1]] })
     cursor = match.index + match[0].length
   }
-  if (cursor < text.length) parts.push({ text: text.slice(cursor) })
+  if (cursor < text.length)
+    parts.push({ text: text.slice(cursor) })
   return parts
 }
 

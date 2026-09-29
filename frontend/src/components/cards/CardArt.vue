@@ -1,13 +1,14 @@
 <script setup lang="ts">
+import type { CardCatalogEntry } from '@/types/catalog'
 import { computed } from 'vue'
 import { useLocalImage } from '@/composables/useLocalImage'
-import type { CardCatalogEntry } from '@/types/catalog'
 
 const props = defineProps<{ card: CardCatalogEntry }>()
 
 const remoteUrl = computed(() => props.card.image ?? props.card.image_png)
 const localUrl = computed(() => {
-  if (!remoteUrl.value) return undefined
+  if (!remoteUrl.value)
+    return undefined
   const ext = remoteUrl.value.slice(remoteUrl.value.lastIndexOf('.'))
   return `/card-images/${props.card.id}${ext}`
 })

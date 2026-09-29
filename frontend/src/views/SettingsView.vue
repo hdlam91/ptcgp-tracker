@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import { Search } from '@lucide/vue'
 import { onMounted } from 'vue'
 import CatalogCard from '@/components/admin/CatalogCard.vue'
 import ImagesCard from '@/components/admin/ImagesCard.vue'
 import RegistrationCard from '@/components/admin/RegistrationCard.vue'
 import UsersTable from '@/components/admin/UsersTable.vue'
-import { Search } from '@lucide/vue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { useAdmin } from '@/composables/useAdmin'
@@ -12,8 +12,22 @@ import { useAuth } from '@/composables/useAuth'
 
 const { currentUser } = useAuth()
 const {
-  users, filteredUsers, search, registrationOpen, catalog, images, loading, error, busy,
-  load, toggleRegistration, setAdmin, deleteUser, disableShare, refreshCatalog, startImageDownload,
+  users,
+  filteredUsers,
+  search,
+  registrationOpen,
+  catalog,
+  images,
+  loading,
+  error,
+  busy,
+  load,
+  toggleRegistration,
+  setAdmin,
+  deleteUser,
+  disableShare,
+  refreshCatalog,
+  startImageDownload,
 } = useAdmin()
 
 onMounted(load)

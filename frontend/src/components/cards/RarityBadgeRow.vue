@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import type { RarityGroup } from '@/composables/useRarityGroups'
 import { Crown, Diamond, Sparkles, Star } from '@lucide/vue'
 import { cn } from '@/lib/utils'
-import type { RarityGroup } from '@/composables/useRarityGroups'
 
 defineProps<{
   groups: RarityGroup[]

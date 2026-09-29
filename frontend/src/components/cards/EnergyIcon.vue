@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Cog, Droplet, Eye, Flame, HandFist, Leaf, Moon, Sparkles, Star, Zap } from '@lucide/vue'
 import type { Component } from 'vue'
-import { computed } from 'vue'
 import type { EnergyType } from '@/lib/cardMetadata'
+import { Cog, Droplet, Eye, Flame, HandFist, Leaf, Moon, Sparkles, Star, Zap } from '@lucide/vue'
+import { computed } from 'vue'
 import { cn } from '@/lib/utils'
 
 const props = withDefaults(defineProps<{

@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import type { PackOption } from '@/composables/useCardFilters'
 import { computed, ref } from 'vue'
 import { useLocalImage } from '@/composables/useLocalImage'
 import { cn } from '@/lib/utils'
-import type { PackOption } from '@/composables/useCardFilters'
 
 const props = withDefaults(defineProps<{
   pack: PackOption
@@ -15,7 +15,8 @@ const props = withDefaults(defineProps<{
 
 const remoteUrl = computed(() => props.pack.image ?? props.pack.image_png)
 const localUrl = computed(() => {
-  if (!remoteUrl.value) return undefined
+  if (!remoteUrl.value)
+    return undefined
   const ext = remoteUrl.value.slice(remoteUrl.value.lastIndexOf('.'))
   return `/pack-images/${props.pack.id}${ext}`
 })
@@ -30,7 +31,8 @@ const previewPosition = ref({ left: 0, top: 0 })
 
 function onPointerMove(event: PointerEvent) {
   // Hover previews are a mouse affordance; on touch, a tap shouldn't leave one stuck open.
-  if (!props.preview || event.pointerType !== 'mouse') return
+  if (!props.preview || event.pointerType !== 'mouse')
+    return
   hovering.value = true
 
   // Sit to the lower right of the cursor, flipping to the other side near a viewport edge.

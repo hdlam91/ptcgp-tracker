@@ -4,6 +4,7 @@
 // Idempotent — already downloaded files are skipped, so it's safe to rerun after
 // a dataset bump (only new/changed images get fetched). Not committed to git or
 // baked into deployed images; see .gitignore and .dockerignore.
+import { Buffer } from 'node:buffer'
 import { access, mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'

@@ -1,14 +1,14 @@
 <script setup lang="ts">
+import type { OwnershipFilter, PackOption, RarityFilter } from '@/composables/useCardFilters'
+import type { AbilityFilter, CardTypeFilter, EnergyType, EvolutionFilter, FilterOption } from '@/lib/cardMetadata'
+import type { ExpansionEntry } from '@/types/catalog'
 import { Search, SlidersHorizontal, X } from '@lucide/vue'
 import { computed, ref } from 'vue'
 import RaritySelect from '@/components/cards/RaritySelect.vue'
 import SetTile from '@/components/cards/SetTile.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import type { OwnershipFilter, PackOption, RarityFilter } from '@/composables/useCardFilters'
-import type { AbilityFilter, CardTypeFilter, EnergyType, EvolutionFilter, FilterOption } from '@/lib/cardMetadata'
 import { cn } from '@/lib/utils'
-import type { ExpansionEntry } from '@/types/catalog'
 
 const props = withDefaults(defineProps<{
   setOptions: ExpansionEntry[]

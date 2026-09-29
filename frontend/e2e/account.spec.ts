@@ -1,6 +1,7 @@
+import type { Page } from '@playwright/test'
+import { Buffer } from 'node:buffer'
 import crypto from 'node:crypto'
 import { expect, test } from '@playwright/test'
-import type { Page } from '@playwright/test'
 import { registerDisposableUser } from './testUsers'
 
 // These specs change or destroy the very credentials a login-mode E2E_LOGIN_EMAIL account would
@@ -17,7 +18,8 @@ function base32Decode(input: string): Buffer {
   let bits = ''
   for (const char of input.replace(/=+$/, '').toUpperCase()) {
     const value = alphabet.indexOf(char)
-    if (value === -1) continue
+    if (value === -1)
+      continue
     bits += value.toString(2).padStart(5, '0')
   }
   const bytes: number[] = []
@@ -32,14 +34,16 @@ function totp(sharedKeyBase32: string): string {
   const counterBuffer = Buffer.alloc(8)
   counterBuffer.writeBigUInt64BE(BigInt(counter))
   const hmac = crypto.createHmac('sha1', key).update(counterBuffer).digest()
-  const offset = hmac[hmac.length - 1] & 0xf
-  const code = ((hmac[offset] & 0x7f) << 24 | (hmac[offset + 1] & 0xff) << 16
-    | (hmac[offset + 2] & 0xff) << 8 | (hmac[offset + 3] & 0xff)) % 1_000_000
+  const offset = hmac[hmac.length - 1] & 0xF
+  const code = ((hmac[offset] & 0x7F) << 24 | (hmac[offset + 1] & 0xFF) << 16
+    | (hmac[offset + 2] & 0xFF) << 8 | (hmac[offset + 3] & 0xFF)) % 1_000_000
   return code.toString().padStart(6, '0')
 }
 
-/** Same as {@link totp}, but waits out a near-expiring 30s window first, so a slow UI round trip
- * (filling a field, clicking, the request itself) can't land the code on the wrong side of it. */
+/**
+ * Same as {@link totp}, but waits out a near-expiring 30s window first, so a slow UI round trip
+ * (filling a field, clicking, the request itself) can't land the code on the wrong side of it.
+ */
 async function freshTotpCode(sharedKeyBase32: string): Promise<string> {
   const msIntoWindow = Date.now() % 30_000
   if (msIntoWindow > 25_000) {
@@ -119,7 +123,7 @@ test('enabling two-factor requires a code at the next login, and disabling turns
 
   await page.getByLabel('Code').fill('000000')
   await page.getByRole('button', { name: 'Enable', exact: true }).click()
-  await expect(page.getByText("isn't valid")).toBeVisible()
+  await expect(page.getByText('isn\'t valid')).toBeVisible()
 
   await page.getByLabel('Code').fill(await freshTotpCode(sharedKey))
   await page.getByRole('button', { name: 'Enable', exact: true }).click()
@@ -187,5 +191,5 @@ test('a recovery code logs in once and then stops working', async ({ page }) => 
   await page.getByRole('button', { name: 'Use a recovery code instead' }).click()
   await page.getByLabel('Recovery code').fill(recoveryCode)
   await page.getByRole('button', { name: 'Verify' }).click()
-  await expect(page.getByText("recovery code isn't valid")).toBeVisible()
+  await expect(page.getByText('recovery code isn\'t valid')).toBeVisible()
 })

@@ -1,6 +1,7 @@
 import type { APIRequestContext, Page } from '@playwright/test'
+import type { TestUser } from './testUsers'
 import { expect } from '@playwright/test'
-import { promoteToAdmin, registerViaApi, uniqueTestUser, type TestUser } from './testUsers'
+import { promoteToAdmin, registerViaApi, uniqueTestUser } from './testUsers'
 
 /** Registers a user on `page` and makes them an admin. Their session picks the role up on the next request. */
 export async function registerAdminViaApi(page: Page): Promise<TestUser> {

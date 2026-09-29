@@ -41,10 +41,13 @@ async function disable() {
 }
 
 async function copyLink() {
-  if (!shareUrl.value) return
+  if (!shareUrl.value)
+    return
   await navigator.clipboard.writeText(shareUrl.value)
   copied.value = true
-  setTimeout(() => { copied.value = false }, 1500)
+  setTimeout(() => {
+    copied.value = false
+  }, 1500)
 }
 </script>
 

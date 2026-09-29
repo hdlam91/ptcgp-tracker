@@ -1,6 +1,7 @@
+import type { Page } from '@playwright/test'
 import { execFileSync } from 'node:child_process'
 import path from 'node:path'
-import type { Page } from '@playwright/test'
+import process from 'node:process'
 
 export interface TestUser {
   email: string

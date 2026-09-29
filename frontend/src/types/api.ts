@@ -5,8 +5,10 @@ export interface UserResponse {
   isAdmin: boolean
 }
 
-/** `user` is null exactly when `requiresTwoFactor` is true — the password was right, but the
- * login isn't complete until the 2FA step succeeds. */
+/**
+ * `user` is null exactly when `requiresTwoFactor` is true — the password was right, but the
+ * login isn't complete until the 2FA step succeeds.
+ */
 export interface LoginResponse {
   requiresTwoFactor: boolean
   user: UserResponse | null

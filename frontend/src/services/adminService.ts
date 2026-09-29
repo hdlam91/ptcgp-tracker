@@ -1,5 +1,5 @@
-import { httpClient } from '@/services/httpClient'
 import type { AdminSettingsResponse, AdminUserResponse, CatalogStatusResponse, ImageMirrorStatusResponse } from '@/types/api'
+import { httpClient } from '@/services/httpClient'
 
 export const adminService = {
   users: () => httpClient.get<AdminUserResponse[]>('/admin/users'),

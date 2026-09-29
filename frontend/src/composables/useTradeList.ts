@@ -1,6 +1,6 @@
+import type { TradeDirection } from '@/types/api'
 import { computed, ref } from 'vue'
 import { tradeListService } from '@/services/tradeListService'
-import type { TradeDirection } from '@/types/api'
 
 // Module-scoped singleton, same reasoning as useCollection: the per-card toggle
 // buttons (in a set's card grid) and the dedicated trade-list view need to agree
@@ -14,7 +14,8 @@ function setFor(direction: TradeDirection) {
 }
 
 async function ensureLoaded() {
-  if (loaded.value) return
+  if (loaded.value)
+    return
   await reload()
 }
 
@@ -32,7 +33,8 @@ async function add(cardId: string, direction: TradeDirection) {
   // Optimistic: a rapid second click must see this card as already added,
   // not race the still-in-flight first request.
   const target = setFor(direction)
-  if (target.value.has(cardId)) return
+  if (target.value.has(cardId))
+    return
   target.value = new Set(target.value).add(cardId)
 
   try {
@@ -46,7 +48,8 @@ async function add(cardId: string, direction: TradeDirection) {
 
 async function remove(cardId: string, direction: TradeDirection) {
   const target = setFor(direction)
-  if (!target.value.has(cardId)) return
+  if (!target.value.has(cardId))
+    return
   const next = new Set(target.value)
   next.delete(cardId)
   target.value = next
