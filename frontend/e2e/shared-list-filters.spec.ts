@@ -8,16 +8,6 @@ const csrf = { 'X-Requested-With': 'XMLHttpRequest' }
 const WANTS = ['a1-001', 'a1-002', 'a1-227', 'a1a-001', 'a2-001']
 const OFFERS = ['a1-002', 'a1a-002']
 
-// registerViaApi reuses a shared login-mode account rather than a fresh one when self-registration
-// is closed, so each test starts by clearing whatever the account's trade list already has —
-// otherwise counts here depend on what an earlier test (or run) happened to leave behind.
-async function clearTradeList(page: import('@playwright/test').Page) {
-  const entries: { cardId: string, direction: string }[] = await (await page.request.get('/api/trade-list')).json()
-  for (const entry of entries) {
-    await page.request.delete(`/api/trade-list/${entry.cardId}/${entry.direction}`, { headers: csrf })
-  }
-}
-
 async function shareList(page: import('@playwright/test').Page, wants: string[], offers: string[]) {
   for (const cardId of wants) await page.request.post('/api/trade-list', { headers: csrf, data: { cardId, direction: 'Want' } })
   for (const cardId of offers) await page.request.post('/api/trade-list', { headers: csrf, data: { cardId, direction: 'Offer' } })
@@ -43,7 +33,6 @@ async function selectRarity(page: import('@playwright/test').Page, label: string
 
 test('both tabs of a shared list can be filtered by set and rarity, and nothing else', async ({ page, browser }) => {
   await registerViaApi(page)
-  await clearTradeList(page)
   const handle = await shareList(page, WANTS, OFFERS)
 
   // A friend opening the link, with no account.
@@ -103,7 +92,6 @@ test('both tabs of a shared list can be filtered by set and rarity, and nothing 
 
 test('a long shared list is shown a page at a time', async ({ page, browser }) => {
   await registerViaApi(page)
-  await clearTradeList(page)
   const many = Array.from({ length: 70 }, (_, index) => `a1-${String(index + 1).padStart(3, '0')}`)
   const handle = await shareList(page, many, [])
 

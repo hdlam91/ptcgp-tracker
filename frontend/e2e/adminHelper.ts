@@ -1,32 +1,6 @@
-import { execFileSync } from 'node:child_process'
-import path from 'node:path'
 import type { APIRequestContext, Page } from '@playwright/test'
 import { expect } from '@playwright/test'
-import { registerViaApi, uniqueTestUser, type TestUser } from './testUsers'
-
-// Playwright runs from frontend/; docker-compose.yml lives one level up.
-const repoRoot = path.resolve(process.cwd(), '..')
-
-/**
- * Grants the Admin role by writing to the dev Postgres container directly. There's
- * deliberately no API to create the first admin (config-driven bootstrap only), so
- * e2e tests take the same shortcut an operator would. The role row exists because
- * the backend creates it on startup.
- */
-function promoteToAdmin(email: string) {
-  if (!/^[\w.+-]+@[\w.-]+$/.test(email)) {
-    throw new Error(`Refusing to interpolate unexpected email into SQL: ${email}`)
-  }
-  const sql = `INSERT INTO "AspNetUserRoles" ("UserId", "RoleId")
-    SELECT u."Id", r."Id" FROM "AspNetUsers" u, "AspNetRoles" r
-    WHERE u."Email" = '${email}' AND r."Name" = 'Admin'
-    ON CONFLICT DO NOTHING;`
-  execFileSync(
-    'docker',
-    ['compose', 'exec', '-T', 'postgres', 'sh', '-c', 'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"'],
-    { cwd: repoRoot, input: sql },
-  )
-}
+import { promoteToAdmin, registerViaApi, uniqueTestUser, type TestUser } from './testUsers'
 
 /** Registers a user on `page` and makes them an admin. Their session picks the role up on the next request. */
 export async function registerAdminViaApi(page: Page): Promise<TestUser> {

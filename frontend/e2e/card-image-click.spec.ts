@@ -36,7 +36,7 @@ test('the hover +/- buttons change the owned count, and clicking the art opens t
   await firstCard.locator('img').click({ position: { x: 60, y: 60 } })
   await expect(page).toHaveURL(/\/cards\/a1-001$/)
   await expect(page.getByRole('heading', { name: 'Bulbasaur', level: 1 })).toBeVisible()
-  await expect(page.getByText('You own ×1.')).toBeVisible()
+  await expect(page.getByTestId('owned-count')).toHaveText('×1')
 })
 
 test('the -/count/+ box under the card also changes the owned count', async ({ page }) => {

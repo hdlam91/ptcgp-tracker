@@ -1,23 +1,15 @@
 import crypto from 'node:crypto'
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
+import { registerDisposableUser } from './testUsers'
 
 // These specs change or destroy the very credentials a login-mode E2E_LOGIN_EMAIL account would
 // need (password, email, 2FA, or the account itself), so — unlike most specs here — they always
 // register a genuine fresh account directly, ignoring the login-mode env vars other specs use.
 async function registerFreshUser(page: Page) {
-  const email = `acct-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`
-  const password = 'Password1'
-  const response = await page.request.post('/api/auth/register', {
-    headers: { 'X-Requested-With': 'XMLHttpRequest' },
-    data: { email, password, displayName: 'Acct Tester' },
-  })
-  if (!response.ok()) {
-    throw new Error(`Failed to register a fresh account for an account-settings test: ${response.status()} ${await response.text()}. `
-      + 'These specs need registration open on the target backend.')
-  }
+  const user = await registerDisposableUser(page)
   await page.goto('/account')
-  return { email, password }
+  return user
 }
 
 function base32Decode(input: string): Buffer {

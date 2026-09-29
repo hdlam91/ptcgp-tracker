@@ -1,8 +1,16 @@
 import { expect, test } from '@playwright/test'
 import { registerViaApi } from './testUsers'
 
+// Mirrors the backend's ShareHandles.Slugify: lowercase, any run of non-alphanumerics collapses
+// to one hyphen. Computed from the real display name rather than hardcoded, since registerViaApi
+// can hand back either a freshly-registered "Test Trainer" or an existing login-mode account
+// with whatever display name it actually has.
+function expectedSlug(displayName: string): string {
+  return displayName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+}
+
 test('sharing a trade list produces a working public read-only link that revokes cleanly', async ({ page, browser }) => {
-  const user = await registerViaApi(page)
+  const { displayName } = await registerViaApi(page)
 
   await page.goto('/sets/a1')
   await page.waitForSelector('img')
@@ -13,7 +21,7 @@ test('sharing a trade list produces a working public read-only link that revokes
   await page.getByRole('button', { name: 'Create share link' }).click()
   const shareUrl = await page.locator('input[readonly]').inputValue()
   // Short, readable link built from the display name — "Test Trainer" → /share/test-trainer[-N].
-  expect(shareUrl).toMatch(/\/share\/test-trainer(-\d+)?$/)
+  expect(shareUrl).toMatch(new RegExp(`/share/${expectedSlug(displayName)}(-\\d+)?$`))
 
   // "Open" goes straight to the shared page, in a new tab.
   const openLink = page.getByRole('link', { name: 'Open' })
@@ -24,7 +32,7 @@ test('sharing a trade list produces a working public read-only link that revokes
   const anonContext = await browser.newContext()
   const anonPage = await anonContext.newPage()
   await anonPage.goto(shareUrl)
-  await expect(anonPage.getByRole('heading', { name: `${user.displayName}'s trade list` })).toBeVisible()
+  await expect(anonPage.getByRole('heading', { name: `${displayName}'s trade list` })).toBeVisible()
   await expect(anonPage.getByRole('button', { name: 'Wants (1)' })).toBeVisible()
   // Read-only: no owned-count controls or trade toggles should be present.
   await expect(anonPage.getByTitle('Want this card')).toHaveCount(0)
