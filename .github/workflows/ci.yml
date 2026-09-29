@@ -1,0 +1,53 @@
+# Lint, type-check/build the frontend, and run the backend test suite on every push and pull
+# request. Any failing step fails the job, and a failing job fails the whole run.
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+# A newer push replaces a run still going for the same branch or PR.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    # Pinned rather than ubuntu-latest, which moves to Ubuntu 26 on 2026-10-19. Bump on purpose.
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+      - run: npm run lint
+      # Also type-checks (`vue-tsc -b`) before building.
+      - run: npm run build
+
+  backend:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: "10.0.x"
+
+      # Integration tests spin up their own Postgres via Testcontainers; ubuntu-24.04
+      # runners already have Docker, so there's nothing extra to provision here.
+      - run: dotnet test
