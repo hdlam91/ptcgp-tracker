@@ -100,6 +100,57 @@ public static class AuthEndpoints
             return Results.Ok(new UserResponse(user.Id, user.Email!, user.DisplayName, isAdmin));
         });
 
+        group.MapPost("/forgot-password", async (
+            ForgotPasswordRequest request,
+            HttpContext httpContext,
+            UserManager<ApplicationUser> userManager,
+            IEmailSender emailSender) =>
+        {
+            var user = await userManager.FindByEmailAsync(request.Email);
+            if (user is not null)
+            {
+                var token = await userManager.GeneratePasswordResetTokenAsync(user);
+                // Always the same origin the request itself came in on — this app is only ever
+                // deployed same-origin (Vite's dev proxy locally, nginx in prod), so there's no
+                // separate "public URL" setting to keep in sync with reality.
+                var resetUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/reset-password"
+                    + $"?email={Uri.EscapeDataString(request.Email)}&token={Uri.EscapeDataString(token)}";
+
+                await emailSender.SendAsync(
+                    request.Email,
+                    "Reset your PTCGP Tracker password",
+                    $"Someone asked to reset the password for this account.\n\n"
+                        + $"Reset it here: {resetUrl}\n\n"
+                        + "If this wasn't you, you can ignore this email.");
+            }
+
+            // Same response either way — never reveal whether an email is registered.
+            return Results.NoContent();
+        }).RequireRateLimiting("forgot-password");
+
+        group.MapPost("/reset-password", async (
+            ResetPasswordRequest request,
+            UserManager<ApplicationUser> userManager) =>
+        {
+            var user = await userManager.FindByEmailAsync(request.Email);
+            if (user is null)
+            {
+                // Same shape as a bad token, so this can't be used to probe which emails exist.
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["Token"] = ["That reset link is invalid or has expired."],
+                });
+            }
+
+            var result = await userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
+            if (!result.Succeeded)
+            {
+                return Results.ValidationProblem(result.Errors.ToDictionary(e => e.Code, e => new[] { e.Description }));
+            }
+
+            return Results.NoContent();
+        });
+
         group.MapPost("/logout", async (SignInManager<ApplicationUser> signInManager) =>
         {
             await signInManager.SignOutAsync();

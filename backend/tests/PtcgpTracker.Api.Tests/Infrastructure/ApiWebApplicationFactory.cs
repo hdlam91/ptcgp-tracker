@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using PtcgpTracker.Api.CardData;
+using PtcgpTracker.Api.Services;
 
 namespace PtcgpTracker.Api.Tests.Infrastructure;
 
@@ -33,6 +34,11 @@ internal class ApiWebApplicationFactory(string connectionString) : WebApplicatio
             services.AddSingleton<FakeCardCatalogProvider>();
             services.AddSingleton<ICardCatalogProvider>(sp => sp.GetRequiredService<FakeCardCatalogProvider>());
             services.AddSingleton<ICardCatalogAdmin>(sp => sp.GetRequiredService<FakeCardCatalogProvider>());
+
+            // Never hit real SMTP in tests — capture what would have been sent instead.
+            services.RemoveAll<IEmailSender>();
+            services.AddSingleton<FakeEmailSender>();
+            services.AddSingleton<IEmailSender>(sp => sp.GetRequiredService<FakeEmailSender>());
         });
     }
 }

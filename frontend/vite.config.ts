@@ -54,7 +54,10 @@ export default defineConfig({
       // reverse proxy used in the production image).
       '/api': {
         target: 'http://localhost:8080',
-        changeOrigin: true,
+        // Not changeOrigin: the backend needs the browser's real Host (localhost:5173), not the
+        // proxy target's, to build absolute links back to the frontend (e.g. a password-reset
+        // email). Kestrel doesn't validate the Host header, so forwarding the original is safe.
+        changeOrigin: false,
       },
     },
   },

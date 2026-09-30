@@ -1,6 +1,8 @@
 using System.Security.Claims;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +34,8 @@ builder.Services.AddSingleton<ImageMirrorService>();
 builder.Services.AddScoped<AppSettingsService>();
 builder.Services.AddScoped<AdminRoleService>();
 builder.Services.AddScoped<AccountDeletionService>();
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.SectionName));
+builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
 
 builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
     .AddCookie(IdentityConstants.ApplicationScheme, options =>
@@ -99,6 +103,26 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy(AppRoles.AdminPolicy, policy => policy.RequireRole(AppRoles.Admin));
 
+// Forgot-password is the first unauthenticated endpoint that triggers real outbound work
+// (sending an email), so it gets its own per-IP abuse guard the plain login/register endpoints
+// don't need.
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("forgot-password", httpContext => RateLimitPartition.GetFixedWindowLimiter(
+        httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 3,
+            Window = TimeSpan.FromMinutes(15),
+            QueueLimit = 0,
+        }));
+    options.OnRejected = (context, _) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        return ValueTask.CompletedTask;
+    };
+});
+
 builder.Services
     .AddIdentityCore<ApplicationUser>(options =>
     {
@@ -160,6 +184,7 @@ if (Directory.Exists(imageDirectory))
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 

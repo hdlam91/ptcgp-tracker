@@ -2,6 +2,13 @@
 # and .env (or exported variables) can override any of them. To run prebuilt images instead
 # (no source needed), see docker-compose.selfhost.yml.
 services:
+  # Fake SMTP server for local dev: catches every email instead of sending it, viewable at
+  # http://localhost:8025. Self-hosting points at a real provider instead (see the README).
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "8025:8025"
+
   postgres:
     image: postgres:17-alpine
     environment:
@@ -24,10 +31,18 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      mailpit:
+        condition: service_started
     environment:
       ConnectionStrings__Default: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-ptcgp_tracker};Username=${POSTGRES_USER:-ptcgp};Password=${POSTGRES_PASSWORD:-changeme}"
       CardData__RepoTag: ${CARD_DATA_REPO_TAG:-v5.3.1}
       Admin__Emails: ${ADMIN_EMAILS:-}
+      # Mailpit by default: a fake SMTP server, no real credentials needed for local dev.
+      Smtp__Host: ${SMTP_HOST:-mailpit}
+      Smtp__Port: ${SMTP_PORT:-1025}
+      Smtp__Username: ${SMTP_USERNAME:-}
+      Smtp__Password: ${SMTP_PASSWORD:-}
+      Smtp__EnableSsl: ${SMTP_ENABLE_SSL:-false}
       APPLY_MIGRATIONS_ON_STARTUP: "true"
       ASPNETCORE_URLS: "http://+:8080"
     volumes:

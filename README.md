@@ -62,6 +62,11 @@ services:
     environment:
       ConnectionStrings__Default: "Host=postgres;Port=5432;Database=ptcgp_tracker;Username=ptcgp;Password=${POSTGRES_PASSWORD:-changeme}"
       Admin__Emails: ${ADMIN_EMAILS:-}                    # your email, so you become admin
+      Smtp__Host: ${SMTP_HOST:-}                          # optional: enables "forgot password" emails
+      Smtp__Port: ${SMTP_PORT:-587}
+      Smtp__Username: ${SMTP_USERNAME:-}
+      Smtp__Password: ${SMTP_PASSWORD:-}
+      Smtp__FromAddress: ${SMTP_FROM_ADDRESS:-noreply@ptcgp-tracker.local}
       APPLY_MIGRATIONS_ON_STARTUP: "true"
       ASPNETCORE_URLS: "http://+:8080"
     volumes:
@@ -91,6 +96,8 @@ docker compose up -d
 ```
 
 Open `http://<your-server>:8081` and **register with the email you put in `ADMIN_EMAILS` straight away**. Emails aren't verified, so whoever registers that address first gets the admin role. Once your account exists you can close registration from Settings.
+
+**"Forgot password" needs `SMTP_*` set too** (see [Configuration](#configuration)) — an SMTP relay you already have (a Gmail app password, or an API key as the password for SendGrid/Mailgun/Postmark/etc.). Without it the app runs fine; that one email just never sends.
 
 Only the website port is published. The database and API are reachable from inside the compose project only.
 
@@ -143,6 +150,7 @@ Every option has a default, so nothing is required. You can set them as environm
 | `PTCGP_PORT` | `8081` | Host port for the website (self-host file). |
 | `PTCGP_VERSION` | `latest` | Which published image release to run (self-host file). |
 | `CARD_DATA_REPO_TAG` | `v5.3.1` | The pinned `pokemon-tcg-pocket-cards` release the backend downloads (build-from-source compose). See [Updating the card data](#updating-the-card-data). |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM_ADDRESS` | *(none; `587`)* | An SMTP relay for "forgot password" emails. Left unset, the app still runs — that feature just can't send anything. The build-from-source compose defaults these to the bundled Mailpit container instead (a fake SMTP catcher for local dev, at `http://localhost:8025`), so it works out of the box with no real email. |
 
 Ports used by the build-from-source `docker-compose.yml`:
 
@@ -151,6 +159,7 @@ Ports used by the build-from-source `docker-compose.yml`:
 | `8081` | The website (nginx serving the frontend and proxying `/api` to the backend) |
 | `8080` | The backend API |
 | `5433` | PostgreSQL (`5433` rather than `5432`, to avoid clashing with a Postgres you may already run) |
+| `8025` | Mailpit's web UI — every "sent" email in local dev lands here instead of a real inbox |
 
 The self-host file publishes only the website port.
 

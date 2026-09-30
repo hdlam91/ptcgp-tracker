@@ -37,6 +37,16 @@ services:
       # CHANGE ME: your email, so you become admin when you register with it. Comma-separate several.
       # Emails aren't verified, so register this account right away, before you share the site.
       Admin__Emails: ${ADMIN_EMAILS:-}
+      # CHANGE ME (all four): an SMTP relay for "forgot password" emails, e.g. a Gmail app
+      # password, or an API-key-as-password from SendGrid/Mailgun/Postmark/etc. Left blank,
+      # the app still runs fine — it just can't send that one email.
+      Smtp__Host: ${SMTP_HOST:-}
+      Smtp__Port: ${SMTP_PORT:-587}
+      Smtp__Username: ${SMTP_USERNAME:-}
+      Smtp__Password: ${SMTP_PASSWORD:-}
+      # Most providers reject mail "from" an address they haven't verified you control —
+      # set this to the mailbox behind the credentials above (or a verified sender identity).
+      Smtp__FromAddress: ${SMTP_FROM_ADDRESS:-noreply@ptcgp-tracker.local}
       APPLY_MIGRATIONS_ON_STARTUP: "true"
       ASPNETCORE_URLS: "http://+:8080"
     volumes:

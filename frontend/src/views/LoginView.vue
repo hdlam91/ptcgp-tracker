@@ -87,7 +87,12 @@ async function onSubmitTwoFactor() {
               <Input id="email" v-model="email" type="email" autocomplete="email" required />
             </div>
             <div class="flex flex-col gap-1.5">
-              <Label for="password">Password</Label>
+              <div class="flex items-center justify-between">
+                <Label for="password">Password</Label>
+                <RouterLink to="/forgot-password" class="text-sm text-muted-foreground underline-offset-4 hover:underline">
+                  Forgot password?
+                </RouterLink>
+              </div>
               <Input id="password" v-model="password" type="password" autocomplete="current-password" required />
             </div>
             <p v-if="errorMessage" class="text-sm text-destructive">
