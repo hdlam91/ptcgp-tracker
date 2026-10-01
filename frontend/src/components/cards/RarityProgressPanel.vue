@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { RarityGroup } from '@/composables/useRarityGroups'
 import { Check } from '@lucide/vue'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 
 defineProps<{
@@ -12,6 +13,8 @@ defineProps<{
 defineEmits<{
   (e: 'complete', key: string): void
 }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -20,7 +23,7 @@ defineEmits<{
       <div class="flex items-center justify-between gap-2">
         <span class="text-sm font-medium">{{ group.label }}</span>
         <span v-if="group.owned === group.total" class="flex items-center gap-1 text-xs font-medium text-primary">
-          <Check class="size-3.5" /> Complete
+          <Check class="size-3.5" /> {{ t('cards.rarityProgressPanel.complete') }}
         </span>
         <span v-else class="text-xs text-muted-foreground">{{ group.owned }} / {{ group.total }}</span>
       </div>
@@ -38,7 +41,7 @@ defineEmits<{
         :disabled="completingKey === group.key"
         @click="$emit('complete', group.key)"
       >
-        {{ completingKey === group.key ? 'Completing…' : `Mark all ${group.label.toLowerCase()} owned` }}
+        {{ completingKey === group.key ? t('cards.rarityProgressPanel.completing') : t('cards.rarityProgressPanel.markAllOwned', { label: group.label.toLowerCase() }) }}
       </Button>
     </div>
   </div>

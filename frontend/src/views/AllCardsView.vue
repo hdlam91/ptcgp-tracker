@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import CardFilterBar from '@/components/cards/CardFilterBar.vue'
 import CardGrid from '@/components/cards/CardGrid.vue'
 import { useCardCatalog } from '@/composables/useCardCatalog'
@@ -7,6 +8,7 @@ import { useCardFilters } from '@/composables/useCardFilters'
 import { useCollection } from '@/composables/useCollection'
 import { useTradeList } from '@/composables/useTradeList'
 
+const { t } = useI18n()
 const { getAllCards } = useCardCatalog()
 const { ownedCounts, getOwnedCount, setOwnedCount, ensureLoaded: ensureCollectionLoaded } = useCollection()
 const { wantedCardIds, offeredCardIds, toggle, ensureLoaded: ensureTradeListLoaded } = useTradeList()
@@ -41,10 +43,10 @@ onMounted(async () => {
 <template>
   <div class="mx-auto max-w-6xl p-4 sm:p-6">
     <h1 class="text-2xl font-semibold">
-      All cards
+      {{ t('views.allCards.title') }}
     </h1>
     <p class="mt-1 text-muted-foreground">
-      Search and filter across every set at once.
+      {{ t('views.allCards.subtitle') }}
     </p>
 
     <CardFilterBar
@@ -71,10 +73,10 @@ onMounted(async () => {
     />
 
     <p v-if="!hasActiveFilters" class="mt-10 rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-      {{ cards.length }} cards across every set. Search by name, number, attack or ability, or use the filters to browse them.
+      {{ t('views.allCards.emptyState', { count: cards.length }) }}
     </p>
     <p v-else-if="filteredCards.length === 0" class="mt-8 text-sm text-muted-foreground">
-      No cards match these filters.
+      {{ t('views.allCards.noResults') }}
     </p>
     <div v-else class="mt-6">
       <CardGrid

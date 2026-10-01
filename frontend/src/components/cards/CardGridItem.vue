@@ -2,6 +2,7 @@
 import type { CardCatalogEntry } from '@/types/catalog'
 import { Heart, Info, Minus, Plus, Repeat } from '@lucide/vue'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { useLocalImage } from '@/composables/useLocalImage'
@@ -26,6 +27,8 @@ const emit = defineEmits<{
   (e: 'toggleWant'): void
   (e: 'toggleOffer'): void
 }>()
+
+const { t } = useI18n()
 
 const remoteImageUrl = computed(() => props.card.image ?? props.card.image_png)
 const localImageUrl = computed(() => {
@@ -92,8 +95,8 @@ function decrement() {
           size="icon"
           :class="glassButtonClass"
           :disabled="ownedCount === 0"
-          aria-label="Remove one copy"
-          title="Remove one"
+          :aria-label="t('cards.gridItem.removeOneCopy')"
+          :title="t('cards.gridItem.removeOne')"
           @click="decrement"
         >
           <Minus class="size-5" :stroke-width="2.5" />
@@ -102,8 +105,8 @@ function decrement() {
           variant="ghost"
           size="icon"
           :class="glassButtonClass"
-          aria-label="Add one copy"
-          title="Add one"
+          :aria-label="t('cards.gridItem.addOneCopy')"
+          :title="t('cards.gridItem.addOne')"
           @click="increment"
         >
           <Plus class="size-5" :stroke-width="2.5" />
@@ -125,8 +128,8 @@ function decrement() {
         <RouterLink
           v-if="!readonly"
           :to="`/cards/${card.id}`"
-          :aria-label="`Details for ${card.name}`"
-          title="Card details"
+          :aria-label="t('cards.gridItem.detailsFor', { name: card.name })"
+          :title="t('cards.gridItem.cardDetails')"
           class="-mr-1 -mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
           <Info class="size-4" />
@@ -140,13 +143,13 @@ function decrement() {
             size="icon"
             class="h-7 w-7"
             :disabled="ownedCount === 0"
-            aria-label="Decrease owned count"
+            :aria-label="t('cards.gridItem.decreaseOwnedCount')"
             @click="decrement"
           >
             <Minus class="size-3.5" />
           </Button>
           <span class="w-4 text-center text-sm tabular-nums">{{ ownedCount }}</span>
-          <Button variant="outline" size="icon" class="h-7 w-7" aria-label="Increase owned count" @click="increment">
+          <Button variant="outline" size="icon" class="h-7 w-7" :aria-label="t('cards.gridItem.increaseOwnedCount')" @click="increment">
             <Plus class="size-3.5" />
           </Button>
         </div>
@@ -156,7 +159,7 @@ function decrement() {
             :variant="wanted ? 'default' : 'outline'"
             size="icon"
             class="h-7 w-7"
-            title="Want this card"
+            :title="t('cards.gridItem.wantThisCard')"
             @click="emit('toggleWant')"
           >
             <Heart class="size-3.5" />
@@ -165,7 +168,7 @@ function decrement() {
             :variant="offered ? 'default' : 'outline'"
             size="icon"
             class="h-7 w-7"
-            title="Offer this card for trade"
+            :title="t('cards.gridItem.offerThisCardForTrade')"
             @click="emit('toggleOffer')"
           >
             <Repeat class="size-3.5" />

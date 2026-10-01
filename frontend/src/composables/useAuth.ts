@@ -1,6 +1,7 @@
 import type { ConfirmEmailPayload, LoginPayload, RegisterPayload, TwoFactorLoginPayload } from '@/services/authService'
 import type { UserResponse } from '@/types/api'
 import { computed, ref } from 'vue'
+import { useLocale } from '@/composables/useLocale'
 import { authService } from '@/services/authService'
 import { ApiError } from '@/services/httpClient'
 
@@ -13,9 +14,18 @@ const initialized = ref(false)
 // opposed to the server answering "not logged in".
 const connectionError = ref(false)
 
+/**
+ * Every path that learns who's logged in goes through here, so the UI language always
+ * follows the account's stored preference the moment it's known.
+ */
+function setCurrentUser(user: UserResponse) {
+  currentUser.value = user
+  useLocale().applyFromUser(user.preferredLocale)
+}
+
 async function fetchCurrentUser(): Promise<UserResponse | null> {
   try {
-    currentUser.value = await authService.me()
+    setCurrentUser(await authService.me())
     connectionError.value = false
     initialized.value = true
   }
@@ -43,7 +53,7 @@ async function fetchCurrentUser(): Promise<UserResponse | null> {
 async function register(payload: RegisterPayload) {
   const response = await authService.register(payload)
   if (response.user) {
-    currentUser.value = response.user
+    setCurrentUser(response.user)
     initialized.value = true
   }
   return response
@@ -56,19 +66,19 @@ async function register(payload: RegisterPayload) {
 async function login(payload: LoginPayload) {
   const response = await authService.login(payload)
   if (response.user) {
-    currentUser.value = response.user
+    setCurrentUser(response.user)
     initialized.value = true
   }
   return response
 }
 
 async function loginTwoFactor(payload: TwoFactorLoginPayload) {
-  currentUser.value = await authService.loginTwoFactor(payload)
+  setCurrentUser(await authService.loginTwoFactor(payload))
   initialized.value = true
 }
 
 async function confirmEmail(payload: ConfirmEmailPayload) {
-  currentUser.value = await authService.confirmEmail(payload)
+  setCurrentUser(await authService.confirmEmail(payload))
   initialized.value = true
 }
 

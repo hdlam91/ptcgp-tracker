@@ -1,0 +1,445 @@
+{
+  "errors": {
+    "requestFailed": "Request failed ({status}).",
+    "generic": "Something went wrong. Please try again."
+  },
+  "account": {
+    "title": "Account",
+    "subtitle": "Manage your login details and security.",
+    "password": {
+      "title": "Password",
+      "description": "Change the password you log in with.",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password",
+      "mismatch": "Those passwords don't match.",
+      "changed": "Password changed.",
+      "submit": "Change password",
+      "submitting": "Changing…"
+    },
+    "email": {
+      "title": "Email",
+      "signedInAs": "Signed in as {email}.",
+      "newEmail": "New email",
+      "currentPassword": "Current password",
+      "changed": "Email changed.",
+      "submit": "Change email",
+      "submitting": "Changing…"
+    },
+    "twoFactor": {
+      "title": "Two-factor authentication",
+      "loading": "Loading…",
+      "enabledDescription": "Enabled — an authenticator app code is required to log in.",
+      "disabledDescription": "Off — add an authenticator app for an extra step at login.",
+      "saveRecoveryCodesTitle": "Save these recovery codes somewhere safe",
+      "saveRecoveryCodesDescription": "Each one lets you log in once if you lose access to your authenticator app. They won't be shown again.",
+      "savedRecoveryCodes": "I've saved these",
+      "enable": "Enable two-factor",
+      "setupInstructions": "Scan this with your authenticator app, or enter the key manually, then enter the 6-digit code it shows.",
+      "code": "Code",
+      "confirmEnable": "Enable",
+      "enabling": "Enabling…",
+      "cancel": "Cancel",
+      "regenerateRecoveryCodes": "Regenerate recovery codes",
+      "disable": "Disable",
+      "currentPassword": "Current password",
+      "confirmDisable": "Yes, disable",
+      "confirmRegenerate": "Regenerate",
+      "confirming": "Confirming…"
+    },
+    "delete": {
+      "title": "Delete account",
+      "description": "Permanently deletes your account, your collection, and your trade list. This can't be undone.",
+      "trigger": "Delete my account",
+      "currentPasswordLabel": "Enter your current password to confirm",
+      "confirm": "Yes, delete everything",
+      "deleting": "Deleting…",
+      "cancel": "Cancel"
+    },
+    "language": {
+      "title": "Language",
+      "description": "Only English is available today — more languages can be added later.",
+      "selectLabel": "Language"
+    }
+  },
+  "login": {
+    "title": "Log in",
+    "description": "Track your Pokémon TCG Pocket collection.",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "incorrectCredentials": "Incorrect email or password.",
+    "submit": "Log in",
+    "submitting": "Logging in…",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign up",
+    "confirmEmailTitle": "Confirm your email",
+    "confirmEmailDescription": "You need to confirm {email} before you can log in.",
+    "checkInbox": "Check your inbox for the confirmation link.",
+    "resendConfirmation": "Resend confirmation email",
+    "resending": "Sending…",
+    "backToLogin": "Back to log in",
+    "twoFactorTitle": "Two-factor authentication",
+    "enterRecoveryCode": "Enter one of your recovery codes.",
+    "enterAuthenticatorCode": "Enter the 6-digit code from your authenticator app.",
+    "recoveryCode": "Recovery code",
+    "code": "Code",
+    "rememberDevice": "Remember this device for 30 days",
+    "incorrectRecoveryCode": "That recovery code isn't valid.",
+    "incorrectCode": "That code isn't valid.",
+    "verify": "Verify",
+    "verifying": "Verifying…",
+    "useRecoveryCodeInstead": "Use a recovery code instead",
+    "useAuthenticatorCodeInstead": "Use an authenticator code instead"
+  },
+  "register": {
+    "checkYourEmailTitle": "Check your email",
+    "closedTitle": "Registration is closed",
+    "title": "Create an account",
+    "checkYourEmailDescription": "You're almost done.",
+    "closedDescription": "New accounts aren't being accepted right now.",
+    "description": "Start tracking your Pokémon TCG Pocket collection.",
+    "confirmEmailInstructions": "Check your inbox for a link to confirm {email} before logging in.",
+    "displayName": "Display name",
+    "email": "Email",
+    "password": "Password",
+    "submitting": "Creating account…",
+    "submit": "Sign up",
+    "haveAccount": "Already have an account?",
+    "logIn": "Log in",
+    "genericError": "Could not create your account. Please check your details."
+  },
+  "forgotPassword": {
+    "title": "Forgot password",
+    "description": "We'll email you a link to reset it.",
+    "submittedMessage": "If an account exists for {email}, check your inbox for a reset link.",
+    "email": "Email",
+    "submitting": "Sending…",
+    "submit": "Send reset link",
+    "backToLogin": "Back to log in"
+  },
+  "resetPassword": {
+    "title": "Reset password",
+    "description": "Choose a new password for {email}.",
+    "missingInfo": "This reset link is missing information. Request a new one.",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "submitting": "Resetting…",
+    "submit": "Reset password",
+    "requestNewLink": "Request a new link",
+    "genericError": "Could not reset your password. Please check your details."
+  },
+  "confirmEmail": {
+    "confirmedTitle": "Email confirmed",
+    "title": "Confirm your email",
+    "confirming": "One moment…",
+    "confirmedDescription": "You're all set — you can log in now.",
+    "failedDescription": "That confirmation link is invalid or has expired.",
+    "goToApp": "Go to the app",
+    "resendSentMessage": "If that email needs confirming, check your inbox for a new link.",
+    "resend": "Send a new confirmation email",
+    "backToLogin": "Back to log in"
+  },
+  "views": {
+    "allCards": {
+      "title": "All cards",
+      "subtitle": "Search and filter across every set at once.",
+      "emptyState": "{count} cards across every set. Search by name, number, attack or ability, or use the filters to browse them.",
+      "noResults": "No cards match these filters."
+    },
+    "cardDetail": {
+      "back": "Back",
+      "notFound": "Card not found. It may not exist in the current card data.",
+      "evolvesFrom": "· Evolves from {name}",
+      "trainerSubtype": "Trainer · {subtype}",
+      "noBattleDetails": "Battle details aren't available for this card.",
+      "hp": "HP",
+      "type": "Type",
+      "weakness": "Weakness",
+      "none": "None",
+      "retreatCost": "Retreat cost",
+      "free": "Free",
+      "abilityHeading": "Ability",
+      "attacksHeading": "Attacks",
+      "attackCostAriaLabel": "Cost: {cost}",
+      "noEnergyAriaLabel": "no energy",
+      "noEnergy": "No energy",
+      "cardTextHeading": "Card text",
+      "detailsHeading": "Details",
+      "cardLabel": "Card",
+      "rarityLabel": "Rarity",
+      "setLabel": "Set",
+      "packLabel": "Pack",
+      "illustratorLabel": "Illustrator",
+      "artStyleLabel": "Art style",
+      "packPointsLabel": "Pack points",
+      "tradingLabel": "Trading",
+      "tradable": "Tradable (trade cost {cost})",
+      "notTradable": "Not tradable",
+      "collectionHeading": "In your collection",
+      "removeOneCopy": "Remove one copy",
+      "addOneCopy": "Add one copy",
+      "onWantList": "On your want list",
+      "addToWantList": "Add to want list",
+      "onOfferList": "On your offer list",
+      "offerForTrade": "Offer for trade",
+      "notTradableNotice": "This card can't be traded, so it can't go on your want or offer list.",
+      "otherPrintsHeading": "Other prints"
+    },
+    "collection": {
+      "title": "Your sets",
+      "subtitle": "Pick a set to view and update the cards you own."
+    },
+    "setDetail": {
+      "backToAllSets": "← All sets",
+      "noResults": "No cards match these filters."
+    }
+  },
+  "admin": {
+    "catalog": {
+      "title": "Card data",
+      "description": "What the server uses to validate card IDs. The card art and details you see on the site come from the bundled dataset.",
+      "datasetVersion": "Dataset version",
+      "cardsLoaded": "Cards loaded",
+      "lastRefreshed": "Last refreshed",
+      "never": "Never",
+      "lastRefreshFailed": "Last refresh failed: {error}",
+      "working": "Working…",
+      "refresh": "Refresh card data"
+    },
+    "emailConfirmation": {
+      "title": "Email confirmation",
+      "loading": "Loading…",
+      "requiredDescription": "Required — new accounts must click a link in their email before they can log in.",
+      "offDescription": "Off — new accounts can log in right away.",
+      "smtpWarning": "No SMTP server is configured, so no confirmation email can actually send. Configured admin accounts are always exempt, so turning this on can't lock you out — but it will lock out everyone else until SMTP is set up.",
+      "turnOff": "Turn off email confirmation",
+      "turnOn": "Require email confirmation"
+    },
+    "images": {
+      "title": "Card images",
+      "description": "By default, card art loads from GitHub in each visitor's browser. Download it to this server (roughly 135 MB) and the site serves its own images, so it no longer depends on GitHub for art.",
+      "cardImagesAnd": "card images and",
+      "packImagesStored": "pack images stored here ({bytes}).",
+      "noneStored": "No images are stored on this server yet.",
+      "preparing": "Preparing the list of images…",
+      "downloadingProgress": "Downloading… {finished} of {total}",
+      "finished": "Finished: {completed} of {total} images are stored.",
+      "failedRetry": "{failed} couldn't be downloaded. Run it again to retry just those.",
+      "downloadStopped": "The download stopped: {error}",
+      "downloadingButton": "Downloading…",
+      "downloadMissing": "Download missing images",
+      "downloadNew": "Download card images",
+      "kb": "{value} KB",
+      "mb": "{value} MB"
+    },
+    "registration": {
+      "title": "New registrations",
+      "loading": "Loading…",
+      "openDescription": "Open — anyone can create an account.",
+      "closedDescription": "Closed — the sign-up page is disabled. Existing users can still log in.",
+      "close": "Close registration",
+      "open": "Open registration"
+    },
+    "users": {
+      "columnUser": "User",
+      "columnJoined": "Joined",
+      "columnCards": "Cards",
+      "columnWant": "Want",
+      "columnOffer": "Offer",
+      "columnShareLink": "Share link",
+      "columnActions": "Actions",
+      "adminBadge": "Admin",
+      "unconfirmedBadge": "Unconfirmed",
+      "you": "(you)",
+      "disableShare": "Disable",
+      "notApplicable": "—",
+      "confirmDeleteText": "Delete {name} and all their data?",
+      "confirmDelete": "Yes, delete",
+      "cancel": "Cancel",
+      "resend": "Resend",
+      "removeAdmin": "Remove admin",
+      "makeAdmin": "Make admin",
+      "delete": "Delete"
+    },
+    "settingsPage": {
+      "title": "Settings",
+      "description": "Admin tools for managing users and app data.",
+      "usersCountFiltered": "Users ({filtered} of {total})",
+      "usersCountAll": "Users ({count})",
+      "usersDescription": "Manage roles, moderate public share links, or remove accounts. You can't change or delete your own account here.",
+      "loadingUsers": "Loading users…",
+      "searchPlaceholder": "Search by name or email",
+      "searchAriaLabel": "Search users",
+      "noUsersMatch": "No users match \"{search}\"."
+    }
+  },
+  "cards": {
+    "rarityGroups": {
+      "diamond": "Diamond",
+      "star": "Star",
+      "shiny": "Shiny",
+      "crown": "Crown"
+    },
+    "filters": {
+      "anyRarity": "Any rarity",
+      "diamondCount": "{n} diamond | {n} diamonds",
+      "starCount": "{n} star | {n} stars",
+      "shinyCount": "{n} star Shiny | {n} stars Shiny"
+    },
+    "filterBar": {
+      "searchPlaceholder": "Search name, number, attack, ability",
+      "filterBySet": "Filter by set",
+      "anySet": "Any set",
+      "filterByPack": "Filter by pack",
+      "anyPack": "Any pack",
+      "filtersButton": "Filters",
+      "ownershipAll": "All",
+      "ownershipOwned": "Owned",
+      "ownershipMissing": "Missing",
+      "clear": "Clear",
+      "resultCount": "{count} / {total} cards",
+      "cardTypeLabel": "Card type",
+      "filterByCardType": "Filter by card type",
+      "any": "Any",
+      "pokemonTypeLabel": "Pokémon type",
+      "filterByPokemonType": "Filter by Pokémon type",
+      "evolutionLabel": "Evolution",
+      "filterByEvolution": "Filter by evolution",
+      "abilityLabel": "Ability",
+      "filterByAbility": "Filter by ability",
+      "moveTypeLabel": "Move type",
+      "filterByMoveType": "Filter by move type",
+      "moveTypeTooltip": "The energy types a card's attacks cost",
+      "allSets": "All sets"
+    },
+    "gridItem": {
+      "removeOneCopy": "Remove one copy",
+      "removeOne": "Remove one",
+      "addOneCopy": "Add one copy",
+      "addOne": "Add one",
+      "detailsFor": "Details for {name}",
+      "cardDetails": "Card details",
+      "decreaseOwnedCount": "Decrease owned count",
+      "increaseOwnedCount": "Increase owned count",
+      "wantThisCard": "Want this card",
+      "offerThisCardForTrade": "Offer this card for trade"
+    },
+    "energyIcon": {
+      "ariaLabel": "{type} energy"
+    },
+    "rarityIcon": {
+      "promo": "Promo"
+    },
+    "rarityProgressPanel": {
+      "complete": "Complete",
+      "completing": "Completing…",
+      "markAllOwned": "Mark all {label} owned"
+    },
+    "raritySelect": {
+      "filterByRarity": "Filter by rarity: {label}",
+      "anyRarity": "Any rarity",
+      "rarityListboxLabel": "Rarity"
+    },
+    "setRarityFilter": {
+      "filterBySet": "Filter by set",
+      "anySet": "Any set",
+      "clear": "Clear",
+      "resultCount": "{count} / {total} cards"
+    }
+  },
+  "layout": {
+    "header": {
+      "brandShort": "PTCGP",
+      "brandFull": "PTCGP Tracker",
+      "openMenu": "Open menu",
+      "closeMenu": "Close menu",
+      "account": "Account",
+      "settings": "Settings",
+      "switchToLightMode": "Switch to light mode",
+      "switchToDarkMode": "Switch to dark mode",
+      "logOut": "Log out"
+    },
+    "nav": {
+      "collection": "Collection",
+      "allCards": "All cards",
+      "allCardsShort": "Cards",
+      "tradeList": "Trade list",
+      "tradeListShort": "Trades"
+    },
+    "headerActions": {
+      "account": "Account",
+      "settings": "Settings",
+      "logOut": "Log out"
+    },
+    "serverUnreachable": {
+      "title": "Can't reach the server",
+      "description": "Check your connection and try again. Your collection is stored on the server, so it will be there when you're back online.",
+      "retry": "Try again"
+    },
+    "themeToggle": {
+      "switchToLightMode": "Switch to light mode",
+      "switchToDarkMode": "Switch to dark mode"
+    }
+  },
+  "trade": {
+    "shareCard": {
+      "title": "Share your trade list",
+      "description": "Anyone with the link can see what you want and what you're offering. They can't edit anything.",
+      "open": "Open",
+      "copied": "Copied",
+      "copy": "Copy",
+      "stopSharing": "Stop sharing",
+      "createShareLink": "Create share link"
+    },
+    "listPage": {
+      "title": "Trade list",
+      "subtitle": "Cards you want, and cards you're willing to trade away.",
+      "wantCount": "Want ({count})",
+      "offerCount": "Offer ({count})",
+      "adding": "Adding…",
+      "addAllMissingToWishlist": "Add all missing to wishlist ({count})",
+      "removing": "Removing…",
+      "removeOwnedFromWishlist": "Remove cards I already own ({count})",
+      "emptyActiveCards": "No cards here yet. Add some from a set's page.",
+      "noFilterMatches": "No cards match these filters.",
+      "showMore": "Show more ({visible} / {total})"
+    },
+    "sharedPage": {
+      "notFound": "This share link is invalid or no longer active.",
+      "title": "{displayName}'s trade list",
+      "readOnlyNotice": "Read-only — get in touch with {displayName} to arrange a trade.",
+      "wantsCount": "Wants ({count})",
+      "offersCount": "Offers ({count})",
+      "emptyActiveCards": "Nothing here yet.",
+      "noFilterMatches": "No cards match these filters.",
+      "showMore": "Show more ({visible} / {total})",
+      "loginPrompt": "Tracking your own Pokémon TCG Pocket collection?",
+      "logIn": "Log in"
+    }
+  },
+  "legal": {
+    "backLink": "← Back",
+    "pageTitle": "Legal & data sources",
+    "notAffiliated": {
+      "title": "Not affiliated with Nintendo, Creatures, GAME FREAK, or The Pokémon Company",
+      "descriptionBeforeEm": "PTCGP Tracker is an independent, fan-made, non-commercial collection-tracking tool for",
+      "descriptionEm": "Pokémon Trading Card Game Pocket",
+      "descriptionAfterEm": ". It is not produced, hosted, endorsed, sponsored, or approved by Nintendo, Creatures Inc., GAME FREAK inc., or The Pokémon Company.",
+      "trademarkNotice": "Pokémon, Pokémon Trading Card Game Pocket, and all associated names, logos, and card designs are trademarks and copyrighted material of their respective owners. This site does not claim any ownership over that material."
+    },
+    "cardData": {
+      "title": "Card data & images",
+      "beforeLink": "Card names, rarities, set information, and card images shown on this site come from the community-maintained",
+      "linkText": "pokemon-tcg-pocket-cards",
+      "afterLink": "dataset, pinned to a fixed release. Card artwork ultimately originates from the official Pokémon Trading Card Game Pocket app and belongs to its respective rights holders; it's used here for identification purposes only, alongside the collection tracking this app actually provides."
+    },
+    "noWarranty": {
+      "title": "No warranty",
+      "description": "This tool is provided \"as is,\" with no guarantee that card data, rarities, or set completion figures are complete or error-free. If something looks wrong, it's a bug in this tracker or its data source, not an official record."
+    },
+    "footer": {
+      "contactNotice": "Questions about a specific asset, or a rights holder who'd like something addressed? Open an issue on the project's repository."
+    }
+  }
+}

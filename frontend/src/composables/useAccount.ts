@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { i18n } from '@/i18n'
 import { accountService } from '@/services/accountService'
 import { ApiError } from '@/services/httpClient'
 
@@ -6,9 +7,9 @@ function describe(error: unknown): string {
   if (error instanceof ApiError) {
     const body = error.body as { errors?: Record<string, string[]>, error?: string, detail?: string } | null
     const firstValidationError = body?.errors ? Object.values(body.errors)[0]?.[0] : undefined
-    return firstValidationError ?? body?.error ?? body?.detail ?? `Request failed (${error.status}).`
+    return firstValidationError ?? body?.error ?? body?.detail ?? i18n.global.t('errors.requestFailed', { status: error.status })
   }
-  return 'Something went wrong. Please try again.'
+  return i18n.global.t('errors.generic')
 }
 
 /**

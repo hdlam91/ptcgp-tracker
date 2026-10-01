@@ -28,6 +28,24 @@ public class AccountEndpointsTests(PostgresApiFixture fixture)
     }
 
     [Fact]
+    public async Task UpdateLocale_DefaultsToEnglish_AndRoundTripsThroughMe()
+    {
+        var client = await fixture.Factory.CreateAuthenticatedClientAsync();
+
+        var before = await client.GetFromJsonAsync<JsonElement>("/api/auth/me");
+        Assert.Equal("en", before.GetProperty("preferredLocale").GetString());
+
+        var unsupported = await client.PostAsJsonAsync("/api/account/locale", new { locale = "xx" });
+        Assert.Equal(HttpStatusCode.BadRequest, unsupported.StatusCode);
+
+        var update = await client.PostAsJsonAsync("/api/account/locale", new { locale = "en" });
+        Assert.Equal(HttpStatusCode.NoContent, update.StatusCode);
+
+        var after = await client.GetFromJsonAsync<JsonElement>("/api/auth/me");
+        Assert.Equal("en", after.GetProperty("preferredLocale").GetString());
+    }
+
+    [Fact]
     public async Task ChangePassword_ThenLoginWithOldPassword_Fails_NewPassword_Works()
     {
         var email = $"{Guid.NewGuid()}@example.com";

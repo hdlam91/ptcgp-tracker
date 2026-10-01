@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -8,29 +9,31 @@ defineProps<{
 }>()
 
 defineEmits<{ (e: 'toggle'): void }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
   <Card>
     <CardHeader>
       <CardTitle class="text-base">
-        New registrations
+        {{ t('admin.registration.title') }}
       </CardTitle>
       <CardDescription>
         <template v-if="open === null">
-          Loading…
+          {{ t('admin.registration.loading') }}
         </template>
         <template v-else-if="open">
-          Open — anyone can create an account.
+          {{ t('admin.registration.openDescription') }}
         </template>
         <template v-else>
-          Closed — the sign-up page is disabled. Existing users can still log in.
+          {{ t('admin.registration.closedDescription') }}
         </template>
       </CardDescription>
     </CardHeader>
     <CardContent>
       <Button variant="outline" :disabled="busy || open === null" @click="$emit('toggle')">
-        {{ open ? 'Close registration' : 'Open registration' }}
+        {{ open ? t('admin.registration.close') : t('admin.registration.open') }}
       </Button>
     </CardContent>
   </Card>

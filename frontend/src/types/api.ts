@@ -3,6 +3,7 @@ export interface UserResponse {
   email: string
   displayName: string
   isAdmin: boolean
+  preferredLocale: string
 }
 
 /**

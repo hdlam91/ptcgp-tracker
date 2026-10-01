@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { navLinks } from '@/components/layout/navLinks'
 import { cn } from '@/lib/utils'
 
 // Horizontal by default (the inline header menu); vertical is the list inside the hamburger dropdown.
 defineProps<{ vertical?: boolean }>()
+
+const { t } = useI18n()
 
 function linkClass({ isActive }: { isActive: boolean }) {
   return isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
@@ -23,10 +26,10 @@ function linkClass({ isActive }: { isActive: boolean }) {
         :aria-current="isActive ? 'page' : undefined"
         @click="navigate"
       >
-        <template v-if="vertical || !link.shortLabel">{{ link.label }}</template>
+        <template v-if="vertical || !link.hasShortLabel">{{ t(`layout.nav.${link.key}`) }}</template>
         <template v-else>
-          <span class="sm:hidden">{{ link.shortLabel }}</span>
-          <span class="hidden sm:inline">{{ link.label }}</span>
+          <span class="sm:hidden">{{ t(`layout.nav.${link.key}Short`) }}</span>
+          <span class="hidden sm:inline">{{ t(`layout.nav.${link.key}`) }}</span>
         </template>
       </a>
     </RouterLink>

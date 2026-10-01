@@ -14,7 +14,7 @@ public record ConfirmEmailRequest(string Email, string Token);
 
 public record ResendConfirmationRequest(string Email);
 
-public record UserResponse(Guid Id, string Email, string DisplayName, bool IsAdmin);
+public record UserResponse(Guid Id, string Email, string DisplayName, bool IsAdmin, string PreferredLocale);
 
 /// <summary>
 /// <see cref="User"/> is null exactly when <see cref="RequiresTwoFactor"/> or

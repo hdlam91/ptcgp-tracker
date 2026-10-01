@@ -2,6 +2,7 @@
 import { LogOut, Menu, Moon, Settings, Sun, UserCog, X } from '@lucide/vue'
 import { useEventListener, useResizeObserver } from '@vueuse/core'
 import { nextTick, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import AppNav from '@/components/layout/AppNav.vue'
 import HeaderActions from '@/components/layout/HeaderActions.vue'
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/composables/useAuth'
 import { useTheme } from '@/composables/useTheme'
 
+const { t } = useI18n()
 const { currentUser, isAdmin, logout } = useAuth()
 const { isDark, toggleTheme } = useTheme()
 const router = useRouter()
@@ -89,8 +91,8 @@ useEventListener(document, 'keydown', (event: KeyboardEvent) => {
     <div ref="leftEl" class="flex min-w-0 items-center gap-3 sm:gap-6">
       <!-- Never shrinks: its width feeds the "does the menu fit?" calculation, so it must be its natural width. -->
       <div ref="brandEl" class="flex shrink-0 items-center">
-        <span class="whitespace-nowrap text-base font-semibold sm:hidden">PTCGP</span>
-        <span class="hidden whitespace-nowrap text-base font-semibold sm:inline sm:text-lg">PTCGP Tracker</span>
+        <span class="whitespace-nowrap text-base font-semibold sm:hidden">{{ t('layout.header.brandShort') }}</span>
+        <span class="hidden whitespace-nowrap text-base font-semibold sm:inline sm:text-lg">{{ t('layout.header.brandFull') }}</span>
       </div>
       <AppNav v-if="!collapsed" />
     </div>
@@ -101,7 +103,7 @@ useEventListener(document, 'keydown', (event: KeyboardEvent) => {
       variant="outline"
       size="icon"
       class="shrink-0"
-      :aria-label="open ? 'Close menu' : 'Open menu'"
+      :aria-label="open ? t('layout.header.closeMenu') : t('layout.header.openMenu')"
       :aria-expanded="open"
       aria-controls="app-menu"
       @click="open = !open"
@@ -138,7 +140,7 @@ useEventListener(document, 'keydown', (event: KeyboardEvent) => {
           active-class="font-medium text-foreground"
         >
           <UserCog class="size-4" />
-          Account
+          {{ t('layout.header.account') }}
         </RouterLink>
         <RouterLink
           v-if="isAdmin"
@@ -147,16 +149,16 @@ useEventListener(document, 'keydown', (event: KeyboardEvent) => {
           active-class="font-medium text-foreground"
         >
           <Settings class="size-4" />
-          Settings
+          {{ t('layout.header.settings') }}
         </RouterLink>
         <button type="button" class="flex w-full items-center gap-3 px-4 py-3 text-left text-base hover:bg-accent" @click="toggleTheme">
           <Sun v-if="isDark" class="size-4" />
           <Moon v-else class="size-4" />
-          {{ isDark ? 'Switch to light mode' : 'Switch to dark mode' }}
+          {{ isDark ? t('layout.header.switchToLightMode') : t('layout.header.switchToDarkMode') }}
         </button>
         <button type="button" class="flex w-full items-center gap-3 px-4 py-3 text-left text-base hover:bg-accent" @click="onLogout">
           <LogOut class="size-4" />
-          Log out
+          {{ t('layout.header.logOut') }}
         </button>
       </div>
     </div>

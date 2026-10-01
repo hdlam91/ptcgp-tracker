@@ -1,14 +1,15 @@
 import type { AdminUserResponse, CatalogStatusResponse, ImageMirrorStatusResponse } from '@/types/api'
 import { computed, onScopeDispose, ref } from 'vue'
+import { i18n } from '@/i18n'
 import { adminService } from '@/services/adminService'
 import { ApiError } from '@/services/httpClient'
 
 function describe(error: unknown): string {
   if (error instanceof ApiError) {
     const body = error.body as { error?: string, detail?: string } | null
-    return body?.error ?? body?.detail ?? `Request failed (${error.status}).`
+    return body?.error ?? body?.detail ?? i18n.global.t('errors.requestFailed', { status: error.status })
   }
-  return 'Something went wrong. Please try again.'
+  return i18n.global.t('errors.generic')
 }
 
 /** State and actions for the admin settings page. Local to the page, not a shared singleton. */

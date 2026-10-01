@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { nextTick, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAccount } from '@/composables/useAccount'
 
+const { t } = useI18n()
 const { busy, error, getTwoFactorStatus, setupTwoFactor, enableTwoFactor, disableTwoFactor, regenerateRecoveryCodes } = useAccount()
 
 const enabled = ref<boolean | null>(null)
@@ -81,17 +83,17 @@ async function confirmRegenerate() {
   <Card>
     <CardHeader>
       <CardTitle class="text-base">
-        Two-factor authentication
+        {{ t('account.twoFactor.title') }}
       </CardTitle>
       <CardDescription>
         <template v-if="enabled === null">
-          Loading…
+          {{ t('account.twoFactor.loading') }}
         </template>
         <template v-else-if="enabled">
-          Enabled — an authenticator app code is required to log in.
+          {{ t('account.twoFactor.enabledDescription') }}
         </template>
         <template v-else>
-          Off — add an authenticator app for an extra step at login.
+          {{ t('account.twoFactor.disabledDescription') }}
         </template>
       </CardDescription>
     </CardHeader>
@@ -99,10 +101,10 @@ async function confirmRegenerate() {
       <!-- Recovery codes: shown once, right after (re)generating them. -->
       <div v-if="recoveryCodes" class="flex flex-col gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-950">
         <p class="font-medium">
-          Save these recovery codes somewhere safe
+          {{ t('account.twoFactor.saveRecoveryCodesTitle') }}
         </p>
         <p class="text-muted-foreground">
-          Each one lets you log in once if you lose access to your authenticator app. They won't be shown again.
+          {{ t('account.twoFactor.saveRecoveryCodesDescription') }}
         </p>
         <ul class="grid grid-cols-2 gap-1 rounded bg-background p-2 font-mono text-sm">
           <li v-for="recoveryCode in recoveryCodes" :key="recoveryCode">
@@ -110,26 +112,26 @@ async function confirmRegenerate() {
           </li>
         </ul>
         <Button size="sm" class="self-start" @click="recoveryCodes = null">
-          I've saved these
+          {{ t('account.twoFactor.savedRecoveryCodes') }}
         </Button>
       </div>
 
       <template v-else-if="enabled === false && !settingUp">
         <Button class="self-start" @click="startSetup">
-          Enable two-factor
+          {{ t('account.twoFactor.enable') }}
         </Button>
       </template>
 
       <form v-else-if="settingUp" class="flex flex-col gap-3" @submit.prevent="confirmEnable">
         <p class="text-sm text-muted-foreground">
-          Scan this with your authenticator app, or enter the key manually, then enter the 6-digit code it shows.
+          {{ t('account.twoFactor.setupInstructions') }}
         </p>
         <canvas ref="qrCanvas" class="rounded-md border" />
         <p class="break-all rounded-md border bg-muted px-2 py-1.5 font-mono text-sm">
           {{ sharedKey }}
         </p>
         <div class="flex flex-col gap-1.5">
-          <Label for="totp-code">Code</Label>
+          <Label for="totp-code">{{ t('account.twoFactor.code') }}</Label>
           <Input id="totp-code" v-model="code" inputmode="numeric" autocomplete="one-time-code" required />
         </div>
         <p v-if="error" class="text-sm text-destructive">
@@ -137,10 +139,10 @@ async function confirmRegenerate() {
         </p>
         <div class="flex items-center gap-2">
           <Button type="submit" :disabled="busy">
-            {{ busy ? 'Enabling…' : 'Enable' }}
+            {{ busy ? t('account.twoFactor.enabling') : t('account.twoFactor.confirmEnable') }}
           </Button>
           <Button type="button" variant="outline" :disabled="busy" @click="cancelSetup">
-            Cancel
+            {{ t('account.twoFactor.cancel') }}
           </Button>
         </div>
       </form>
@@ -148,15 +150,15 @@ async function confirmRegenerate() {
       <template v-else-if="enabled">
         <div v-if="!disabling && !regenerating" class="flex flex-wrap items-center gap-2">
           <Button variant="outline" @click="regenerating = true">
-            Regenerate recovery codes
+            {{ t('account.twoFactor.regenerateRecoveryCodes') }}
           </Button>
           <Button variant="destructive" @click="disabling = true">
-            Disable
+            {{ t('account.twoFactor.disable') }}
           </Button>
         </div>
         <form v-else class="flex flex-col gap-3" @submit.prevent="disabling ? confirmDisable() : confirmRegenerate()">
           <div class="flex flex-col gap-1.5">
-            <Label for="twofactor-current-password">Current password</Label>
+            <Label for="twofactor-current-password">{{ t('account.twoFactor.currentPassword') }}</Label>
             <Input id="twofactor-current-password" v-model="currentPassword" type="password" autocomplete="current-password" required />
           </div>
           <p v-if="error" class="text-sm text-destructive">
@@ -164,10 +166,10 @@ async function confirmRegenerate() {
           </p>
           <div class="flex items-center gap-2">
             <Button type="submit" :variant="disabling ? 'destructive' : 'default'" :disabled="busy">
-              {{ busy ? 'Confirming…' : disabling ? 'Yes, disable' : 'Regenerate' }}
+              {{ busy ? t('account.twoFactor.confirming') : disabling ? t('account.twoFactor.confirmDisable') : t('account.twoFactor.confirmRegenerate') }}
             </Button>
             <Button type="button" variant="outline" :disabled="busy" @click="disabling = false; regenerating = false; currentPassword = ''">
-              Cancel
+              {{ t('account.twoFactor.cancel') }}
             </Button>
           </div>
         </form>

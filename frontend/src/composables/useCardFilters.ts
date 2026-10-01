@@ -3,6 +3,7 @@ import type { AbilityFilter, CardTypeFilter, EnergyType, EvolutionFilter, Filter
 import type { CardCatalogEntry, ExpansionEntry } from '@/types/catalog'
 import { computed, ref, watch } from 'vue'
 import { useCardCatalog } from '@/composables/useCardCatalog'
+import { i18n } from '@/i18n'
 import {
   ABILITY_OPTIONS,
 
@@ -36,17 +37,17 @@ const STAR_TIERS: Record<string, number> = { '☆': 1, '☆☆': 2, '☆☆☆':
 /** Plain-English name for a rarity filter value, for accessible labels — never shown as visible text. */
 export function rarityFilterLabel(rarity: RarityFilter | ''): string {
   if (rarity === '')
-    return 'Any rarity'
+    return i18n.global.t('cards.filters.anyRarity')
   if (rarity === 'Crown Rare' || rarity === 'Promo')
     return rarity
   if (rarity.endsWith(' Shiny')) {
     const n = STAR_TIERS[rarity.slice(0, -' Shiny'.length)] ?? 1
-    return `${n} star${n > 1 ? 's' : ''} Shiny`
+    return i18n.global.t('cards.filters.shinyCount', { n }, n)
   }
   if (rarity in DIAMOND_TIERS)
-    return `${DIAMOND_TIERS[rarity]} diamond${DIAMOND_TIERS[rarity] > 1 ? 's' : ''}`
+    return i18n.global.t('cards.filters.diamondCount', { n: DIAMOND_TIERS[rarity] }, DIAMOND_TIERS[rarity])
   const n = STAR_TIERS[rarity] ?? 1
-  return `${n} star${n > 1 ? 's' : ''}`
+  return i18n.global.t('cards.filters.starCount', { n }, n)
 }
 
 // Dropdown order: all diamond tiers, then all star tiers, then all shiny tiers (grouped

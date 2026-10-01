@@ -6,6 +6,8 @@ public record ChangeEmailRequest(string NewEmail, string CurrentPassword);
 
 public record DeleteAccountRequest(string CurrentPassword);
 
+public record UpdateLocaleRequest(string Locale);
+
 public record TwoFactorStatusResponse(bool Enabled);
 
 public record TwoFactorSetupResponse(string SharedKey, string OtpAuthUri);

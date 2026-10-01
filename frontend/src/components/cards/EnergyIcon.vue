@@ -3,6 +3,7 @@ import type { Component } from 'vue'
 import type { EnergyType } from '@/lib/cardMetadata'
 import { Cog, Droplet, Eye, Flame, HandFist, Leaf, Moon, Sparkles, Star, Zap } from '@lucide/vue'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { cn } from '@/lib/utils'
 
 const props = withDefaults(defineProps<{
@@ -28,12 +29,14 @@ const STYLES: Record<EnergyType, { icon: Component, solid: boolean, classes: str
 }
 
 const style = computed(() => STYLES[props.type])
+
+const { t } = useI18n()
 </script>
 
 <template>
   <span
     role="img"
-    :aria-label="`${type} energy`"
+    :aria-label="t('cards.energyIcon.ariaLabel', { type })"
     :title="type"
     :class="cn(
       'inline-flex shrink-0 select-none items-center justify-center rounded-full',

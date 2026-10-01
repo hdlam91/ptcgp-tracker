@@ -1,6 +1,7 @@
 import type { ComputedRef, Ref } from 'vue'
 import type { CardCatalogEntry } from '@/types/catalog'
 import { computed } from 'vue'
+import { i18n } from '@/i18n'
 
 export interface RarityGroup {
   key: string
@@ -14,11 +15,11 @@ export interface RarityGroup {
 // completion" is how players talk about a set's rarity ladder, not the individual tiers.
 // Shiny cards carry a ☆/☆☆ rarity in the dataset but are their own collecting goal, so they
 // count under "shiny" only, not under "star".
-const RARITY_GROUPS: { key: string, label: string, matches: (card: CardCatalogEntry) => boolean }[] = [
-  { key: 'diamond', label: 'Diamond', matches: card => ['◊', '◊◊', '◊◊◊', '◊◊◊◊'].includes(card.rarity) },
-  { key: 'star', label: 'Star', matches: card => ['☆', '☆☆', '☆☆☆'].includes(card.rarity) && !card.shiny },
-  { key: 'shiny', label: 'Shiny', matches: card => card.shiny === true },
-  { key: 'crown', label: 'Crown', matches: card => card.rarity === 'Crown Rare' },
+const RARITY_GROUPS: { key: string, labelKey: string, matches: (card: CardCatalogEntry) => boolean }[] = [
+  { key: 'diamond', labelKey: 'cards.rarityGroups.diamond', matches: card => ['◊', '◊◊', '◊◊◊', '◊◊◊◊'].includes(card.rarity) },
+  { key: 'star', labelKey: 'cards.rarityGroups.star', matches: card => ['☆', '☆☆', '☆☆☆'].includes(card.rarity) && !card.shiny },
+  { key: 'shiny', labelKey: 'cards.rarityGroups.shiny', matches: card => card.shiny === true },
+  { key: 'crown', labelKey: 'cards.rarityGroups.crown', matches: card => card.rarity === 'Crown Rare' },
 ]
 
 /**
@@ -31,12 +32,12 @@ export function computeRarityGroups(
   getOwnedCount: (cardId: string) => number,
 ): RarityGroup[] {
   return RARITY_GROUPS
-    .map(({ key, label, matches }) => {
+    .map(({ key, labelKey, matches }) => {
       const cardsInGroup = cards.filter(matches)
       const missingCardIds = cardsInGroup.filter(card => getOwnedCount(card.id) === 0).map(card => card.id)
       return {
         key,
-        label,
+        label: i18n.global.t(labelKey),
         total: cardsInGroup.length,
         owned: cardsInGroup.length - missingCardIds.length,
         missingCardIds,

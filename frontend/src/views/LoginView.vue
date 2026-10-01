@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,6 +11,7 @@ import { useAuth } from '@/composables/useAuth'
 import { authService } from '@/services/authService'
 import { ApiError } from '@/services/httpClient'
 
+const { t } = useI18n()
 const email = ref('')
 const password = ref('')
 const errorMessage = ref('')
@@ -53,8 +55,8 @@ async function onSubmit() {
   }
   catch (error) {
     errorMessage.value = error instanceof ApiError && error.status === 401
-      ? 'Incorrect email or password.'
-      : 'Something went wrong. Please try again.'
+      ? t('login.incorrectCredentials')
+      : t('errors.generic')
   }
   finally {
     isSubmitting.value = false
@@ -81,8 +83,8 @@ async function onSubmitTwoFactor() {
   }
   catch (error) {
     errorMessage.value = error instanceof ApiError && error.status === 401
-      ? (isRecoveryCode.value ? 'That recovery code isn\'t valid.' : 'That code isn\'t valid.')
-      : 'Something went wrong. Please try again.'
+      ? (isRecoveryCode.value ? t('login.incorrectRecoveryCode') : t('login.incorrectCode'))
+      : t('errors.generic')
   }
   finally {
     isSubmitting.value = false
@@ -95,20 +97,20 @@ async function onSubmitTwoFactor() {
     <Card class="w-full max-w-sm">
       <template v-if="!awaitingTwoFactor && !awaitingEmailConfirmation">
         <CardHeader>
-          <CardTitle>Log in</CardTitle>
-          <CardDescription>Track your Pokémon TCG Pocket collection.</CardDescription>
+          <CardTitle>{{ t('login.title') }}</CardTitle>
+          <CardDescription>{{ t('login.description') }}</CardDescription>
         </CardHeader>
         <CardContent>
           <form class="flex flex-col gap-4" @submit.prevent="onSubmit">
             <div class="flex flex-col gap-1.5">
-              <Label for="email">Email</Label>
+              <Label for="email">{{ t('login.email') }}</Label>
               <Input id="email" v-model="email" type="email" autocomplete="email" required />
             </div>
             <div class="flex flex-col gap-1.5">
               <div class="flex items-center justify-between">
-                <Label for="password">Password</Label>
+                <Label for="password">{{ t('login.password') }}</Label>
                 <RouterLink to="/forgot-password" class="text-sm text-muted-foreground underline-offset-4 hover:underline">
-                  Forgot password?
+                  {{ t('login.forgotPassword') }}
                 </RouterLink>
               </div>
               <Input id="password" v-model="password" type="password" autocomplete="current-password" required />
@@ -117,13 +119,13 @@ async function onSubmitTwoFactor() {
               {{ errorMessage }}
             </p>
             <Button type="submit" :disabled="isSubmitting">
-              {{ isSubmitting ? 'Logging in…' : 'Log in' }}
+              {{ isSubmitting ? t('login.submitting') : t('login.submit') }}
             </Button>
           </form>
           <p v-if="registrationOpen" class="mt-4 text-center text-sm text-muted-foreground">
-            Don't have an account?
+            {{ t('login.noAccount') }}
             <RouterLink to="/register" class="font-medium text-primary underline-offset-4 hover:underline">
-              Sign up
+              {{ t('login.signUp') }}
             </RouterLink>
           </p>
         </CardContent>
@@ -131,37 +133,37 @@ async function onSubmitTwoFactor() {
 
       <template v-else-if="awaitingEmailConfirmation">
         <CardHeader>
-          <CardTitle>Confirm your email</CardTitle>
-          <CardDescription>You need to confirm {{ email }} before you can log in.</CardDescription>
+          <CardTitle>{{ t('login.confirmEmailTitle') }}</CardTitle>
+          <CardDescription>{{ t('login.confirmEmailDescription', { email }) }}</CardDescription>
         </CardHeader>
         <CardContent class="flex flex-col gap-4">
           <p v-if="resendSent" class="text-sm text-muted-foreground">
-            Check your inbox for the confirmation link.
+            {{ t('login.checkInbox') }}
           </p>
           <Button v-else :disabled="isSubmitting" @click="onResendConfirmation">
-            {{ isSubmitting ? 'Sending…' : 'Resend confirmation email' }}
+            {{ isSubmitting ? t('login.resending') : t('login.resendConfirmation') }}
           </Button>
           <button
             type="button"
             class="text-center text-sm font-medium text-primary underline-offset-4 hover:underline"
             @click="awaitingEmailConfirmation = false; resendSent = false"
           >
-            Back to log in
+            {{ t('login.backToLogin') }}
           </button>
         </CardContent>
       </template>
 
       <template v-else>
         <CardHeader>
-          <CardTitle>Two-factor authentication</CardTitle>
+          <CardTitle>{{ t('login.twoFactorTitle') }}</CardTitle>
           <CardDescription>
-            {{ isRecoveryCode ? 'Enter one of your recovery codes.' : 'Enter the 6-digit code from your authenticator app.' }}
+            {{ isRecoveryCode ? t('login.enterRecoveryCode') : t('login.enterAuthenticatorCode') }}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form class="flex flex-col gap-4" @submit.prevent="onSubmitTwoFactor">
             <div class="flex flex-col gap-1.5">
-              <Label for="code">{{ isRecoveryCode ? 'Recovery code' : 'Code' }}</Label>
+              <Label for="code">{{ isRecoveryCode ? t('login.recoveryCode') : t('login.code') }}</Label>
               <Input
                 id="code" v-model="code" :inputmode="isRecoveryCode ? 'text' : 'numeric'"
                 autocomplete="one-time-code" autofocus required
@@ -169,13 +171,13 @@ async function onSubmitTwoFactor() {
             </div>
             <label class="flex items-center gap-2 text-sm">
               <input v-model="rememberDevice" type="checkbox" class="size-4 rounded border-input">
-              Remember this device for 30 days
+              {{ t('login.rememberDevice') }}
             </label>
             <p v-if="errorMessage" class="text-sm text-destructive">
               {{ errorMessage }}
             </p>
             <Button type="submit" :disabled="isSubmitting">
-              {{ isSubmitting ? 'Verifying…' : 'Verify' }}
+              {{ isSubmitting ? t('login.verifying') : t('login.verify') }}
             </Button>
           </form>
           <button
@@ -183,7 +185,7 @@ async function onSubmitTwoFactor() {
             class="mt-4 w-full text-center text-sm font-medium text-primary underline-offset-4 hover:underline"
             @click="isRecoveryCode = !isRecoveryCode; code = ''; errorMessage = ''"
           >
-            {{ isRecoveryCode ? 'Use an authenticator code instead' : 'Use a recovery code instead' }}
+            {{ isRecoveryCode ? t('login.useAuthenticatorCodeInstead') : t('login.useRecoveryCodeInstead') }}
           </button>
         </CardContent>
       </template>

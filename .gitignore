@@ -37,5 +37,8 @@ docker-compose.override.yml
 # Database
 *.sql.bak
 
-# Card art downloaded by a locally run backend (see Images:Directory)
+# Card art downloaded by a locally run backend (see Images:Directory). On a case-insensitive
+# filesystem (macOS/Windows default), this pattern also matches Data/ (the EF Core folder) —
+# the negation below is required so Data/ (and anything new added under it) stays tracked.
 backend/src/PtcgpTracker.Api/data/
+!backend/src/PtcgpTracker.Api/Data/

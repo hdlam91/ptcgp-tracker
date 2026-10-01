@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -8,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { authService } from '@/services/authService'
 import { ApiError } from '@/services/httpClient'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const email = typeof route.query.email === 'string' ? route.query.email : ''
@@ -31,7 +33,7 @@ async function onSubmit() {
     await router.push('/login')
   }
   catch (error) {
-    errorMessage.value = error instanceof ApiError ? describeResetError(error) : 'Something went wrong. Please try again.'
+    errorMessage.value = error instanceof ApiError ? describeResetError(error) : t('errors.generic')
   }
   finally {
     isSubmitting.value = false
@@ -41,7 +43,7 @@ async function onSubmit() {
 function describeResetError(error: ApiError): string {
   const body = error.body as { errors?: Record<string, string[]> } | null
   const firstError = body?.errors ? Object.values(body.errors)[0]?.[0] : undefined
-  return firstError ?? 'Could not reset your password. Please check your details.'
+  return firstError ?? t('resetPassword.genericError')
 }
 </script>
 
@@ -49,37 +51,37 @@ function describeResetError(error: ApiError): string {
   <div class="flex min-h-screen items-center justify-center bg-muted/40 px-4">
     <Card class="w-full max-w-sm">
       <CardHeader>
-        <CardTitle>Reset password</CardTitle>
-        <CardDescription>Choose a new password for {{ email }}.</CardDescription>
+        <CardTitle>{{ t('resetPassword.title') }}</CardTitle>
+        <CardDescription>{{ t('resetPassword.description', { email }) }}</CardDescription>
       </CardHeader>
       <CardContent>
         <template v-if="!email || !token">
           <p class="text-sm text-destructive">
-            This reset link is missing information. Request a new one.
+            {{ t('resetPassword.missingInfo') }}
           </p>
         </template>
         <form v-else class="flex flex-col gap-4" @submit.prevent="onSubmit">
           <div class="flex flex-col gap-1.5">
-            <Label for="new-password">New password</Label>
+            <Label for="new-password">{{ t('resetPassword.newPassword') }}</Label>
             <Input id="new-password" v-model="newPassword" type="password" autocomplete="new-password" required />
           </div>
           <div class="flex flex-col gap-1.5">
-            <Label for="confirm-password">Confirm new password</Label>
+            <Label for="confirm-password">{{ t('resetPassword.confirmPassword') }}</Label>
             <Input id="confirm-password" v-model="confirmPassword" type="password" autocomplete="new-password" required />
           </div>
           <p v-if="mismatch" class="text-sm text-destructive">
-            Those passwords don't match.
+            {{ t('account.password.mismatch') }}
           </p>
           <p v-else-if="errorMessage" class="text-sm text-destructive">
             {{ errorMessage }}
           </p>
           <Button type="submit" :disabled="isSubmitting">
-            {{ isSubmitting ? 'Resetting…' : 'Reset password' }}
+            {{ isSubmitting ? t('resetPassword.submitting') : t('resetPassword.submit') }}
           </Button>
         </form>
         <p class="mt-4 text-center text-sm text-muted-foreground">
           <RouterLink to="/forgot-password" class="font-medium text-primary underline-offset-4 hover:underline">
-            Request a new link
+            {{ t('resetPassword.requestNewLink') }}
           </RouterLink>
         </p>
       </CardContent>

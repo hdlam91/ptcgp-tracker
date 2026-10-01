@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { AdminUserResponse } from '@/types/api'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 
 defineProps<{
@@ -16,6 +17,8 @@ defineEmits<{
   (e: 'delete', user: AdminUserResponse): void
 }>()
 
+const { t } = useI18n()
+
 // Deleting is destructive and permanent, so it takes a second, explicit click.
 const confirmingDeleteId = ref<string | null>(null)
 </script>
@@ -26,25 +29,25 @@ const confirmingDeleteId = ref<string | null>(null)
       <thead class="text-xs uppercase tracking-wide text-muted-foreground">
         <tr class="border-b">
           <th class="py-2 pr-4 font-medium">
-            User
+            {{ t('admin.users.columnUser') }}
           </th>
           <th class="py-2 pr-4 font-medium">
-            Joined
+            {{ t('admin.users.columnJoined') }}
           </th>
           <th class="py-2 pr-4 text-right font-medium">
-            Cards
+            {{ t('admin.users.columnCards') }}
           </th>
           <th class="py-2 pr-4 text-right font-medium">
-            Want
+            {{ t('admin.users.columnWant') }}
           </th>
           <th class="py-2 pr-4 text-right font-medium">
-            Offer
+            {{ t('admin.users.columnOffer') }}
           </th>
           <th class="py-2 pr-4 font-medium">
-            Share link
+            {{ t('admin.users.columnShareLink') }}
           </th>
           <th class="py-2 text-right font-medium">
-            Actions
+            {{ t('admin.users.columnActions') }}
           </th>
         </tr>
       </thead>
@@ -56,12 +59,12 @@ const confirmingDeleteId = ref<string | null>(null)
               <span
                 v-if="user.isAdmin"
                 class="rounded-full border border-sky-300 bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-700 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-300"
-              >Admin</span>
+              >{{ t('admin.users.adminBadge') }}</span>
               <span
                 v-if="!user.emailConfirmed"
                 class="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300"
-              >Unconfirmed</span>
-              <span v-if="user.id === currentUserId" class="text-xs text-muted-foreground">(you)</span>
+              >{{ t('admin.users.unconfirmedBadge') }}</span>
+              <span v-if="user.id === currentUserId" class="text-xs text-muted-foreground">{{ t('admin.users.you') }}</span>
             </div>
             <div class="text-xs text-muted-foreground">
               {{ user.email }}
@@ -83,31 +86,31 @@ const confirmingDeleteId = ref<string | null>(null)
             <div v-if="user.shareHandle" class="flex items-center gap-2">
               <a :href="`/share/${user.shareHandle}`" target="_blank" rel="noopener" class="text-primary underline-offset-4 hover:underline">/share/{{ user.shareHandle }}</a>
               <Button variant="ghost" size="sm" :disabled="busy" @click="$emit('disableShare', user)">
-                Disable
+                {{ t('admin.users.disableShare') }}
               </Button>
             </div>
-            <span v-else class="text-muted-foreground">—</span>
+            <span v-else class="text-muted-foreground">{{ t('admin.users.notApplicable') }}</span>
           </td>
           <td class="py-3 text-right">
-            <span v-if="user.id === currentUserId" class="text-xs text-muted-foreground">—</span>
+            <span v-if="user.id === currentUserId" class="text-xs text-muted-foreground">{{ t('admin.users.notApplicable') }}</span>
             <div v-else-if="confirmingDeleteId === user.id" class="flex items-center justify-end gap-2">
-              <span class="text-xs text-muted-foreground">Delete {{ user.displayName }} and all their data?</span>
+              <span class="text-xs text-muted-foreground">{{ t('admin.users.confirmDeleteText', { name: user.displayName }) }}</span>
               <Button variant="destructive" size="sm" :disabled="busy" @click="$emit('delete', user); confirmingDeleteId = null">
-                Yes, delete
+                {{ t('admin.users.confirmDelete') }}
               </Button>
               <Button variant="outline" size="sm" @click="confirmingDeleteId = null">
-                Cancel
+                {{ t('admin.users.cancel') }}
               </Button>
             </div>
             <div v-else class="flex items-center justify-end gap-2">
               <Button v-if="!user.emailConfirmed" variant="outline" size="sm" :disabled="busy" @click="$emit('resendConfirmation', user)">
-                Resend
+                {{ t('admin.users.resend') }}
               </Button>
               <Button variant="outline" size="sm" :disabled="busy" @click="$emit('setAdmin', user, !user.isAdmin)">
-                {{ user.isAdmin ? 'Remove admin' : 'Make admin' }}
+                {{ user.isAdmin ? t('admin.users.removeAdmin') : t('admin.users.makeAdmin') }}
               </Button>
               <Button variant="outline" size="sm" :disabled="busy" @click="confirmingDeleteId = user.id">
-                Delete
+                {{ t('admin.users.delete') }}
               </Button>
             </div>
           </td>

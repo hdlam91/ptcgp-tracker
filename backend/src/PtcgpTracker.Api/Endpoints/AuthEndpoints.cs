@@ -63,7 +63,7 @@ public static class AuthEndpoints
             await userManager.UpdateAsync(user);
 
             await signInManager.SignInAsync(user, isPersistent: true);
-            return Results.Created($"/api/auth/me", new RegisterResponse(false, new UserResponse(user.Id, user.Email!, user.DisplayName, isAdmin)));
+            return Results.Created($"/api/auth/me", new RegisterResponse(false, new UserResponse(user.Id, user.Email!, user.DisplayName, isAdmin, user.PreferredLocale)));
         });
 
         group.MapPost("/login", async (
@@ -96,7 +96,7 @@ public static class AuthEndpoints
             }
 
             var isAdmin = await userManager.IsInRoleAsync(user!, AppRoles.Admin);
-            return Results.Ok(new LoginResponse(false, false, new UserResponse(user!.Id, user.Email!, user.DisplayName, isAdmin)));
+            return Results.Ok(new LoginResponse(false, false, new UserResponse(user!.Id, user.Email!, user.DisplayName, isAdmin, user.PreferredLocale)));
         });
 
         group.MapPost("/login/2fa", async (
@@ -130,7 +130,7 @@ public static class AuthEndpoints
             }
 
             var isAdmin = await userManager.IsInRoleAsync(user, AppRoles.Admin);
-            return Results.Ok(new LoginResponse(false, false, new UserResponse(user.Id, user.Email!, user.DisplayName, isAdmin)));
+            return Results.Ok(new LoginResponse(false, false, new UserResponse(user.Id, user.Email!, user.DisplayName, isAdmin, user.PreferredLocale)));
         });
 
         group.MapPost("/confirm-email", async (
@@ -156,7 +156,7 @@ public static class AuthEndpoints
             // One less step: confirming signs you in immediately.
             await signInManager.SignInAsync(user, isPersistent: true);
             var isAdmin = await userManager.IsInRoleAsync(user, AppRoles.Admin);
-            return Results.Ok(new UserResponse(user.Id, user.Email!, user.DisplayName, isAdmin));
+            return Results.Ok(new UserResponse(user.Id, user.Email!, user.DisplayName, isAdmin, user.PreferredLocale));
         });
 
         group.MapPost("/resend-confirmation", async (
@@ -237,7 +237,7 @@ public static class AuthEndpoints
             var user = await userManager.GetUserAsync(principal);
             return user is null
                 ? Results.Unauthorized()
-                : Results.Ok(new UserResponse(user.Id, user.Email!, user.DisplayName, principal.IsInRole(AppRoles.Admin)));
+                : Results.Ok(new UserResponse(user.Id, user.Email!, user.DisplayName, principal.IsInRole(AppRoles.Admin), user.PreferredLocale));
         }).RequireAuthorization();
     }
 

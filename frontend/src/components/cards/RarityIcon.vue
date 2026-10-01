@@ -2,10 +2,13 @@
 import type { RarityFilter } from '@/composables/useCardFilters'
 import { Crown, Diamond, Sparkles, Star } from '@lucide/vue'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{
   rarity: RarityFilter
 }>()
+
+const { t } = useI18n()
 
 const DIAMOND_TIERS: Record<string, number> = { '◊': 1, '◊◊': 2, '◊◊◊': 3, '◊◊◊◊': 4 }
 const STAR_TIERS: Record<string, number> = { '☆': 1, '☆☆': 2, '☆☆☆': 3 }
@@ -47,5 +50,5 @@ const parsed = computed(() => {
       fill="currentColor"
     />
   </span>
-  <span v-else class="text-xs font-medium">Promo</span>
+  <span v-else class="text-xs font-medium">{{ t('cards.rarityIcon.promo') }}</span>
 </template>

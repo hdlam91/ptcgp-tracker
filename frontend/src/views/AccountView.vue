@@ -1,11 +1,14 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import ChangeEmailCard from '@/components/account/ChangeEmailCard.vue'
 import ChangePasswordCard from '@/components/account/ChangePasswordCard.vue'
 import DeleteAccountCard from '@/components/account/DeleteAccountCard.vue'
+import LanguageCard from '@/components/account/LanguageCard.vue'
 import TwoFactorCard from '@/components/account/TwoFactorCard.vue'
 import { useAuth } from '@/composables/useAuth'
 
+const { t } = useI18n()
 const { currentUser, fetchCurrentUser } = useAuth()
 const router = useRouter()
 
@@ -21,16 +24,17 @@ async function onDeleted() {
 <template>
   <div class="mx-auto max-w-3xl p-4 sm:p-6">
     <h1 class="text-2xl font-semibold">
-      Account
+      {{ t('account.title') }}
     </h1>
     <p class="mt-1 text-muted-foreground">
-      Manage your login details and security.
+      {{ t('account.subtitle') }}
     </p>
 
     <div class="mt-6 flex flex-col gap-4">
       <ChangePasswordCard />
       <ChangeEmailCard v-if="currentUser" :current-email="currentUser.email" @changed="fetchCurrentUser" />
       <TwoFactorCard />
+      <LanguageCard />
       <DeleteAccountCard @deleted="onDeleted" />
     </div>
   </div>

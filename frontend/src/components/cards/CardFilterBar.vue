@@ -4,6 +4,7 @@ import type { AbilityFilter, CardTypeFilter, EnergyType, EvolutionFilter, Filter
 import type { ExpansionEntry } from '@/types/catalog'
 import { Search, SlidersHorizontal, X } from '@lucide/vue'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import RaritySelect from '@/components/cards/RaritySelect.vue'
 import SetTile from '@/components/cards/SetTile.vue'
 import { Button } from '@/components/ui/button'
@@ -35,6 +36,8 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{ (e: 'reset'): void }>()
 
+const { t } = useI18n()
+
 const search = defineModel<string>('search', { required: true })
 const setCode = defineModel<string>('setCode', { required: true })
 const rarity = defineModel<RarityFilter | ''>('rarity', { required: true })
@@ -60,12 +63,12 @@ const selectClass = 'h-10 rounded-md border border-input bg-background px-3 text
     <div class="flex flex-wrap items-center gap-2">
       <div class="relative min-w-[10rem] flex-1 sm:max-w-xs">
         <Search class="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input v-model="search" type="text" placeholder="Search name, number, attack, ability" class="pl-8" />
+        <Input v-model="search" type="text" :placeholder="t('cards.filterBar.searchPlaceholder')" class="pl-8" />
       </div>
 
-      <select v-if="setSelector === 'dropdown' && setOptions.length > 1" v-model="setCode" :class="selectClass" aria-label="Filter by set">
+      <select v-if="setSelector === 'dropdown' && setOptions.length > 1" v-model="setCode" :class="selectClass" :aria-label="t('cards.filterBar.filterBySet')">
         <option value="">
-          Any set
+          {{ t('cards.filterBar.anySet') }}
         </option>
         <option v-for="option in setOptions" :key="option.id" :value="option.id">
           {{ option.name }}
@@ -74,9 +77,9 @@ const selectClass = 'h-10 rounded-md border border-input bg-background px-3 text
 
       <RaritySelect v-model="rarity" :options="rarityOptions" />
 
-      <select v-if="packOptions.length > 1" v-model="pack" :class="selectClass" aria-label="Filter by pack">
+      <select v-if="packOptions.length > 1" v-model="pack" :class="selectClass" :aria-label="t('cards.filterBar.filterByPack')">
         <option value="">
-          Any pack
+          {{ t('cards.filterBar.anyPack') }}
         </option>
         <option v-for="option in packOptions" :key="option.id" :value="option.name">
           {{ option.name }}
@@ -93,19 +96,19 @@ const selectClass = 'h-10 rounded-md border border-input bg-background px-3 text
         @click="showAdvanced = !showAdvanced"
       >
         <SlidersHorizontal class="size-3.5" />
-        Filters
+        {{ t('cards.filterBar.filtersButton') }}
         <span v-if="activeAdvancedCount > 0" class="rounded-full bg-primary-foreground px-1.5 text-xs font-semibold text-primary">{{ activeAdvancedCount }}</span>
       </Button>
 
       <div v-if="showOwnership" class="flex items-center gap-1">
         <Button :variant="ownership === 'all' ? 'default' : 'outline'" size="sm" @click="ownership = 'all'">
-          All
+          {{ t('cards.filterBar.ownershipAll') }}
         </Button>
         <Button :variant="ownership === 'owned' ? 'default' : 'outline'" size="sm" @click="ownership = 'owned'">
-          Owned
+          {{ t('cards.filterBar.ownershipOwned') }}
         </Button>
         <Button :variant="ownership === 'missing' ? 'default' : 'outline'" size="sm" @click="ownership = 'missing'">
-          Missing
+          {{ t('cards.filterBar.ownershipMissing') }}
         </Button>
       </div>
 
@@ -117,11 +120,11 @@ const selectClass = 'h-10 rounded-md border border-input bg-background px-3 text
         @click="emit('reset')"
       >
         <X class="size-3.5" />
-        Clear
+        {{ t('cards.filterBar.clear') }}
       </Button>
 
       <span :class="cn('ml-auto text-sm text-muted-foreground', hasActiveFilters && 'font-medium text-foreground')">
-        {{ resultCount }} / {{ totalCount }} cards
+        {{ t('cards.filterBar.resultCount', { count: resultCount, total: totalCount }) }}
       </span>
     </div>
 
@@ -131,10 +134,10 @@ const selectClass = 'h-10 rounded-md border border-input bg-background px-3 text
       class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
     >
       <div v-if="advancedOptions.cardTypes.length > 0" class="flex flex-col gap-1">
-        <span class="text-xs text-muted-foreground" aria-hidden="true">Card type</span>
-        <select v-model="cardType" :class="selectClass" aria-label="Filter by card type">
+        <span class="text-xs text-muted-foreground" aria-hidden="true">{{ t('cards.filterBar.cardTypeLabel') }}</span>
+        <select v-model="cardType" :class="selectClass" :aria-label="t('cards.filterBar.filterByCardType')">
           <option value="">
-            Any
+            {{ t('cards.filterBar.any') }}
           </option>
           <option v-for="option in advancedOptions.cardTypes" :key="option.value" :value="option.value">
             {{ option.label }}
@@ -142,10 +145,10 @@ const selectClass = 'h-10 rounded-md border border-input bg-background px-3 text
         </select>
       </div>
       <div v-if="advancedOptions.pokemonTypes.length > 0" class="flex flex-col gap-1">
-        <span class="text-xs text-muted-foreground" aria-hidden="true">Pokémon type</span>
-        <select v-model="pokemonType" :class="selectClass" aria-label="Filter by Pokémon type">
+        <span class="text-xs text-muted-foreground" aria-hidden="true">{{ t('cards.filterBar.pokemonTypeLabel') }}</span>
+        <select v-model="pokemonType" :class="selectClass" :aria-label="t('cards.filterBar.filterByPokemonType')">
           <option value="">
-            Any
+            {{ t('cards.filterBar.any') }}
           </option>
           <option v-for="option in advancedOptions.pokemonTypes" :key="option.value" :value="option.value">
             {{ option.label }}
@@ -153,10 +156,10 @@ const selectClass = 'h-10 rounded-md border border-input bg-background px-3 text
         </select>
       </div>
       <div v-if="advancedOptions.evolutions.length > 0" class="flex flex-col gap-1">
-        <span class="text-xs text-muted-foreground" aria-hidden="true">Evolution</span>
-        <select v-model="evolution" :class="selectClass" aria-label="Filter by evolution">
+        <span class="text-xs text-muted-foreground" aria-hidden="true">{{ t('cards.filterBar.evolutionLabel') }}</span>
+        <select v-model="evolution" :class="selectClass" :aria-label="t('cards.filterBar.filterByEvolution')">
           <option value="">
-            Any
+            {{ t('cards.filterBar.any') }}
           </option>
           <option v-for="option in advancedOptions.evolutions" :key="option.value" :value="option.value">
             {{ option.label }}
@@ -164,10 +167,10 @@ const selectClass = 'h-10 rounded-md border border-input bg-background px-3 text
         </select>
       </div>
       <div v-if="advancedOptions.abilities.length > 0" class="flex flex-col gap-1">
-        <span class="text-xs text-muted-foreground" aria-hidden="true">Ability</span>
-        <select v-model="ability" :class="selectClass" aria-label="Filter by ability">
+        <span class="text-xs text-muted-foreground" aria-hidden="true">{{ t('cards.filterBar.abilityLabel') }}</span>
+        <select v-model="ability" :class="selectClass" :aria-label="t('cards.filterBar.filterByAbility')">
           <option value="">
-            Any
+            {{ t('cards.filterBar.any') }}
           </option>
           <option v-for="option in advancedOptions.abilities" :key="option.value" :value="option.value">
             {{ option.label }}
@@ -175,10 +178,10 @@ const selectClass = 'h-10 rounded-md border border-input bg-background px-3 text
         </select>
       </div>
       <div v-if="advancedOptions.moveTypes.length > 0" class="flex flex-col gap-1">
-        <span class="text-xs text-muted-foreground" aria-hidden="true" title="The energy types a card's attacks cost">Move type</span>
-        <select v-model="moveType" :class="selectClass" aria-label="Filter by move type" title="The energy types a card's attacks cost">
+        <span class="text-xs text-muted-foreground" aria-hidden="true" :title="t('cards.filterBar.moveTypeTooltip')">{{ t('cards.filterBar.moveTypeLabel') }}</span>
+        <select v-model="moveType" :class="selectClass" :aria-label="t('cards.filterBar.filterByMoveType')" :title="t('cards.filterBar.moveTypeTooltip')">
           <option value="">
-            Any
+            {{ t('cards.filterBar.any') }}
           </option>
           <option v-for="option in advancedOptions.moveTypes" :key="option.value" :value="option.value">
             {{ option.label }}
@@ -187,7 +190,7 @@ const selectClass = 'h-10 rounded-md border border-input bg-background px-3 text
       </div>
     </div>
 
-    <div v-if="setSelector === 'tiles' && setOptions.length > 1" class="flex items-center gap-2 overflow-x-auto pb-1" role="group" aria-label="Filter by set">
+    <div v-if="setSelector === 'tiles' && setOptions.length > 1" class="flex items-center gap-2 overflow-x-auto pb-1" role="group" :aria-label="t('cards.filterBar.filterBySet')">
       <button
         type="button"
         :class="cn(
@@ -196,7 +199,7 @@ const selectClass = 'h-10 rounded-md border border-input bg-background px-3 text
         )"
         @click="setCode = ''"
       >
-        All sets
+        {{ t('cards.filterBar.allSets') }}
       </button>
       <SetTile
         v-for="option in setOptions"

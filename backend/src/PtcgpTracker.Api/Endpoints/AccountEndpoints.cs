@@ -102,6 +102,27 @@ public static class AccountEndpoints
             return Results.NoContent();
         });
 
+        group.MapPost("/locale", async (
+            UpdateLocaleRequest request,
+            ClaimsPrincipal principal,
+            UserManager<ApplicationUser> userManager) =>
+        {
+            var user = await userManager.GetUserAsync(principal);
+            if (user is null) return Results.Unauthorized();
+
+            if (!SupportedLocales.Codes.Contains(request.Locale))
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["Locale"] = [$"'{request.Locale}' isn't a supported language."],
+                });
+            }
+
+            user.PreferredLocale = request.Locale;
+            await userManager.UpdateAsync(user);
+            return Results.NoContent();
+        });
+
         group.MapGet("/2fa", async (ClaimsPrincipal principal, UserManager<ApplicationUser> userManager) =>
         {
             var user = await userManager.GetUserAsync(principal);

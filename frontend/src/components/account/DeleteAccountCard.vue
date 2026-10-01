@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -8,6 +9,7 @@ import { useAccount } from '@/composables/useAccount'
 
 const emit = defineEmits<{ (e: 'deleted'): void }>()
 
+const { t } = useI18n()
 const { busy, error, deleteAccount } = useAccount()
 
 // Deleting your own account is permanent, so it takes an explicit second step and your password.
@@ -31,17 +33,17 @@ function cancel() {
   <Card class="border-destructive/40">
     <CardHeader>
       <CardTitle class="text-base">
-        Delete account
+        {{ t('account.delete.title') }}
       </CardTitle>
-      <CardDescription>Permanently deletes your account, your collection, and your trade list. This can't be undone.</CardDescription>
+      <CardDescription>{{ t('account.delete.description') }}</CardDescription>
     </CardHeader>
     <CardContent>
       <Button v-if="!confirming" variant="destructive" @click="confirming = true">
-        Delete my account
+        {{ t('account.delete.trigger') }}
       </Button>
       <form v-else class="flex flex-col gap-3" @submit.prevent="onConfirm">
         <div class="flex flex-col gap-1.5">
-          <Label for="delete-current-password">Enter your current password to confirm</Label>
+          <Label for="delete-current-password">{{ t('account.delete.currentPasswordLabel') }}</Label>
           <Input id="delete-current-password" v-model="currentPassword" type="password" autocomplete="current-password" required />
         </div>
         <p v-if="error" class="text-sm text-destructive">
@@ -49,10 +51,10 @@ function cancel() {
         </p>
         <div class="flex items-center gap-2">
           <Button type="submit" variant="destructive" :disabled="busy">
-            {{ busy ? 'Deleting…' : 'Yes, delete everything' }}
+            {{ busy ? t('account.delete.deleting') : t('account.delete.confirm') }}
           </Button>
           <Button type="button" variant="outline" :disabled="busy" @click="cancel">
-            Cancel
+            {{ t('account.delete.cancel') }}
           </Button>
         </div>
       </form>

@@ -8,6 +8,8 @@ export const accountService = {
   changeEmail: (newEmail: string, currentPassword: string) =>
     httpClient.post<void>('/account/email', { newEmail, currentPassword }),
 
+  updateLocale: (locale: string) => httpClient.post<void>('/account/locale', { locale }),
+
   deleteAccount: (currentPassword: string) =>
     httpClient.delete<void>('/account', { currentPassword }),
 

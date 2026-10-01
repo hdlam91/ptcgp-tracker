@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { TradeDirection } from '@/types/api'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import CardFilterBar from '@/components/cards/CardFilterBar.vue'
 import CardGrid from '@/components/cards/CardGrid.vue'
 import TradeListShareCard from '@/components/trade/TradeListShareCard.vue'
@@ -11,6 +12,7 @@ import { useCollection } from '@/composables/useCollection'
 import { useTradeList } from '@/composables/useTradeList'
 import { runInBatches } from '@/lib/batch'
 
+const { t } = useI18n()
 const { getCard, getAllCards } = useCardCatalog()
 const { getOwnedCount, ownedCounts, setOwnedCount, ensureLoaded: ensureCollectionLoaded } = useCollection()
 const { wantedCardIds, offeredCardIds, toggle, add, remove, ensureLoaded: ensureTradeListLoaded } = useTradeList()
@@ -105,20 +107,20 @@ const visibleCards = computed(() => filteredCards.value.slice(0, visibleCount.va
 <template>
   <div class="mx-auto max-w-6xl p-4 sm:p-6">
     <h1 class="text-2xl font-semibold">
-      Trade list
+      {{ t('trade.listPage.title') }}
     </h1>
     <p class="mt-1 text-muted-foreground">
-      Cards you want, and cards you're willing to trade away.
+      {{ t('trade.listPage.subtitle') }}
     </p>
 
     <TradeListShareCard class="mt-4" />
 
     <div class="mt-6 flex flex-wrap items-center gap-2">
       <Button :variant="activeTab === 'Want' ? 'default' : 'outline'" @click="activeTab = 'Want'">
-        Want ({{ wantedCardIds.size }})
+        {{ t('trade.listPage.wantCount', { count: wantedCardIds.size }) }}
       </Button>
       <Button :variant="activeTab === 'Offer' ? 'default' : 'outline'" @click="activeTab = 'Offer'">
-        Offer ({{ offeredCardIds.size }})
+        {{ t('trade.listPage.offerCount', { count: offeredCardIds.size }) }}
       </Button>
       <Button
         v-if="activeTab === 'Want' && missingCardIds.length > 0"
@@ -127,7 +129,7 @@ const visibleCards = computed(() => filteredCards.value.slice(0, visibleCount.va
         :disabled="addingAllMissing"
         @click="addAllMissingToWishlist"
       >
-        {{ addingAllMissing ? 'Adding…' : `Add all missing to wishlist (${missingCardIds.length})` }}
+        {{ addingAllMissing ? t('trade.listPage.adding') : t('trade.listPage.addAllMissingToWishlist', { count: missingCardIds.length }) }}
       </Button>
       <Button
         v-if="activeTab === 'Want' && ownedWantedCardIds.length > 0"
@@ -136,12 +138,12 @@ const visibleCards = computed(() => filteredCards.value.slice(0, visibleCount.va
         :disabled="removingOwned"
         @click="removeOwnedFromWishlist"
       >
-        {{ removingOwned ? 'Removing…' : `Remove cards I already own (${ownedWantedCardIds.length})` }}
+        {{ removingOwned ? t('trade.listPage.removing') : t('trade.listPage.removeOwnedFromWishlist', { count: ownedWantedCardIds.length }) }}
       </Button>
     </div>
 
     <p v-if="activeCards.length === 0" class="mt-8 text-sm text-muted-foreground">
-      No cards here yet. Add some from a set's page.
+      {{ t('trade.listPage.emptyActiveCards') }}
     </p>
 
     <template v-else>
@@ -170,7 +172,7 @@ const visibleCards = computed(() => filteredCards.value.slice(0, visibleCount.va
       />
 
       <p v-if="filteredCards.length === 0" class="mt-8 text-sm text-muted-foreground">
-        No cards match these filters.
+        {{ t('trade.listPage.noFilterMatches') }}
       </p>
       <template v-else>
         <div class="mt-6">
@@ -187,7 +189,7 @@ const visibleCards = computed(() => filteredCards.value.slice(0, visibleCount.va
         </div>
         <div v-if="visibleCards.length < filteredCards.length" class="mt-4 flex justify-center">
           <Button variant="outline" @click="visibleCount += PAGE_SIZE">
-            Show more ({{ visibleCards.length }} / {{ filteredCards.length }})
+            {{ t('trade.listPage.showMore', { visible: visibleCards.length, total: filteredCards.length }) }}
           </Button>
         </div>
       </template>

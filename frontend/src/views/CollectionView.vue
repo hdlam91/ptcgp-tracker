@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { SetSummaryResponse } from '@/types/api'
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import PackThumbnail from '@/components/cards/PackThumbnail.vue'
 import RarityBadgeRow from '@/components/cards/RarityBadgeRow.vue'
 import SetProgressBar from '@/components/cards/SetProgressBar.vue'
@@ -9,6 +10,7 @@ import { useCardCatalog } from '@/composables/useCardCatalog'
 import { useCollection } from '@/composables/useCollection'
 import { computeRarityGroups } from '@/composables/useRarityGroups'
 
+const { t } = useI18n()
 const { getExpansions, getCardsBySet } = useCardCatalog()
 const { getSummary, getOwnedCount, ensureLoaded: ensureCollectionLoaded } = useCollection()
 
@@ -38,10 +40,10 @@ const rarityGroupsFor = computed(() => {
 <template>
   <div class="mx-auto max-w-7xl p-4 sm:p-6">
     <h1 class="text-2xl font-semibold">
-      Your sets
+      {{ t('views.collection.title') }}
     </h1>
     <p class="mt-1 text-muted-foreground">
-      Pick a set to view and update the cards you own.
+      {{ t('views.collection.subtitle') }}
     </p>
 
     <div class="mt-6 grid grid-cols-[repeat(auto-fill,minmax(min(100%,23rem),1fr))] gap-4">

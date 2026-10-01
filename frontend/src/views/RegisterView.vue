@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,6 +10,7 @@ import { useAppConfig } from '@/composables/useAppConfig'
 import { useAuth } from '@/composables/useAuth'
 import { ApiError } from '@/services/httpClient'
 
+const { t } = useI18n()
 const displayName = ref('')
 const email = ref('')
 const password = ref('')
@@ -42,7 +44,7 @@ async function onSubmit() {
     else {
       errorMessage.value = error instanceof ApiError
         ? describeRegistrationError(error)
-        : 'Something went wrong. Please try again.'
+        : t('errors.generic')
     }
   }
   finally {
@@ -53,7 +55,7 @@ async function onSubmit() {
 function describeRegistrationError(error: ApiError): string {
   const body = error.body as { errors?: Record<string, string[]> } | null
   const firstError = body?.errors ? Object.values(body.errors)[0]?.[0] : undefined
-  return firstError ?? 'Could not create your account. Please check your details.'
+  return firstError ?? t('register.genericError')
 }
 </script>
 
@@ -62,40 +64,40 @@ function describeRegistrationError(error: ApiError): string {
     <Card class="w-full max-w-sm">
       <CardHeader>
         <CardTitle>
-          {{ awaitingConfirmation ? 'Check your email' : registrationOpen === false ? 'Registration is closed' : 'Create an account' }}
+          {{ awaitingConfirmation ? t('register.checkYourEmailTitle') : registrationOpen === false ? t('register.closedTitle') : t('register.title') }}
         </CardTitle>
         <CardDescription>
-          {{ awaitingConfirmation ? "You're almost done." : registrationOpen === false ? 'New accounts aren\'t being accepted right now.' : 'Start tracking your Pokémon TCG Pocket collection.' }}
+          {{ awaitingConfirmation ? t('register.checkYourEmailDescription') : registrationOpen === false ? t('register.closedDescription') : t('register.description') }}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <p v-if="awaitingConfirmation" class="text-sm text-muted-foreground">
-          Check your inbox for a link to confirm {{ email }} before logging in.
+          {{ t('register.confirmEmailInstructions', { email }) }}
         </p>
         <form v-else-if="registrationOpen !== false" class="flex flex-col gap-4" @submit.prevent="onSubmit">
           <div class="flex flex-col gap-1.5">
-            <Label for="displayName">Display name</Label>
+            <Label for="displayName">{{ t('register.displayName') }}</Label>
             <Input id="displayName" v-model="displayName" autocomplete="nickname" required />
           </div>
           <div class="flex flex-col gap-1.5">
-            <Label for="email">Email</Label>
+            <Label for="email">{{ t('register.email') }}</Label>
             <Input id="email" v-model="email" type="email" autocomplete="email" required />
           </div>
           <div class="flex flex-col gap-1.5">
-            <Label for="password">Password</Label>
+            <Label for="password">{{ t('register.password') }}</Label>
             <Input id="password" v-model="password" type="password" autocomplete="new-password" required />
           </div>
           <p v-if="errorMessage" class="text-sm text-destructive">
             {{ errorMessage }}
           </p>
           <Button type="submit" :disabled="isSubmitting">
-            {{ isSubmitting ? 'Creating account…' : 'Sign up' }}
+            {{ isSubmitting ? t('register.submitting') : t('register.submit') }}
           </Button>
         </form>
         <p class="mt-4 text-center text-sm text-muted-foreground">
-          Already have an account?
+          {{ t('register.haveAccount') }}
           <RouterLink to="/login" class="font-medium text-primary underline-offset-4 hover:underline">
-            Log in
+            {{ t('register.logIn') }}
           </RouterLink>
         </p>
       </CardContent>

@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/composables/useAuth'
 import { authService } from '@/services/authService'
 
+const { t } = useI18n()
 const route = useRoute()
 const email = typeof route.query.email === 'string' ? route.query.email : ''
 const token = typeof route.query.token === 'string' ? route.query.token : ''
@@ -40,34 +42,34 @@ async function onResend() {
   <div class="flex min-h-screen items-center justify-center bg-muted/40 px-4">
     <Card class="w-full max-w-sm">
       <CardHeader>
-        <CardTitle>{{ status === 'confirmed' ? 'Email confirmed' : 'Confirm your email' }}</CardTitle>
+        <CardTitle>{{ status === 'confirmed' ? t('confirmEmail.confirmedTitle') : t('confirmEmail.title') }}</CardTitle>
         <CardDescription v-if="status === 'confirming'">
-          One moment…
+          {{ t('confirmEmail.confirming') }}
         </CardDescription>
         <CardDescription v-else-if="status === 'confirmed'">
-          You're all set — you can log in now.
+          {{ t('confirmEmail.confirmedDescription') }}
         </CardDescription>
         <CardDescription v-else>
-          That confirmation link is invalid or has expired.
+          {{ t('confirmEmail.failedDescription') }}
         </CardDescription>
       </CardHeader>
       <CardContent v-if="status === 'confirmed'">
         <RouterLink v-slot="{ href, navigate }" to="/" custom>
           <Button as-child class="w-full">
-            <a :href="href" @click="navigate">Go to the app</a>
+            <a :href="href" @click="navigate">{{ t('confirmEmail.goToApp') }}</a>
           </Button>
         </RouterLink>
       </CardContent>
       <CardContent v-else-if="status === 'failed'" class="flex flex-col gap-4">
         <p v-if="resendSent" class="text-sm text-muted-foreground">
-          If that email needs confirming, check your inbox for a new link.
+          {{ t('confirmEmail.resendSentMessage') }}
         </p>
         <Button v-else-if="email" @click="onResend">
-          Send a new confirmation email
+          {{ t('confirmEmail.resend') }}
         </Button>
         <p class="text-center text-sm text-muted-foreground">
           <RouterLink to="/login" class="font-medium text-primary underline-offset-4 hover:underline">
-            Back to log in
+            {{ t('confirmEmail.backToLogin') }}
           </RouterLink>
         </p>
       </CardContent>

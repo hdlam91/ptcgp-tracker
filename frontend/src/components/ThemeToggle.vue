@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { Moon, Sun } from '@lucide/vue'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/composables/useTheme'
 
+const { t } = useI18n()
 const { isDark, toggleTheme } = useTheme()
 </script>
 
@@ -10,7 +12,7 @@ const { isDark, toggleTheme } = useTheme()
   <Button
     variant="outline"
     size="icon"
-    :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+    :title="isDark ? t('layout.themeToggle.switchToLightMode') : t('layout.themeToggle.switchToDarkMode')"
     @click="toggleTheme"
   >
     <Sun v-if="isDark" class="size-4" />

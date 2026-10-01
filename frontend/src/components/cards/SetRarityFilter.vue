@@ -2,6 +2,7 @@
 import type { RarityFilter } from '@/composables/useCardFilters'
 import type { ExpansionEntry } from '@/types/catalog'
 import { X } from '@lucide/vue'
+import { useI18n } from 'vue-i18n'
 import RaritySelect from '@/components/cards/RaritySelect.vue'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -18,6 +19,8 @@ defineProps<{
 
 const emit = defineEmits<{ (e: 'reset'): void }>()
 
+const { t } = useI18n()
+
 const setCode = defineModel<string>('setCode', { required: true })
 const rarity = defineModel<RarityFilter | ''>('rarity', { required: true })
 
@@ -26,9 +29,9 @@ const selectClass = 'h-10 rounded-md border border-input bg-background px-3 text
 
 <template>
   <div class="flex flex-wrap items-center gap-2">
-    <select v-model="setCode" :class="selectClass" aria-label="Filter by set">
+    <select v-model="setCode" :class="selectClass" :aria-label="t('cards.setRarityFilter.filterBySet')">
       <option value="">
-        Any set
+        {{ t('cards.setRarityFilter.anySet') }}
       </option>
       <option v-for="option in setOptions" :key="option.id" :value="option.id">
         {{ option.name }}
@@ -39,11 +42,11 @@ const selectClass = 'h-10 rounded-md border border-input bg-background px-3 text
 
     <Button v-if="hasActiveFilters" variant="ghost" size="sm" class="text-muted-foreground" @click="emit('reset')">
       <X class="size-3.5" />
-      Clear
+      {{ t('cards.setRarityFilter.clear') }}
     </Button>
 
     <span :class="cn('ml-auto text-sm text-muted-foreground', hasActiveFilters && 'font-medium text-foreground')">
-      {{ resultCount }} / {{ totalCount }} cards
+      {{ t('cards.setRarityFilter.resultCount', { count: resultCount, total: totalCount }) }}
     </span>
   </div>
 </template>

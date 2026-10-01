@@ -2,6 +2,7 @@
 import type { EnergyType } from '@/lib/cardMetadata'
 import { ArrowLeft, Heart, Minus, Plus, Repeat } from '@lucide/vue'
 import { computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import CardArt from '@/components/cards/CardArt.vue'
 import EnergyIcon from '@/components/cards/EnergyIcon.vue'
@@ -12,6 +13,7 @@ import { useCollection } from '@/composables/useCollection'
 import { useTradeList } from '@/composables/useTradeList'
 import { parseEnergyCost, printCardId } from '@/lib/cardMetadata'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const cardId = computed(() => route.params.cardId as string)
@@ -62,11 +64,11 @@ function goBack() {
 <template>
   <div class="mx-auto max-w-5xl p-4 sm:p-6">
     <button type="button" class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground" @click="goBack">
-      <ArrowLeft class="size-4" /> Back
+      <ArrowLeft class="size-4" /> {{ t('views.cardDetail.back') }}
     </button>
 
     <p v-if="!card" class="mt-8 text-sm text-muted-foreground">
-      Card not found. It may not exist in the current card data.
+      {{ t('views.cardDetail.notFound') }}
     </p>
 
     <div v-else class="mt-4 grid gap-6 md:grid-cols-[minmax(0,20rem)_1fr]">
@@ -80,22 +82,22 @@ function goBack() {
           <p class="mt-1 text-sm text-muted-foreground">
             <template v-if="isPokemon">
               {{ gameplay?.stage }}<template v-if="gameplay?.evolves_from">
-                · Evolves from {{ gameplay.evolves_from }}
+                {{ t('views.cardDetail.evolvesFrom', { name: gameplay.evolves_from }) }}
               </template>
             </template>
             <template v-else-if="gameplay">
-              Trainer · {{ gameplay.subtype }}
+              {{ t('views.cardDetail.trainerSubtype', { subtype: gameplay.subtype }) }}
             </template>
           </p>
           <p v-if="!gameplay" class="mt-2 text-sm text-muted-foreground">
-            Battle details aren't available for this card.
+            {{ t('views.cardDetail.noBattleDetails') }}
           </p>
         </header>
 
         <dl v-if="isPokemon" class="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
           <div>
             <dt class="text-xs uppercase tracking-wide text-muted-foreground">
-              HP
+              {{ t('views.cardDetail.hp') }}
             </dt>
             <dd class="mt-1 text-lg font-semibold tabular-nums">
               {{ gameplay?.health }}
@@ -103,7 +105,7 @@ function goBack() {
           </div>
           <div>
             <dt class="text-xs uppercase tracking-wide text-muted-foreground">
-              Type
+              {{ t('views.cardDetail.type') }}
             </dt>
             <dd class="mt-1 flex items-center gap-1.5">
               <EnergyIcon v-if="meta?.pokemonType" :type="meta.pokemonType" />
@@ -114,25 +116,25 @@ function goBack() {
           </div>
           <div>
             <dt class="text-xs uppercase tracking-wide text-muted-foreground">
-              Weakness
+              {{ t('views.cardDetail.weakness') }}
             </dt>
             <dd class="mt-1 flex items-center gap-1.5">
               <EnergyIcon v-if="weaknessType" :type="weaknessType" />
               <template v-else>
-                None
+                {{ t('views.cardDetail.none') }}
               </template>
             </dd>
           </div>
           <div>
             <dt class="text-xs uppercase tracking-wide text-muted-foreground">
-              Retreat cost
+              {{ t('views.cardDetail.retreatCost') }}
             </dt>
             <dd class="mt-1 flex items-center gap-1">
               <template v-if="retreatCost.length > 0">
                 <EnergyIcon v-for="(type, index) in retreatCost" :key="index" :type="type" />
               </template>
               <template v-else>
-                Free
+                {{ t('views.cardDetail.free') }}
               </template>
             </dd>
           </div>
@@ -140,7 +142,7 @@ function goBack() {
 
         <section v-if="ability" aria-labelledby="ability-heading">
           <h2 id="ability-heading" class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Ability
+            {{ t('views.cardDetail.abilityHeading') }}
           </h2>
           <div class="mt-2 rounded-lg border p-3">
             <p class="font-medium">
@@ -154,16 +156,16 @@ function goBack() {
 
         <section v-if="attacks.length > 0" aria-labelledby="attacks-heading">
           <h2 id="attacks-heading" class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Attacks
+            {{ t('views.cardDetail.attacksHeading') }}
           </h2>
           <ul class="mt-2 flex flex-col gap-2">
             <li v-for="attack in attacks" :key="attack.name ?? ''" class="rounded-lg border p-3">
               <div class="flex items-center gap-3">
-                <span class="flex min-w-14 shrink-0 items-center gap-1" :aria-label="`Cost: ${parseEnergyCost(attack.cost).length ? parseEnergyCost(attack.cost).join(', ') : 'no energy'}`">
+                <span class="flex min-w-14 shrink-0 items-center gap-1" :aria-label="t('views.cardDetail.attackCostAriaLabel', { cost: parseEnergyCost(attack.cost).length ? parseEnergyCost(attack.cost).join(', ') : t('views.cardDetail.noEnergyAriaLabel') })">
                   <template v-if="parseEnergyCost(attack.cost).length > 0">
                     <EnergyIcon v-for="(type, index) in parseEnergyCost(attack.cost)" :key="index" :type="type" />
                   </template>
-                  <span v-else class="text-xs text-muted-foreground">No energy</span>
+                  <span v-else class="text-xs text-muted-foreground">{{ t('views.cardDetail.noEnergy') }}</span>
                 </span>
                 <span class="min-w-0 flex-1 font-medium">{{ attack.name }}</span>
                 <span v-if="attack.damage !== null" class="text-lg font-semibold tabular-nums">{{ attack.damage }}</span>
@@ -177,7 +179,7 @@ function goBack() {
 
         <section v-if="gameplay && !isPokemon && gameplay.card_text" aria-labelledby="text-heading">
           <h2 id="text-heading" class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Card text
+            {{ t('views.cardDetail.cardTextHeading') }}
           </h2>
           <p class="mt-2 rounded-lg border p-3 text-sm">
             <EnergyText :text="gameplay.card_text" />
@@ -190,19 +192,19 @@ function goBack() {
 
         <section aria-labelledby="details-heading">
           <h2 id="details-heading" class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Details
+            {{ t('views.cardDetail.detailsHeading') }}
           </h2>
           <dl class="mt-2 grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5 text-sm">
             <dt class="text-muted-foreground">
-              Card
+              {{ t('views.cardDetail.cardLabel') }}
             </dt>
             <dd>{{ card.id }}</dd>
             <dt class="text-muted-foreground">
-              Rarity
+              {{ t('views.cardDetail.rarityLabel') }}
             </dt>
             <dd>{{ card.rarity }}</dd>
             <dt class="text-muted-foreground">
-              Set
+              {{ t('views.cardDetail.setLabel') }}
             </dt>
             <dd>
               <RouterLink :to="`/sets/${card.set_code}`" class="text-primary underline-offset-4 hover:underline">
@@ -211,45 +213,45 @@ function goBack() {
             </dd>
             <template v-if="card.pack">
               <dt class="text-muted-foreground">
-                Pack
+                {{ t('views.cardDetail.packLabel') }}
               </dt>
               <dd>{{ card.pack }}</dd>
             </template>
             <template v-if="card.artist">
               <dt class="text-muted-foreground">
-                Illustrator
+                {{ t('views.cardDetail.illustratorLabel') }}
               </dt>
               <dd>{{ card.artist }}</dd>
             </template>
             <template v-if="card.art_style">
               <dt class="text-muted-foreground">
-                Art style
+                {{ t('views.cardDetail.artStyleLabel') }}
               </dt>
               <dd>{{ card.art_style }}</dd>
             </template>
             <template v-if="card.pack_points">
               <dt class="text-muted-foreground">
-                Pack points
+                {{ t('views.cardDetail.packPointsLabel') }}
               </dt>
               <dd>{{ card.pack_points }}</dd>
             </template>
             <dt class="text-muted-foreground">
-              Trading
+              {{ t('views.cardDetail.tradingLabel') }}
             </dt>
-            <dd>{{ card.tradable ? `Tradable (trade cost ${card.trade_cost ?? 0})` : 'Not tradable' }}</dd>
+            <dd>{{ card.tradable ? t('views.cardDetail.tradable', { cost: card.trade_cost ?? 0 }) : t('views.cardDetail.notTradable') }}</dd>
           </dl>
         </section>
 
         <section aria-labelledby="collection-heading">
           <h2 id="collection-heading" class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            In your collection
+            {{ t('views.cardDetail.collectionHeading') }}
           </h2>
           <div class="mt-2 flex items-center gap-3">
-            <Button variant="outline" size="icon" aria-label="Remove one copy" :disabled="ownedCount === 0" @click="changeOwned(-1)">
+            <Button variant="outline" size="icon" :aria-label="t('views.cardDetail.removeOneCopy')" :disabled="ownedCount === 0" @click="changeOwned(-1)">
               <Minus class="size-4" />
             </Button>
             <span class="min-w-10 text-center text-lg font-semibold tabular-nums" aria-live="polite" data-testid="owned-count">×{{ ownedCount }}</span>
-            <Button variant="outline" size="icon" aria-label="Add one copy" @click="changeOwned(1)">
+            <Button variant="outline" size="icon" :aria-label="t('views.cardDetail.addOneCopy')" @click="changeOwned(1)">
               <Plus class="size-4" />
             </Button>
           </div>
@@ -260,7 +262,7 @@ function goBack() {
               @click="toggle(card.id, 'Want')"
             >
               <Heart class="size-4" />
-              {{ isWanted(card.id) ? 'On your want list' : 'Add to want list' }}
+              {{ isWanted(card.id) ? t('views.cardDetail.onWantList') : t('views.cardDetail.addToWantList') }}
             </Button>
             <Button
               :variant="isOffered(card.id) ? 'default' : 'outline'"
@@ -268,17 +270,17 @@ function goBack() {
               @click="toggle(card.id, 'Offer')"
             >
               <Repeat class="size-4" />
-              {{ isOffered(card.id) ? 'On your offer list' : 'Offer for trade' }}
+              {{ isOffered(card.id) ? t('views.cardDetail.onOfferList') : t('views.cardDetail.offerForTrade') }}
             </Button>
           </div>
           <p v-else class="mt-2 text-sm text-muted-foreground">
-            This card can't be traded, so it can't go on your want or offer list.
+            {{ t('views.cardDetail.notTradableNotice') }}
           </p>
         </section>
 
         <section v-if="otherPrints.length > 0" aria-labelledby="prints-heading">
           <h2 id="prints-heading" class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Other prints
+            {{ t('views.cardDetail.otherPrintsHeading') }}
           </h2>
           <ul class="mt-2 flex flex-wrap gap-2">
             <li v-for="print in otherPrints" :key="print.id">

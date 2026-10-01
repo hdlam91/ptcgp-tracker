@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { Check, Copy, ExternalLink } from '@lucide/vue'
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { tradeListService } from '@/services/tradeListService'
 
+const { t } = useI18n()
 const handle = ref<string | null>(null)
 const loading = ref(true)
 const busy = ref(false)
@@ -55,10 +57,10 @@ async function copyLink() {
   <Card v-if="!loading">
     <CardHeader>
       <CardTitle class="text-base">
-        Share your trade list
+        {{ t('trade.shareCard.title') }}
       </CardTitle>
       <CardDescription>
-        Anyone with the link can see what you want and what you're offering. They can't edit anything.
+        {{ t('trade.shareCard.description') }}
       </CardDescription>
     </CardHeader>
     <CardContent>
@@ -74,21 +76,21 @@ async function copyLink() {
           <Button as-child variant="outline" size="sm">
             <a :href="shareUrl ?? undefined" target="_blank" rel="noopener">
               <ExternalLink class="size-3.5" />
-              Open
+              {{ t('trade.shareCard.open') }}
             </a>
           </Button>
           <Button variant="outline" size="sm" @click="copyLink">
             <Check v-if="copied" class="size-3.5" />
             <Copy v-else class="size-3.5" />
-            {{ copied ? 'Copied' : 'Copy' }}
+            {{ copied ? t('trade.shareCard.copied') : t('trade.shareCard.copy') }}
           </Button>
           <Button variant="outline" size="sm" :disabled="busy" @click="disable">
-            Stop sharing
+            {{ t('trade.shareCard.stopSharing') }}
           </Button>
         </div>
       </div>
       <Button v-else :disabled="busy" @click="enable">
-        Create share link
+        {{ t('trade.shareCard.createShareLink') }}
       </Button>
     </CardContent>
   </Card>

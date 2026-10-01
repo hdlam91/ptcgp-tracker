@@ -3,6 +3,7 @@ import type { RarityFilter } from '@/composables/useCardFilters'
 import { ChevronDown } from '@lucide/vue'
 import { useEventListener } from '@vueuse/core'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import RarityIcon from '@/components/cards/RarityIcon.vue'
 import { rarityFilterLabel } from '@/composables/useCardFilters'
 
@@ -15,6 +16,8 @@ defineProps<{
 }>()
 
 const rarity = defineModel<RarityFilter | ''>({ required: true })
+
+const { t } = useI18n()
 
 const open = ref(false)
 
@@ -41,14 +44,14 @@ useEventListener(document, 'keydown', (event: KeyboardEvent) => {
     <button
       type="button"
       class="flex h-10 min-w-[6.5rem] items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-      :aria-label="`Filter by rarity: ${rarityFilterLabel(rarity)}`"
+      :aria-label="t('cards.raritySelect.filterByRarity', { label: rarityFilterLabel(rarity) })"
       aria-haspopup="listbox"
       :aria-expanded="open"
       aria-controls="rarity-listbox"
       @click="open = !open"
     >
       <RarityIcon v-if="rarity !== ''" :rarity="rarity" />
-      <span v-else class="text-muted-foreground">Any rarity</span>
+      <span v-else class="text-muted-foreground">{{ t('cards.raritySelect.anyRarity') }}</span>
       <ChevronDown class="size-4 shrink-0 text-muted-foreground" />
     </button>
 
@@ -56,7 +59,7 @@ useEventListener(document, 'keydown', (event: KeyboardEvent) => {
       v-if="open"
       id="rarity-listbox"
       role="listbox"
-      aria-label="Rarity"
+      :aria-label="t('cards.raritySelect.rarityListboxLabel')"
       class="absolute left-0 top-full z-30 mt-1 min-w-[8rem] rounded-md border bg-background py-1 shadow-md"
     >
       <li
@@ -66,7 +69,7 @@ useEventListener(document, 'keydown', (event: KeyboardEvent) => {
         :class="rarity === '' && 'bg-accent'"
         @click="pick('')"
       >
-        Any rarity
+        {{ t('cards.raritySelect.anyRarity') }}
       </li>
       <li
         v-for="option in options"

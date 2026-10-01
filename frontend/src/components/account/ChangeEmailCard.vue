@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -12,6 +13,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{ (e: 'changed', newEmail: string): void }>()
 
+const { t } = useI18n()
 const { busy, error, changeEmail } = useAccount()
 
 const newEmail = ref('')
@@ -34,28 +36,28 @@ async function onSubmit() {
   <Card>
     <CardHeader>
       <CardTitle class="text-base">
-        Email
+        {{ t('account.email.title') }}
       </CardTitle>
-      <CardDescription>Signed in as {{ props.currentEmail }}.</CardDescription>
+      <CardDescription>{{ t('account.email.signedInAs', { email: props.currentEmail }) }}</CardDescription>
     </CardHeader>
     <CardContent>
       <form class="flex flex-col gap-3" @submit.prevent="onSubmit">
         <div class="flex flex-col gap-1.5">
-          <Label for="new-email">New email</Label>
+          <Label for="new-email">{{ t('account.email.newEmail') }}</Label>
           <Input id="new-email" v-model="newEmail" type="email" autocomplete="email" required />
         </div>
         <div class="flex flex-col gap-1.5">
-          <Label for="email-current-password">Current password</Label>
+          <Label for="email-current-password">{{ t('account.email.currentPassword') }}</Label>
           <Input id="email-current-password" v-model="currentPassword" type="password" autocomplete="current-password" required />
         </div>
         <p v-if="error" class="text-sm text-destructive">
           {{ error }}
         </p>
         <p v-else-if="done" class="text-sm text-primary">
-          Email changed.
+          {{ t('account.email.changed') }}
         </p>
         <Button type="submit" :disabled="busy" class="self-start">
-          {{ busy ? 'Changing…' : 'Change email' }}
+          {{ busy ? t('account.email.submitting') : t('account.email.submit') }}
         </Button>
       </form>
     </CardContent>

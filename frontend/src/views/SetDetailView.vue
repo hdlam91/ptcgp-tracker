@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import CardFilterBar from '@/components/cards/CardFilterBar.vue'
 import CardGrid from '@/components/cards/CardGrid.vue'
@@ -11,6 +12,7 @@ import { useRarityGroups } from '@/composables/useRarityGroups'
 import { useTradeList } from '@/composables/useTradeList'
 import { runInBatches } from '@/lib/batch'
 
+const { t } = useI18n()
 const route = useRoute()
 const setCode = computed(() => route.params.setCode as string)
 
@@ -70,7 +72,7 @@ onMounted(async () => {
 <template>
   <div class="mx-auto max-w-6xl p-4 sm:p-6">
     <RouterLink to="/" class="text-sm text-muted-foreground hover:underline">
-      ← All sets
+      {{ t('views.setDetail.backToAllSets') }}
     </RouterLink>
     <h1 class="mt-1 text-2xl font-semibold">
       {{ expansion?.name ?? setCode }}
@@ -107,7 +109,7 @@ onMounted(async () => {
     />
 
     <p v-if="filteredCards.length === 0" class="mt-8 text-sm text-muted-foreground">
-      No cards match these filters.
+      {{ t('views.setDetail.noResults') }}
     </p>
     <div v-else class="mt-6">
       <CardGrid
