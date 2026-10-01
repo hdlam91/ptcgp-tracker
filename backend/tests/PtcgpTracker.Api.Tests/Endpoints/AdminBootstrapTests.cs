@@ -67,7 +67,8 @@ public class AdminBootstrapTests(PostgresApiFixture fixture)
             new { email, password = "Password1", displayName = "Boss" });
         var created = await register.Content.ReadFromJsonAsync<JsonElement>();
 
-        Assert.True(created.GetProperty("isAdmin").GetBoolean());
+        Assert.False(created.GetProperty("requiresEmailConfirmation").GetBoolean());
+        Assert.True(created.GetProperty("user").GetProperty("isAdmin").GetBoolean());
         Assert.True((await client.GetFromJsonAsync<JsonElement>("/api/auth/me")).GetProperty("isAdmin").GetBoolean());
         Assert.Equal(System.Net.HttpStatusCode.OK, (await client.GetAsync("/api/admin/users")).StatusCode);
     }

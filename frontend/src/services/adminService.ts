@@ -7,9 +7,10 @@ export const adminService = {
     httpClient.put<void>(`/admin/users/${encodeURIComponent(userId)}/admin`, { isAdmin }),
   deleteUser: (userId: string) => httpClient.delete<void>(`/admin/users/${encodeURIComponent(userId)}`),
   disableShare: (userId: string) => httpClient.delete<void>(`/admin/users/${encodeURIComponent(userId)}/share`),
+  resendConfirmation: (userId: string) => httpClient.post<void>(`/admin/users/${encodeURIComponent(userId)}/resend-confirmation`),
   getSettings: () => httpClient.get<AdminSettingsResponse>('/admin/settings'),
-  updateSettings: (registrationOpen: boolean) =>
-    httpClient.put<AdminSettingsResponse>('/admin/settings', { registrationOpen }),
+  updateSettings: (registrationOpen: boolean, requireEmailConfirmation: boolean) =>
+    httpClient.put<AdminSettingsResponse>('/admin/settings', { registrationOpen, requireEmailConfirmation }),
   catalog: () => httpClient.get<CatalogStatusResponse>('/admin/catalog'),
   refreshCatalog: () => httpClient.post<CatalogStatusResponse>('/admin/catalog/refresh'),
   images: () => httpClient.get<ImageMirrorStatusResponse>('/admin/images'),

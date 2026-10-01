@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAppConfig } from '@/composables/useAppConfig'
 import { useAuth } from '@/composables/useAuth'
+import { authService } from '@/services/authService'
 import { ApiError } from '@/services/httpClient'
 
 const email = ref('')
@@ -14,11 +15,14 @@ const password = ref('')
 const errorMessage = ref('')
 const isSubmitting = ref(false)
 
-// The password step and the 2FA step are separate forms, but only one is ever showing.
+// The password step, the 2FA step, and the "confirm your email first" step are separate
+// screens, but only one is ever showing.
 const awaitingTwoFactor = ref(false)
 const code = ref('')
 const isRecoveryCode = ref(false)
 const rememberDevice = ref(false)
+const awaitingEmailConfirmation = ref(false)
+const resendSent = ref(false)
 
 const { login, loginTwoFactor } = useAuth()
 const { registrationOpen, load: loadConfig } = useAppConfig()
@@ -40,6 +44,9 @@ async function onSubmit() {
     if (result.requiresTwoFactor) {
       awaitingTwoFactor.value = true
     }
+    else if (result.requiresEmailConfirmation) {
+      awaitingEmailConfirmation.value = true
+    }
     else {
       await afterLogin()
     }
@@ -51,6 +58,17 @@ async function onSubmit() {
   }
   finally {
     isSubmitting.value = false
+  }
+}
+
+async function onResendConfirmation() {
+  isSubmitting.value = true
+  try {
+    await authService.resendConfirmation(email.value)
+  }
+  finally {
+    isSubmitting.value = false
+    resendSent.value = true
   }
 }
 
@@ -75,7 +93,7 @@ async function onSubmitTwoFactor() {
 <template>
   <div class="flex min-h-screen items-center justify-center bg-muted/40 px-4">
     <Card class="w-full max-w-sm">
-      <template v-if="!awaitingTwoFactor">
+      <template v-if="!awaitingTwoFactor && !awaitingEmailConfirmation">
         <CardHeader>
           <CardTitle>Log in</CardTitle>
           <CardDescription>Track your Pokémon TCG Pocket collection.</CardDescription>
@@ -108,6 +126,28 @@ async function onSubmitTwoFactor() {
               Sign up
             </RouterLink>
           </p>
+        </CardContent>
+      </template>
+
+      <template v-else-if="awaitingEmailConfirmation">
+        <CardHeader>
+          <CardTitle>Confirm your email</CardTitle>
+          <CardDescription>You need to confirm {{ email }} before you can log in.</CardDescription>
+        </CardHeader>
+        <CardContent class="flex flex-col gap-4">
+          <p v-if="resendSent" class="text-sm text-muted-foreground">
+            Check your inbox for the confirmation link.
+          </p>
+          <Button v-else :disabled="isSubmitting" @click="onResendConfirmation">
+            {{ isSubmitting ? 'Sending…' : 'Resend confirmation email' }}
+          </Button>
+          <button
+            type="button"
+            class="text-center text-sm font-medium text-primary underline-offset-4 hover:underline"
+            @click="awaitingEmailConfirmation = false; resendSent = false"
+          >
+            Back to log in
+          </button>
         </CardContent>
       </template>
 

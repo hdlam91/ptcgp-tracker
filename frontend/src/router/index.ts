@@ -29,6 +29,12 @@ const router = createRouter({
       meta: { requiresAuth: false },
     },
     {
+      path: '/confirm-email',
+      name: 'confirm-email',
+      component: () => import('@/views/ConfirmEmailView.vue'),
+      meta: { requiresAuth: false },
+    },
+    {
       path: '/',
       name: 'collection',
       component: () => import('@/views/CollectionView.vue'),

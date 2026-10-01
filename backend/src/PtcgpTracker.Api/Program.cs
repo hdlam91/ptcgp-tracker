@@ -36,6 +36,7 @@ builder.Services.AddScoped<AdminRoleService>();
 builder.Services.AddScoped<AccountDeletionService>();
 builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.SectionName));
 builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
+builder.Services.AddScoped<ConfirmationEmailSender>();
 
 builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
     .AddCookie(IdentityConstants.ApplicationScheme, options =>
@@ -109,6 +110,15 @@ builder.Services.AddAuthorizationBuilder()
 builder.Services.AddRateLimiter(options =>
 {
     options.AddPolicy("forgot-password", httpContext => RateLimitPartition.GetFixedWindowLimiter(
+        httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 3,
+            Window = TimeSpan.FromMinutes(15),
+            QueueLimit = 0,
+        }));
+    // Same guard, same reasoning, for resending a confirmation email.
+    options.AddPolicy("resend-confirmation", httpContext => RateLimitPartition.GetFixedWindowLimiter(
         httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         _ => new FixedWindowRateLimiterOptions
         {
@@ -203,6 +213,7 @@ if (builder.Configuration.GetValue("APPLY_MIGRATIONS_ON_STARTUP", false))
     using var scope = app.Services.CreateScope();
     await scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.MigrateAsync();
     await scope.ServiceProvider.GetRequiredService<AdminRoleService>().PromoteConfiguredAdminsAsync();
+    await scope.ServiceProvider.GetRequiredService<AppSettingsService>().EnsureNoStaleUnconfirmedUsersAsync();
 }
 
 app.Run();

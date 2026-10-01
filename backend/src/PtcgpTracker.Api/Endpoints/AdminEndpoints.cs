@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using PtcgpTracker.Api.CardData;
 using PtcgpTracker.Api.Data;
 using PtcgpTracker.Api.Data.Entities;
@@ -45,6 +46,7 @@ public static class AdminEndpoints
                 u.DisplayName,
                 u.CreatedAt,
                 adminIds.Contains(u.Id),
+                u.EmailConfirmed,
                 ownedByUser.GetValueOrDefault(u.Id),
                 TradeCount(u.Id, TradeDirection.Want),
                 TradeCount(u.Id, TradeDirection.Offer),
@@ -114,13 +116,41 @@ public static class AdminEndpoints
             return Results.NoContent();
         });
 
-        group.MapGet("/settings", async (AppSettingsService settings) =>
-            Results.Ok(new AdminSettingsResponse(await settings.IsRegistrationOpenAsync())));
+        group.MapPost("/users/{id:guid}/resend-confirmation", async (
+            Guid id,
+            HttpContext httpContext,
+            UserManager<ApplicationUser> userManager,
+            ConfirmationEmailSender confirmationEmail) =>
+        {
+            var user = await userManager.FindByIdAsync(id.ToString());
+            if (user is null)
+            {
+                return Results.NotFound();
+            }
 
-        group.MapPut("/settings", async (UpdateAdminSettingsRequest request, AppSettingsService settings) =>
+            if (user.EmailConfirmed)
+            {
+                return Results.BadRequest(new { error = "This user's email is already confirmed." });
+            }
+
+            await confirmationEmail.SendAsync(httpContext, userManager, user);
+            return Results.NoContent();
+        });
+
+        group.MapGet("/settings", async (AppSettingsService settings, IOptions<SmtpOptions> smtp) =>
+            Results.Ok(new AdminSettingsResponse(
+                await settings.IsRegistrationOpenAsync(),
+                await settings.IsEmailConfirmationRequiredAsync(),
+                !string.IsNullOrWhiteSpace(smtp.Value.Host))));
+
+        group.MapPut("/settings", async (UpdateAdminSettingsRequest request, AppSettingsService settings, IOptions<SmtpOptions> smtp) =>
         {
             await settings.SetRegistrationOpenAsync(request.RegistrationOpen);
-            return Results.Ok(new AdminSettingsResponse(request.RegistrationOpen));
+            await settings.SetEmailConfirmationRequiredAsync(request.RequireEmailConfirmation);
+            return Results.Ok(new AdminSettingsResponse(
+                request.RegistrationOpen,
+                request.RequireEmailConfirmation,
+                !string.IsNullOrWhiteSpace(smtp.Value.Host)));
         });
 
         group.MapGet("/catalog", (ICardCatalogAdmin catalog) => Results.Ok(ToResponse(catalog.GetStatus())));

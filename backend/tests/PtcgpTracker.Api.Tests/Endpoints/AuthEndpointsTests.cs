@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PtcgpTracker.Api.Tests.Infrastructure;
 
@@ -135,6 +136,134 @@ public class AuthEndpointsTests(PostgresApiFixture fixture)
         var reset = await client.PostAsJsonAsync("/api/auth/reset-password", new { email, token = "not-a-real-token", newPassword = "NewPassword1" });
 
         Assert.Equal(HttpStatusCode.BadRequest, reset.StatusCode);
+    }
+
+    [Fact]
+    public async Task Register_WithConfirmationRequired_BlocksLoginUntilTheLinkIsClicked()
+    {
+        var admin = await fixture.Factory.CreateAdminClientAsync();
+        var email = $"{Guid.NewGuid()}@example.com";
+
+        try
+        {
+            Assert.Equal(HttpStatusCode.OK, (await admin.PutAsJsonAsync(
+                "/api/admin/settings", new { registrationOpen = true, requireEmailConfirmation = true })).StatusCode);
+
+            var anonymous = fixture.Factory.CreateClient();
+            anonymous.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+
+            var register = await anonymous.PostAsJsonAsync("/api/auth/register", new { email, password = "Password1", displayName = "Pending" });
+            Assert.Equal(HttpStatusCode.Created, register.StatusCode);
+            var registerBody = await register.Content.ReadFromJsonAsync<JsonElement>();
+            Assert.True(registerBody.GetProperty("requiresEmailConfirmation").GetBoolean());
+            Assert.Equal(JsonValueKind.Null, registerBody.GetProperty("user").ValueKind);
+
+            // Not actually signed in yet.
+            Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync("/api/auth/me")).StatusCode);
+
+            // Correct password, but still blocked.
+            var blockedLogin = await anonymous.PostAsJsonAsync("/api/auth/login", new { email, password = "Password1" });
+            Assert.Equal(HttpStatusCode.OK, blockedLogin.StatusCode);
+            var blockedBody = await blockedLogin.Content.ReadFromJsonAsync<JsonElement>();
+            Assert.True(blockedBody.GetProperty("requiresEmailConfirmation").GetBoolean());
+            Assert.Equal(JsonValueKind.Null, blockedBody.GetProperty("user").ValueKind);
+            Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync("/api/auth/me")).StatusCode);
+
+            // Pull the confirmation link out of the fake mailer.
+            var sender = fixture.Factory.Services.GetRequiredService<FakeEmailSender>();
+            var sentEmail = sender.Sent.Last(e => e.ToEmail == email);
+            var confirmUrl = new Uri(System.Text.RegularExpressions.Regex.Match(sentEmail.TextBody, @"https?://\S+").Value);
+            var token = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(confirmUrl.Query)["token"].ToString();
+
+            var confirm = await anonymous.PostAsJsonAsync("/api/auth/confirm-email", new { email, token });
+            Assert.Equal(HttpStatusCode.OK, confirm.StatusCode);
+
+            // Confirming signs you in immediately.
+            Assert.Equal(HttpStatusCode.OK, (await anonymous.GetAsync("/api/auth/me")).StatusCode);
+
+            // A fresh login now succeeds normally too.
+            await anonymous.PostAsync("/api/auth/logout", null);
+            var login = await anonymous.PostAsJsonAsync("/api/auth/login", new { email, password = "Password1" });
+            var loginBody = await login.Content.ReadFromJsonAsync<JsonElement>();
+            Assert.False(loginBody.GetProperty("requiresEmailConfirmation").GetBoolean());
+        }
+        finally
+        {
+            await admin.PutAsJsonAsync("/api/admin/settings", new { registrationOpen = true, requireEmailConfirmation = false });
+        }
+    }
+
+    [Fact]
+    public async Task Register_WithConfirmationRequired_ConfiguredAdminEmailSkipsIt()
+    {
+        var admin = await fixture.Factory.CreateAdminClientAsync();
+        var adminEmail = $"{Guid.NewGuid()}@example.com";
+        using var factory = fixture.Factory.WithWebHostBuilder(builder =>
+            builder.ConfigureAppConfiguration((_, config) =>
+                config.AddInMemoryCollection(new Dictionary<string, string?> { ["Admin:Emails"] = adminEmail })));
+
+        try
+        {
+            await admin.PutAsJsonAsync("/api/admin/settings", new { registrationOpen = true, requireEmailConfirmation = true });
+
+            var client = factory.CreateClient();
+            client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+            var register = await client.PostAsJsonAsync("/api/auth/register", new { email = adminEmail, password = "Password1", displayName = "Boss" });
+            var body = await register.Content.ReadFromJsonAsync<JsonElement>();
+
+            Assert.False(body.GetProperty("requiresEmailConfirmation").GetBoolean());
+            Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/api/auth/me")).StatusCode);
+        }
+        finally
+        {
+            await admin.PutAsJsonAsync("/api/admin/settings", new { registrationOpen = true, requireEmailConfirmation = false });
+        }
+    }
+
+    [Fact]
+    public async Task EnablingConfirmation_GrandfathersUsersWhoRegisteredBeforeIt()
+    {
+        var admin = await fixture.Factory.CreateAdminClientAsync();
+        var email = $"{Guid.NewGuid()}@example.com";
+        var client = await fixture.Factory.CreateAuthenticatedClientAsync(email);
+
+        try
+        {
+            Assert.Equal(HttpStatusCode.OK, (await admin.PutAsJsonAsync(
+                "/api/admin/settings", new { registrationOpen = true, requireEmailConfirmation = true })).StatusCode);
+
+            // Already-logged-in session is untouched...
+            Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/api/auth/me")).StatusCode);
+
+            // ...and a brand new login for that same pre-existing account isn't blocked either.
+            var anonymous = fixture.Factory.CreateClient();
+            anonymous.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+            var login = await anonymous.PostAsJsonAsync("/api/auth/login", new { email, password = "Password1" });
+            Assert.Equal(HttpStatusCode.OK, login.StatusCode);
+            var body = await login.Content.ReadFromJsonAsync<JsonElement>();
+            Assert.False(body.GetProperty("requiresEmailConfirmation").GetBoolean());
+        }
+        finally
+        {
+            await admin.PutAsJsonAsync("/api/admin/settings", new { registrationOpen = true, requireEmailConfirmation = false });
+        }
+    }
+
+    [Fact]
+    public async Task ResendConfirmation_NeverRevealsWhetherAnEmailExistsOrIsAlreadyConfirmed()
+    {
+        var confirmedEmail = $"{Guid.NewGuid()}@example.com";
+        await fixture.Factory.CreateAuthenticatedClientAsync(confirmedEmail);
+        var unknownEmail = $"{Guid.NewGuid()}@example.com";
+
+        var client = fixture.Factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+
+        Assert.Equal(HttpStatusCode.NoContent, (await client.PostAsJsonAsync("/api/auth/resend-confirmation", new { email = confirmedEmail })).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await client.PostAsJsonAsync("/api/auth/resend-confirmation", new { email = unknownEmail })).StatusCode);
+
+        var sender = fixture.Factory.Services.GetRequiredService<FakeEmailSender>();
+        Assert.DoesNotContain(sender.Sent, e => e.ToEmail == confirmedEmail || e.ToEmail == unknownEmail);
     }
 
     [Fact]

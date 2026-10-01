@@ -17,7 +17,9 @@ public static class AuthEndpoints
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             AppSettingsService settings,
-            AdminRoleService adminRoles) =>
+            AdminRoleService adminRoles,
+            ConfirmationEmailSender confirmationEmail,
+            HttpContext httpContext) =>
         {
             if (!await settings.IsRegistrationOpenAsync())
             {
@@ -45,14 +47,31 @@ public static class AuthEndpoints
                 await adminRoles.SetAdminAsync(user, true);
             }
 
+            // Configured admins skip this entirely — they're already trusted via server config,
+            // and requiring confirmation for them risks locking out the only admin if SMTP isn't
+            // set up yet.
+            if (!isAdmin && await settings.IsEmailConfirmationRequiredAsync())
+            {
+                await confirmationEmail.SendAsync(httpContext, userManager, user);
+                return Results.Created($"/api/auth/me", new RegisterResponse(true, null));
+            }
+
+            // Nothing pending for this account (confirmation is off, or this email is exempt) —
+            // EmailConfirmed means "no outstanding confirmation", not literally "clicked a link",
+            // so the admin Users list only ever flags accounts that actually have one pending.
+            user.EmailConfirmed = true;
+            await userManager.UpdateAsync(user);
+
             await signInManager.SignInAsync(user, isPersistent: true);
-            return Results.Created($"/api/auth/me", new UserResponse(user.Id, user.Email!, user.DisplayName, isAdmin));
+            return Results.Created($"/api/auth/me", new RegisterResponse(false, new UserResponse(user.Id, user.Email!, user.DisplayName, isAdmin)));
         });
 
         group.MapPost("/login", async (
             LoginRequest request,
             SignInManager<ApplicationUser> signInManager,
-            UserManager<ApplicationUser> userManager) =>
+            UserManager<ApplicationUser> userManager,
+            AppSettingsService settings,
+            AdminRoleService adminRoles) =>
         {
             var result = await signInManager.PasswordSignInAsync(
                 request.Email, request.Password, isPersistent: true, lockoutOnFailure: false);
@@ -61,7 +80,7 @@ public static class AuthEndpoints
             {
                 // The password was right, but SignInManager hasn't completed the sign-in — it's
                 // stashed who's mid-login in its own short-lived cookie for /login/2fa to finish.
-                return Results.Ok(new LoginResponse(true, null));
+                return Results.Ok(new LoginResponse(true, false, null));
             }
 
             if (!result.Succeeded)
@@ -70,14 +89,22 @@ public static class AuthEndpoints
             }
 
             var user = await userManager.FindByEmailAsync(request.Email);
+            if (await IsBlockedByUnconfirmedEmailAsync(user!, settings, adminRoles))
+            {
+                await signInManager.SignOutAsync();
+                return Results.Ok(new LoginResponse(false, true, null));
+            }
+
             var isAdmin = await userManager.IsInRoleAsync(user!, AppRoles.Admin);
-            return Results.Ok(new LoginResponse(false, new UserResponse(user!.Id, user.Email!, user.DisplayName, isAdmin)));
+            return Results.Ok(new LoginResponse(false, false, new UserResponse(user!.Id, user.Email!, user.DisplayName, isAdmin)));
         });
 
         group.MapPost("/login/2fa", async (
             TwoFactorLoginRequest request,
             SignInManager<ApplicationUser> signInManager,
-            UserManager<ApplicationUser> userManager) =>
+            UserManager<ApplicationUser> userManager,
+            AppSettingsService settings,
+            AdminRoleService adminRoles) =>
         {
             // Fetched before the sign-in call below, which clears the intermediate "who's
             // mid-login" cookie this reads from once it succeeds.
@@ -96,9 +123,57 @@ public static class AuthEndpoints
                 return Results.Unauthorized();
             }
 
+            if (await IsBlockedByUnconfirmedEmailAsync(user, settings, adminRoles))
+            {
+                await signInManager.SignOutAsync();
+                return Results.Ok(new LoginResponse(false, true, null));
+            }
+
+            var isAdmin = await userManager.IsInRoleAsync(user, AppRoles.Admin);
+            return Results.Ok(new LoginResponse(false, false, new UserResponse(user.Id, user.Email!, user.DisplayName, isAdmin)));
+        });
+
+        group.MapPost("/confirm-email", async (
+            ConfirmEmailRequest request,
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager) =>
+        {
+            var user = await userManager.FindByEmailAsync(request.Email);
+            if (user is null)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["Token"] = ["That confirmation link is invalid or has expired."],
+                });
+            }
+
+            var result = await userManager.ConfirmEmailAsync(user, request.Token);
+            if (!result.Succeeded)
+            {
+                return Results.ValidationProblem(result.Errors.ToDictionary(e => e.Code, e => new[] { e.Description }));
+            }
+
+            // One less step: confirming signs you in immediately.
+            await signInManager.SignInAsync(user, isPersistent: true);
             var isAdmin = await userManager.IsInRoleAsync(user, AppRoles.Admin);
             return Results.Ok(new UserResponse(user.Id, user.Email!, user.DisplayName, isAdmin));
         });
+
+        group.MapPost("/resend-confirmation", async (
+            ResendConfirmationRequest request,
+            UserManager<ApplicationUser> userManager,
+            ConfirmationEmailSender confirmationEmail,
+            HttpContext httpContext) =>
+        {
+            var user = await userManager.FindByEmailAsync(request.Email);
+            if (user is not null && !user.EmailConfirmed)
+            {
+                await confirmationEmail.SendAsync(httpContext, userManager, user);
+            }
+
+            // Same response either way — never reveal whether an email is registered or confirmed.
+            return Results.NoContent();
+        }).RequireRateLimiting("resend-confirmation");
 
         group.MapPost("/forgot-password", async (
             ForgotPasswordRequest request,
@@ -165,4 +240,10 @@ public static class AuthEndpoints
                 : Results.Ok(new UserResponse(user.Id, user.Email!, user.DisplayName, principal.IsInRole(AppRoles.Admin)));
         }).RequireAuthorization();
     }
+
+    private static async Task<bool> IsBlockedByUnconfirmedEmailAsync(
+        ApplicationUser user, AppSettingsService settings, AdminRoleService adminRoles) =>
+        !user.EmailConfirmed
+        && !adminRoles.IsConfiguredAdmin(user.Email)
+        && await settings.IsEmailConfirmationRequiredAsync();
 }

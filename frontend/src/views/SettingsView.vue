@@ -2,6 +2,7 @@
 import { Search } from '@lucide/vue'
 import { onMounted } from 'vue'
 import CatalogCard from '@/components/admin/CatalogCard.vue'
+import EmailConfirmationCard from '@/components/admin/EmailConfirmationCard.vue'
 import ImagesCard from '@/components/admin/ImagesCard.vue'
 import RegistrationCard from '@/components/admin/RegistrationCard.vue'
 import UsersTable from '@/components/admin/UsersTable.vue'
@@ -16,6 +17,8 @@ const {
   filteredUsers,
   search,
   registrationOpen,
+  requireEmailConfirmation,
+  smtpConfigured,
   catalog,
   images,
   loading,
@@ -23,9 +26,11 @@ const {
   busy,
   load,
   toggleRegistration,
+  toggleEmailConfirmation,
   setAdmin,
   deleteUser,
   disableShare,
+  resendConfirmation,
   refreshCatalog,
   startImageDownload,
 } = useAdmin()
@@ -48,6 +53,12 @@ onMounted(load)
 
     <div class="mt-6 grid gap-4 md:grid-cols-2">
       <RegistrationCard :open="registrationOpen" :busy="busy" @toggle="toggleRegistration" />
+      <EmailConfirmationCard
+        :required="requireEmailConfirmation"
+        :smtp-configured="smtpConfigured"
+        :busy="busy"
+        @toggle="toggleEmailConfirmation"
+      />
       <CatalogCard :catalog="catalog" :busy="busy" @refresh="refreshCatalog" />
       <ImagesCard :status="images" :busy="busy" @download="startImageDownload" />
     </div>
@@ -81,6 +92,7 @@ onMounted(load)
           :busy="busy"
           @set-admin="setAdmin"
           @disable-share="disableShare"
+          @resend-confirmation="resendConfirmation"
           @delete="deleteUser"
         />
       </CardContent>

@@ -16,6 +16,8 @@ export function useAdmin() {
   const users = ref<AdminUserResponse[]>([])
   const search = ref('')
   const registrationOpen = ref<boolean | null>(null)
+  const requireEmailConfirmation = ref<boolean | null>(null)
+  const smtpConfigured = ref(false)
   const catalog = ref<CatalogStatusResponse | null>(null)
   const images = ref<ImageMirrorStatusResponse | null>(null)
   const loading = ref(true)
@@ -79,6 +81,8 @@ export function useAdmin() {
       ])
       users.value = loadedUsers
       registrationOpen.value = settings.registrationOpen
+      requireEmailConfirmation.value = settings.requireEmailConfirmation
+      smtpConfigured.value = settings.smtpConfigured
       catalog.value = loadedCatalog
       images.value = loadedImages
       // A download started before this page was opened (or reloaded) is still worth watching.
@@ -93,8 +97,19 @@ export function useAdmin() {
   }
 
   const toggleRegistration = () => run(async () => {
-    const next = !registrationOpen.value
-    registrationOpen.value = (await adminService.updateSettings(next)).registrationOpen
+    const settings = await adminService.updateSettings(!registrationOpen.value, requireEmailConfirmation.value === true)
+    registrationOpen.value = settings.registrationOpen
+    requireEmailConfirmation.value = settings.requireEmailConfirmation
+  })
+
+  const toggleEmailConfirmation = () => run(async () => {
+    const settings = await adminService.updateSettings(registrationOpen.value === true, !requireEmailConfirmation.value)
+    registrationOpen.value = settings.registrationOpen
+    requireEmailConfirmation.value = settings.requireEmailConfirmation
+  })
+
+  const resendConfirmation = (user: AdminUserResponse) => run(async () => {
+    await adminService.resendConfirmation(user.id)
   })
 
   const setAdmin = (user: AdminUserResponse, isAdmin: boolean) => run(async () => {
@@ -126,6 +141,8 @@ export function useAdmin() {
     filteredUsers,
     search,
     registrationOpen,
+    requireEmailConfirmation,
+    smtpConfigured,
     catalog,
     images,
     loading,
@@ -133,9 +150,11 @@ export function useAdmin() {
     busy,
     load,
     toggleRegistration,
+    toggleEmailConfirmation,
     setAdmin,
     deleteUser,
     disableShare,
+    resendConfirmation,
     refreshCatalog,
     startImageDownload,
   }

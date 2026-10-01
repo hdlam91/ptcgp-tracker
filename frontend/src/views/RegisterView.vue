@@ -14,6 +14,7 @@ const email = ref('')
 const password = ref('')
 const errorMessage = ref('')
 const isSubmitting = ref(false)
+const awaitingConfirmation = ref(false)
 
 const { register } = useAuth()
 const { registrationOpen, load: loadConfig, markRegistrationClosed } = useAppConfig()
@@ -25,8 +26,13 @@ async function onSubmit() {
   errorMessage.value = ''
   isSubmitting.value = true
   try {
-    await register({ email: email.value, password: password.value, displayName: displayName.value })
-    await router.push('/')
+    const result = await register({ email: email.value, password: password.value, displayName: displayName.value })
+    if (result.requiresEmailConfirmation) {
+      awaitingConfirmation.value = true
+    }
+    else {
+      await router.push('/')
+    }
   }
   catch (error) {
     if (error instanceof ApiError && (error.body as { error?: string } | null)?.error === 'registration_closed') {
@@ -55,13 +61,18 @@ function describeRegistrationError(error: ApiError): string {
   <div class="flex min-h-screen items-center justify-center bg-muted/40 px-4">
     <Card class="w-full max-w-sm">
       <CardHeader>
-        <CardTitle>{{ registrationOpen === false ? 'Registration is closed' : 'Create an account' }}</CardTitle>
+        <CardTitle>
+          {{ awaitingConfirmation ? 'Check your email' : registrationOpen === false ? 'Registration is closed' : 'Create an account' }}
+        </CardTitle>
         <CardDescription>
-          {{ registrationOpen === false ? 'New accounts aren\'t being accepted right now.' : 'Start tracking your Pokémon TCG Pocket collection.' }}
+          {{ awaitingConfirmation ? "You're almost done." : registrationOpen === false ? 'New accounts aren\'t being accepted right now.' : 'Start tracking your Pokémon TCG Pocket collection.' }}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form v-if="registrationOpen !== false" class="flex flex-col gap-4" @submit.prevent="onSubmit">
+        <p v-if="awaitingConfirmation" class="text-sm text-muted-foreground">
+          Check your inbox for a link to confirm {{ email }} before logging in.
+        </p>
+        <form v-else-if="registrationOpen !== false" class="flex flex-col gap-4" @submit.prevent="onSubmit">
           <div class="flex flex-col gap-1.5">
             <Label for="displayName">Display name</Label>
             <Input id="displayName" v-model="displayName" autocomplete="nickname" required />

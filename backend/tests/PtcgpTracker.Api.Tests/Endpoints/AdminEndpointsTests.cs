@@ -58,6 +58,8 @@ public class AdminEndpointsTests(PostgresApiFixture fixture)
         var entry = FindUser(users, await trainer.GetUserIdAsync());
         Assert.Equal("Stats Trainer", entry.GetProperty("displayName").GetString());
         Assert.False(entry.GetProperty("isAdmin").GetBoolean());
+        // Confirmation isn't required by default, so there's nothing pending for this account.
+        Assert.True(entry.GetProperty("emailConfirmed").GetBoolean());
         Assert.Equal(1, entry.GetProperty("ownedUniqueCards").GetInt32());
         Assert.Equal(1, entry.GetProperty("wantCount").GetInt32());
         Assert.Equal(1, entry.GetProperty("offerCount").GetInt32());
@@ -188,6 +190,41 @@ public class AdminEndpointsTests(PostgresApiFixture fixture)
     }
 
     [Fact]
+    public async Task ResendConfirmation_Admin_SendsAnotherEmailButRefusesForAnAlreadyConfirmedUser()
+    {
+        var admin = await fixture.Factory.CreateAdminClientAsync();
+        var email = $"{Guid.NewGuid()}@example.com";
+
+        try
+        {
+            await admin.PutAsJsonAsync("/api/admin/settings", new { registrationOpen = true, requireEmailConfirmation = true });
+
+            var anonymous = fixture.Factory.CreateClient();
+            anonymous.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+            await anonymous.PostAsJsonAsync("/api/auth/register", new { email, password = "Password1", displayName = "Pending" });
+
+            var users = await admin.GetFromJsonAsync<JsonElement>("/api/admin/users");
+            var userId = users.EnumerateArray().Single(u => u.GetProperty("email").GetString() == email).GetProperty("id").GetGuid();
+
+            var sender = fixture.Factory.Services.GetRequiredService<FakeEmailSender>();
+            Assert.Equal(1, sender.Sent.Count(e => e.ToEmail == email));
+
+            var resend = await admin.PostAsync($"/api/admin/users/{userId}/resend-confirmation", null);
+            Assert.Equal(HttpStatusCode.NoContent, resend.StatusCode);
+            Assert.Equal(2, sender.Sent.Count(e => e.ToEmail == email));
+
+            // The admin's own account was created while confirmation wasn't required, so there's
+            // nothing pending for it — resending is refused rather than silently doing nothing.
+            var alreadyConfirmed = await admin.PostAsync($"/api/admin/users/{await admin.GetUserIdAsync()}/resend-confirmation", null);
+            Assert.Equal(HttpStatusCode.BadRequest, alreadyConfirmed.StatusCode);
+        }
+        finally
+        {
+            await admin.PutAsJsonAsync("/api/admin/settings", new { registrationOpen = true, requireEmailConfirmation = false });
+        }
+    }
+
+    [Fact]
     public async Task Registration_ClosingBlocksSignupsButNotExistingUsers_AndReopeningRestoresIt()
     {
         var admin = await fixture.Factory.CreateAdminClientAsync();
@@ -232,6 +269,31 @@ public class AdminEndpointsTests(PostgresApiFixture fixture)
         var response = await trainer.PutAsJsonAsync("/api/admin/settings", new { registrationOpen = false });
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Settings_RequireEmailConfirmation_RoundTripsAndReportsSmtpStatus()
+    {
+        var admin = await fixture.Factory.CreateAdminClientAsync();
+
+        try
+        {
+            var before = await admin.GetFromJsonAsync<JsonElement>("/api/admin/settings");
+            Assert.False(before.GetProperty("requireEmailConfirmation").GetBoolean());
+            // The test host never sets Smtp:Host, so this should read as not configured.
+            Assert.False(before.GetProperty("smtpConfigured").GetBoolean());
+
+            var enable = await admin.PutAsJsonAsync("/api/admin/settings", new { registrationOpen = true, requireEmailConfirmation = true });
+            Assert.Equal(HttpStatusCode.OK, enable.StatusCode);
+            var enabledBody = await enable.Content.ReadFromJsonAsync<JsonElement>();
+            Assert.True(enabledBody.GetProperty("requireEmailConfirmation").GetBoolean());
+
+            Assert.True((await admin.GetFromJsonAsync<JsonElement>("/api/admin/settings")).GetProperty("requireEmailConfirmation").GetBoolean());
+        }
+        finally
+        {
+            await admin.PutAsJsonAsync("/api/admin/settings", new { registrationOpen = true, requireEmailConfirmation = false });
+        }
     }
 
     [Fact]

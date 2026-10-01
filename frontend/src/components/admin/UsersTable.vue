@@ -12,6 +12,7 @@ defineProps<{
 defineEmits<{
   (e: 'setAdmin', user: AdminUserResponse, isAdmin: boolean): void
   (e: 'disableShare', user: AdminUserResponse): void
+  (e: 'resendConfirmation', user: AdminUserResponse): void
   (e: 'delete', user: AdminUserResponse): void
 }>()
 
@@ -56,6 +57,10 @@ const confirmingDeleteId = ref<string | null>(null)
                 v-if="user.isAdmin"
                 class="rounded-full border border-sky-300 bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-700 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-300"
               >Admin</span>
+              <span
+                v-if="!user.emailConfirmed"
+                class="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300"
+              >Unconfirmed</span>
               <span v-if="user.id === currentUserId" class="text-xs text-muted-foreground">(you)</span>
             </div>
             <div class="text-xs text-muted-foreground">
@@ -95,6 +100,9 @@ const confirmingDeleteId = ref<string | null>(null)
               </Button>
             </div>
             <div v-else class="flex items-center justify-end gap-2">
+              <Button v-if="!user.emailConfirmed" variant="outline" size="sm" :disabled="busy" @click="$emit('resendConfirmation', user)">
+                Resend
+              </Button>
               <Button variant="outline" size="sm" :disabled="busy" @click="$emit('setAdmin', user, !user.isAdmin)">
                 {{ user.isAdmin ? 'Remove admin' : 'Make admin' }}
               </Button>

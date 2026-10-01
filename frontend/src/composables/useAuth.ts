@@ -1,4 +1,4 @@
-import type { LoginPayload, RegisterPayload, TwoFactorLoginPayload } from '@/services/authService'
+import type { ConfirmEmailPayload, LoginPayload, RegisterPayload, TwoFactorLoginPayload } from '@/services/authService'
 import type { UserResponse } from '@/types/api'
 import { computed, ref } from 'vue'
 import { authService } from '@/services/authService'
@@ -36,9 +36,17 @@ async function fetchCurrentUser(): Promise<UserResponse | null> {
   return currentUser.value
 }
 
+/**
+ * Returns the raw response so the register view can branch on `requiresEmailConfirmation` —
+ * `currentUser` is only set once registration actually signs someone in.
+ */
 async function register(payload: RegisterPayload) {
-  currentUser.value = await authService.register(payload)
-  initialized.value = true
+  const response = await authService.register(payload)
+  if (response.user) {
+    currentUser.value = response.user
+    initialized.value = true
+  }
+  return response
 }
 
 /**
@@ -59,6 +67,11 @@ async function loginTwoFactor(payload: TwoFactorLoginPayload) {
   initialized.value = true
 }
 
+async function confirmEmail(payload: ConfirmEmailPayload) {
+  currentUser.value = await authService.confirmEmail(payload)
+  initialized.value = true
+}
+
 async function logout() {
   await authService.logout()
   currentUser.value = null
@@ -75,6 +88,7 @@ export function useAuth() {
     register,
     login,
     loginTwoFactor,
+    confirmEmail,
     logout,
   }
 }

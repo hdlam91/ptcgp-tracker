@@ -8,6 +8,7 @@ public record AdminUserResponse(
     string DisplayName,
     DateTimeOffset CreatedAt,
     bool IsAdmin,
+    bool EmailConfirmed,
     int OwnedUniqueCards,
     int WantCount,
     int OfferCount,
@@ -15,9 +16,9 @@ public record AdminUserResponse(
 
 public record SetAdminRequest(bool IsAdmin);
 
-public record AdminSettingsResponse(bool RegistrationOpen);
+public record AdminSettingsResponse(bool RegistrationOpen, bool RequireEmailConfirmation, bool SmtpConfigured);
 
-public record UpdateAdminSettingsRequest(bool RegistrationOpen);
+public record UpdateAdminSettingsRequest(bool RegistrationOpen, bool RequireEmailConfirmation);
 
 public record CatalogStatusResponse(string RepoTag, int CardCount, DateTimeOffset? LastRefreshedAt, string? LastError);
 

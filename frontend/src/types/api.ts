@@ -6,11 +6,22 @@ export interface UserResponse {
 }
 
 /**
- * `user` is null exactly when `requiresTwoFactor` is true — the password was right, but the
- * login isn't complete until the 2FA step succeeds.
+ * `user` is null exactly when `requiresTwoFactor` or `requiresEmailConfirmation` is true — the
+ * password was right, but the login isn't complete until the 2FA step succeeds, or the account's
+ * email is confirmed.
  */
 export interface LoginResponse {
   requiresTwoFactor: boolean
+  requiresEmailConfirmation: boolean
+  user: UserResponse | null
+}
+
+/**
+ * `user` is null exactly when `requiresEmailConfirmation` is true — the account was created, but
+ * isn't signed in until its email is confirmed.
+ */
+export interface RegisterResponse {
+  requiresEmailConfirmation: boolean
   user: UserResponse | null
 }
 
@@ -63,6 +74,7 @@ export interface AdminUserResponse {
   displayName: string
   createdAt: string
   isAdmin: boolean
+  emailConfirmed: boolean
   ownedUniqueCards: number
   wantCount: number
   offerCount: number
@@ -71,6 +83,8 @@ export interface AdminUserResponse {
 
 export interface AdminSettingsResponse {
   registrationOpen: boolean
+  requireEmailConfirmation: boolean
+  smtpConfigured: boolean
 }
 
 export interface CatalogStatusResponse {

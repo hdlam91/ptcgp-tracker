@@ -1,4 +1,4 @@
-import type { LoginResponse, UserResponse } from '@/types/api'
+import type { LoginResponse, RegisterResponse, UserResponse } from '@/types/api'
 import { httpClient } from '@/services/httpClient'
 
 export interface RegisterPayload {
@@ -24,12 +24,19 @@ export interface ResetPasswordPayload {
   newPassword: string
 }
 
+export interface ConfirmEmailPayload {
+  email: string
+  token: string
+}
+
 export const authService = {
-  register: (payload: RegisterPayload) => httpClient.post<UserResponse>('/auth/register', payload),
+  register: (payload: RegisterPayload) => httpClient.post<RegisterResponse>('/auth/register', payload),
   login: (payload: LoginPayload) => httpClient.post<LoginResponse>('/auth/login', payload),
   loginTwoFactor: (payload: TwoFactorLoginPayload) => httpClient.post<UserResponse>('/auth/login/2fa', payload),
   logout: () => httpClient.post<void>('/auth/logout'),
   me: () => httpClient.get<UserResponse>('/auth/me'),
   forgotPassword: (email: string) => httpClient.post<void>('/auth/forgot-password', { email }),
   resetPassword: (payload: ResetPasswordPayload) => httpClient.post<void>('/auth/reset-password', payload),
+  confirmEmail: (payload: ConfirmEmailPayload) => httpClient.post<UserResponse>('/auth/confirm-email', payload),
+  resendConfirmation: (email: string) => httpClient.post<void>('/auth/resend-confirmation', { email }),
 }
