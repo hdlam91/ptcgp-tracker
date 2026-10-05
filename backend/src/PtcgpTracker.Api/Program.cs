@@ -32,6 +32,7 @@ builder.Services.Configure<ImageMirrorOptions>(builder.Configuration.GetSection(
 builder.Services.AddHttpClient(ImageMirrorService.HttpClientName);
 builder.Services.AddSingleton<ImageMirrorService>();
 builder.Services.AddScoped<AppSettingsService>();
+builder.Services.AddScoped<CollectionMergeService>();
 builder.Services.AddScoped<AdminRoleService>();
 builder.Services.AddScoped<AccountDeletionService>();
 builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.SectionName));
@@ -214,6 +215,23 @@ if (builder.Configuration.GetValue("APPLY_MIGRATIONS_ON_STARTUP", false))
     await scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.MigrateAsync();
     await scope.ServiceProvider.GetRequiredService<AdminRoleService>().PromoteConfiguredAdminsAsync();
     await scope.ServiceProvider.GetRequiredService<AppSettingsService>().EnsureNoStaleUnconfirmedUsersAsync();
+
+    // The catalog's own background refresh hasn't started yet at this point (hosted services
+    // start inside app.Run(), below) — fetch it explicitly now so the merge has equivalence
+    // groups to work with, instead of running against an empty catalog. A flaky GitHub at boot
+    // shouldn't take the whole app down, though — the hosted service's own retry loop will pick
+    // the catalog up shortly after startup regardless, same as if this block didn't exist; the
+    // merge just has to wait for a later run (next clean startup, or the next admin-triggered
+    // catalog refresh) in that case.
+    try
+    {
+        await scope.ServiceProvider.GetRequiredService<ICardCatalogAdmin>().RefreshNowAsync(CancellationToken.None);
+        await scope.ServiceProvider.GetRequiredService<CollectionMergeService>().MergeDuplicatesAsync();
+    }
+    catch (Exception ex) when (ex is not OperationCanceledException)
+    {
+        app.Logger.LogWarning(ex, "Could not fetch the card catalog at startup; skipping the collection merge for now");
+    }
 }
 
 app.Run();

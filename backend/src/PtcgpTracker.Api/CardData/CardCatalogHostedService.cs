@@ -20,6 +20,9 @@ public class CardCatalogHostedService(
     private ImmutableDictionary<string, CollectionCardRecord> _snapshot =
         ImmutableDictionary<string, CollectionCardRecord>.Empty;
 
+    private CardEquivalenceGrouping.Result _equivalence =
+        new(ImmutableDictionary<string, string>.Empty, ImmutableDictionary<string, ImmutableArray<string>>.Empty);
+
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
     private DateTimeOffset? _lastRefreshedAt;
     private string? _lastError;
@@ -28,6 +31,15 @@ public class CardCatalogHostedService(
         _snapshot.TryGetValue(cardId, out card!);
 
     public IReadOnlyCollection<CollectionCardRecord> GetAll() => _snapshot.Values.ToList();
+
+    public string ResolveCanonicalId(string cardId) =>
+        _equivalence.CanonicalIds.GetValueOrDefault(cardId, cardId);
+
+    public IReadOnlyCollection<string> GetEquivalentIds(string cardId)
+    {
+        var canonicalId = ResolveCanonicalId(cardId);
+        return _equivalence.GroupMembers.TryGetValue(canonicalId, out var members) ? members : [cardId];
+    }
 
     public CatalogStatus GetStatus() =>
         new(options.Value.RepoTag, _snapshot.Count, _lastRefreshedAt, _lastError);
@@ -39,6 +51,7 @@ public class CardCatalogHostedService(
         try
         {
             _snapshot = await FetchSnapshotAsync(cancellationToken);
+            _equivalence = CardEquivalenceGrouping.Compute(_snapshot.Values);
             _lastRefreshedAt = DateTimeOffset.UtcNow;
             _lastError = null;
             logger.LogInformation("Card catalog cache populated with {Count} cards", _snapshot.Count);

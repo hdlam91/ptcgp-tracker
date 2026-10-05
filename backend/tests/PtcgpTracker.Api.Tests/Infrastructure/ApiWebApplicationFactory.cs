@@ -31,7 +31,7 @@ internal class ApiWebApplicationFactory(string connectionString) : WebApplicatio
             services.RemoveAll<CardCatalogHostedService>();
             services.RemoveAll<ICardCatalogProvider>();
             services.RemoveAll<ICardCatalogAdmin>();
-            services.AddSingleton<FakeCardCatalogProvider>();
+            services.AddSingleton(_ => new FakeCardCatalogProvider(FakeCardCatalogProvider.DefaultCards));
             services.AddSingleton<ICardCatalogProvider>(sp => sp.GetRequiredService<FakeCardCatalogProvider>());
             services.AddSingleton<ICardCatalogAdmin>(sp => sp.GetRequiredService<FakeCardCatalogProvider>());
 

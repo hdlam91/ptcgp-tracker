@@ -96,4 +96,60 @@ public class CollectionEndpointsTests(PostgresApiFixture fixture)
         var entries = await client.GetFromJsonAsync<List<JsonElement>>("/api/collection");
         Assert.Empty(entries!);
     }
+
+    [Fact]
+    public async Task Put_LinkedCardId_AppliesOwnershipToEveryReprint_ButNotTheUnrelatedReverseFoil()
+    {
+        using var factory = LinkedCardsTestFactory.Create(fixture);
+        var client = await factory.CreateAuthenticatedClientAsync();
+
+        // a4b-001 is clicked, but it's the same real-world card as a1-001.
+        var put = await client.PutAsJsonAsync("/api/collection/a4b-001", new { ownedCount = 4 });
+        Assert.Equal(HttpStatusCode.OK, put.StatusCode);
+
+        var putEntries = await put.Content.ReadFromJsonAsync<List<JsonElement>>() ?? [];
+        var putIds = putEntries.Select(e => e.GetProperty("cardId").GetString()!).ToHashSet();
+        Assert.Equal(new HashSet<string> { "a1-001", "a4b-001" }, putIds);
+        Assert.All(putEntries, e => Assert.Equal(4, e.GetProperty("ownedCount").GetInt32()));
+
+        var entries = await client.GetFromJsonAsync<List<JsonElement>>("/api/collection") ?? [];
+        var entriesById = entries.ToDictionary(e => e.GetProperty("cardId").GetString()!);
+        Assert.Equal(4, entriesById["a1-001"].GetProperty("ownedCount").GetInt32());
+        Assert.Equal(4, entriesById["a4b-001"].GetProperty("ownedCount").GetInt32());
+        // a4b-002 is the pack's own reverse-foil pull — a different print, not owned by this.
+        Assert.DoesNotContain("a4b-002", entriesById.Keys);
+    }
+
+    [Fact]
+    public async Task Put_EitherIdInAGroup_UpdatesTheSameUnderlyingRow()
+    {
+        using var factory = LinkedCardsTestFactory.Create(fixture);
+        var client = await factory.CreateAuthenticatedClientAsync();
+
+        await client.PutAsJsonAsync("/api/collection/a1-001", new { ownedCount = 2 });
+        // a4b-001 released later than a1-001, so a1-001 is the group's canonical id — this must
+        // update that same row, not add a second one.
+        await client.PutAsJsonAsync("/api/collection/a4b-001", new { ownedCount = 7 });
+
+        var entries = await client.GetFromJsonAsync<List<JsonElement>>("/api/collection") ?? [];
+        Assert.Equal(2, entries.Count);
+        Assert.All(entries, e => Assert.Equal(7, e.GetProperty("ownedCount").GetInt32()));
+    }
+
+    [Fact]
+    public async Task Summary_AttributesALinkedCardToEverySetInItsGroup()
+    {
+        using var factory = LinkedCardsTestFactory.Create(fixture);
+        var client = await factory.CreateAuthenticatedClientAsync();
+
+        await client.PutAsJsonAsync("/api/collection/a4b-001", new { ownedCount = 1 });
+
+        var summary = await client.GetFromJsonAsync<List<JsonElement>>("/api/collection/summary") ?? [];
+
+        var a1 = summary.Single(s => s.GetProperty("setCode").GetString() == "a1");
+        Assert.Equal(1, a1.GetProperty("ownedUniqueCards").GetInt32());
+
+        var a4b = summary.Single(s => s.GetProperty("setCode").GetString() == "a4b");
+        Assert.Equal(1, a4b.GetProperty("ownedUniqueCards").GetInt32());
+    }
 }

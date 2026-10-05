@@ -11,4 +11,15 @@ public interface ICardCatalogProvider
     bool TryGetCard(string cardId, out CollectionCardRecord card);
 
     IReadOnlyCollection<CollectionCardRecord> GetAll();
+
+    /// <summary>
+    /// The id that collection ownership is actually stored under for this card — itself, unless
+    /// it's a reprint of another card (see <see cref="CardEquivalenceGrouping"/>), in which case
+    /// every reprint in the group shares one canonical id. Callers validate with
+    /// <see cref="TryGetCard"/> first; this assumes the id is already known.
+    /// </summary>
+    string ResolveCanonicalId(string cardId);
+
+    /// <summary>Every id that shares the same canonical id as this one, including itself.</summary>
+    IReadOnlyCollection<string> GetEquivalentIds(string cardId);
 }

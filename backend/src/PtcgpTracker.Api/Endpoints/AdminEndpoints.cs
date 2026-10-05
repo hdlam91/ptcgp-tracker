@@ -163,7 +163,10 @@ public static class AdminEndpoints
                 ? Results.Accepted("/api/admin/images", ToResponse(images.GetStatus()))
                 : Results.Conflict(new { error = "A download is already running." }));
 
-        group.MapPost("/catalog/refresh", async (ICardCatalogAdmin catalog, CancellationToken cancellationToken) =>
+        group.MapPost("/catalog/refresh", async (
+            ICardCatalogAdmin catalog,
+            CollectionMergeService collectionMerge,
+            CancellationToken cancellationToken) =>
         {
             try
             {
@@ -173,6 +176,11 @@ public static class AdminEndpoints
             {
                 return Results.Problem($"Could not fetch the card data: {ex.Message}", statusCode: StatusCodes.Status502BadGateway);
             }
+
+            // A new release can change which id is canonical for an existing equivalence group
+            // (or introduce a new one), so re-converge stored collection rows every time the
+            // catalog actually changes, not just once at startup.
+            await collectionMerge.MergeDuplicatesAsync();
 
             return Results.Ok(ToResponse(catalog.GetStatus()));
         });

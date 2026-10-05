@@ -48,12 +48,17 @@ async function setOwnedCount(cardId: string, ownedCount: number) {
     return
   }
 
+  // The response covers every reprint that's the same real-world card as cardId (usually just
+  // cardId itself) — apply all of them, so a card only ever shown on a different page already
+  // reflects the change without needing a full reload.
   const confirmed = new Map(ownedCounts.value)
-  if (result.ownedCount === 0) {
-    confirmed.delete(cardId)
-  }
-  else {
-    confirmed.set(cardId, result.ownedCount)
+  for (const entry of result) {
+    if (entry.ownedCount === 0) {
+      confirmed.delete(entry.cardId)
+    }
+    else {
+      confirmed.set(entry.cardId, entry.ownedCount)
+    }
   }
   ownedCounts.value = confirmed
 }
