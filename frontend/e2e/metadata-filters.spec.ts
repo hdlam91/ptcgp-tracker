@@ -92,5 +92,5 @@ test('all-cards page can filter the whole catalog by evolution', async ({ page }
 
   await page.getByRole('button', { name: 'Filters' }).click()
   await page.getByLabel('Filter by evolution').selectOption({ label: 'Mega' })
-  await expect(page.getByText('111 / 3879 cards')).toBeVisible()
+  await expect(page.getByText('156 / 4317 cards')).toBeVisible()
 })

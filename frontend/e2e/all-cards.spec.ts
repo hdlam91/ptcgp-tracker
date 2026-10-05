@@ -6,9 +6,9 @@ test('searching and filtering the all-cards page spans every set', async ({ page
 
   await page.goto('/cards')
   await expect(page.getByRole('heading', { name: 'All cards' })).toBeVisible()
-  await expect(page.getByText('3879 / 3879 cards')).toBeVisible()
+  await expect(page.getByText('4317 / 4317 cards')).toBeVisible()
 
-  // Nothing renders until a filter narrows things down — rendering all ~3,879
+  // Nothing renders until a filter narrows things down — rendering all ~4,317
   // cards by default is a real perf hit, not just a display choice.
   await expect(page.getByText(/cards across every set/)).toBeVisible()
   await expect(page.locator('.grid > div')).toHaveCount(0)
@@ -35,7 +35,7 @@ test('searching and filtering the all-cards page spans every set', async ({ page
   }
 
   await page.getByRole('button', { name: 'Clear' }).click()
-  await expect(page.getByText('3879 / 3879 cards')).toBeVisible()
+  await expect(page.getByText('4317 / 4317 cards')).toBeVisible()
   await expect(page.getByText(/cards across every set/)).toBeVisible()
 })
 
