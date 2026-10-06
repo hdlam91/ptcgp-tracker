@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { PackOption, RarityFilter } from '@/composables/useCardFilters'
 import type { EnergyType } from '@/lib/cardMetadata'
 import { ArrowLeft, Heart, Minus, Plus, Repeat } from '@lucide/vue'
 import { computed, onMounted } from 'vue'
@@ -7,8 +8,11 @@ import { useRoute, useRouter } from 'vue-router'
 import CardArt from '@/components/cards/CardArt.vue'
 import EnergyIcon from '@/components/cards/EnergyIcon.vue'
 import EnergyText from '@/components/cards/EnergyText.vue'
+import PackThumbnail from '@/components/cards/PackThumbnail.vue'
+import RarityIcon from '@/components/cards/RarityIcon.vue'
 import { Button } from '@/components/ui/button'
 import { useCardCatalog } from '@/composables/useCardCatalog'
+import { compareRarityFilters, rarityFilterLabel, shinyRarityLabel } from '@/composables/useCardFilters'
 import { useCollection } from '@/composables/useCollection'
 import { useTradeList } from '@/composables/useTradeList'
 import { parseEnergyCost, printCardId } from '@/lib/cardMetadata'
@@ -39,11 +43,84 @@ const weaknessType = computed(() => {
 })
 const retreatCost = computed(() => Array.from({ length: gameplay.value?.retreat ?? 0 }, () => 'Colorless' as const))
 
-const otherPrints = computed(() =>
-  (card.value?.alternate_versions ?? []).flatMap((print) => {
+interface OtherPrint {
+  id: string
+  setName: string
+  pack: PackOption | undefined
+  card: NonNullable<ReturnType<typeof getCard>>
+}
+
+// The "exact copy" group has no single rarity icon to show (its heading is the label itself);
+// every other group is a RarityFilter with an icon from RarityIcon, same as the filter bar.
+type OtherPrintGroup
+  = | { key: 'exact', label: string, rarity: null, prints: OtherPrint[] }
+    | { key: RarityFilter, label: string, rarity: RarityFilter, prints: OtherPrint[] }
+
+// Same rule the backend uses to merge collection ownership across reprints (rarity, art_style,
+// shiny, and artist all matching) — here it's purely about labeling, not merging anything, so
+// it's just this one pairwise check rather than the backend's full equivalence-group computation.
+function isExactCopy(a: ReturnType<typeof getCard>, b: ReturnType<typeof getCard>): boolean {
+  return !!a && !!b
+    && a.rarity === b.rarity
+    && (a.art_style ?? null) === (b.art_style ?? null)
+    && a.shiny === b.shiny
+    && a.artist === b.artist
+}
+
+function rarityFilterFor(printedCard: NonNullable<ReturnType<typeof getCard>>): RarityFilter {
+  return printedCard.shiny ? shinyRarityLabel(printedCard.rarity as '☆' | '☆☆' | '☆☆☆') : printedCard.rarity
+}
+
+const otherPrintGroups = computed<OtherPrintGroup[]>(() => {
+  const current = card.value
+  if (!current)
+    return []
+
+  const exact: OtherPrint[] = []
+  const byRarity = new Map<RarityFilter, OtherPrint[]>()
+
+  for (const print of current.alternate_versions ?? []) {
     const id = printCardId(print.set_code, print.id)
-    return getCard(id) ? [{ id, setName: print.set_name, rarity: print.rarity }] : []
-  }))
+    const printedCard = getCard(id)
+    if (!printedCard)
+      continue
+
+    const printedExpansion = getExpansion(print.set_code)
+    // Single-pack sets (Deluxe Packs, promo sets, and most non-"booster" sets) consistently name
+    // their one pack "Booster" in this field while every card's own `.pack` carries the set's real
+    // name instead — matching by name would always miss, so just take the only pack there is.
+    const printedPack = printedExpansion?.packs.length === 1
+      ? printedExpansion.packs[0]
+      : printedExpansion?.packs.find(pack => pack.name === printedCard.pack)
+    const entry: OtherPrint = {
+      id,
+      setName: print.set_name,
+      // Only set when there's actual art — some packs (Deluxe Packs, promo codes) have no pack-box
+      // image at all, and a pill shouldn't reserve icon space for one that'll never render.
+      pack: printedPack?.image ? printedPack : undefined,
+      card: printedCard,
+    }
+    if (isExactCopy(current, printedCard)) {
+      exact.push(entry)
+    }
+    else {
+      const rarity = rarityFilterFor(printedCard)
+      const bucket = byRarity.get(rarity) ?? []
+      bucket.push(entry)
+      byRarity.set(rarity, bucket)
+    }
+  }
+
+  const groups: OtherPrintGroup[] = []
+  if (exact.length > 0)
+    groups.push({ key: 'exact', label: t('views.cardDetail.exactCopyGroup'), rarity: null, prints: exact })
+
+  const sortedRarities = [...byRarity.keys()].sort(compareRarityFilters)
+  for (const rarity of sortedRarities)
+    groups.push({ key: rarity, label: rarityFilterLabel(rarity), rarity, prints: byRarity.get(rarity)! })
+
+  return groups
+})
 
 const ownedCount = computed(() => getOwnedCount(cardId.value))
 
@@ -278,17 +355,38 @@ function goBack() {
           </p>
         </section>
 
-        <section v-if="otherPrints.length > 0" aria-labelledby="prints-heading">
+        <section v-if="otherPrintGroups.length > 0" aria-labelledby="prints-heading">
           <h2 id="prints-heading" class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
             {{ t('views.cardDetail.otherPrintsHeading') }}
           </h2>
-          <ul class="mt-2 flex flex-wrap gap-2">
-            <li v-for="print in otherPrints" :key="print.id">
-              <RouterLink :to="`/cards/${print.id}`" class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm hover:bg-accent">
-                {{ print.id }} <span class="text-muted-foreground">· {{ print.rarity }} · {{ print.setName }}</span>
-              </RouterLink>
-            </li>
-          </ul>
+          <div class="mt-2 flex flex-col gap-3">
+            <div v-for="group in otherPrintGroups" :key="group.key">
+              <h3 class="flex items-center gap-1 text-xs font-medium text-muted-foreground" :aria-label="group.rarity ? group.label : undefined">
+                <RarityIcon v-if="group.rarity" :rarity="group.rarity" />
+                <template v-else>
+                  {{ group.label }}
+                </template>
+              </h3>
+              <ul class="mt-1 flex flex-wrap gap-2">
+                <li v-for="print in group.prints" :key="print.id">
+                  <RouterLink :to="`/cards/${print.id}`" class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm hover:bg-accent">
+                    <span class="relative inline-block">
+                      <!-- Invisible, overlaid on the set name's own bounds: hovering the text
+                           triggers PackThumbnail's built-in hover-to-enlarge preview, without a
+                           separate visible icon taking up space in the pill. -->
+                      <PackThumbnail v-if="print.pack" :pack="print.pack" preview alt="" class="absolute inset-0 size-full opacity-0" />
+                      {{ print.setName }}
+                    </span>
+                    <span class="relative inline-block text-muted-foreground">
+                      <!-- Same trick, overlaid on the card id: hovering it previews that print's own art. -->
+                      <CardArt :card="print.card" preview alt="" class="absolute inset-0 size-full opacity-0" />
+                      · {{ print.id }}
+                    </span>
+                  </RouterLink>
+                </li>
+              </ul>
+            </div>
+          </div>
         </section>
       </div>
     </div>

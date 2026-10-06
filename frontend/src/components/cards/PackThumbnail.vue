@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { PackOption } from '@/composables/useCardFilters'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
+import { useHoverPreview } from '@/composables/useHoverPreview'
 import { useLocalImage } from '@/composables/useLocalImage'
 import { cn } from '@/lib/utils'
 
@@ -9,8 +10,12 @@ const props = withDefaults(defineProps<{
   class?: string
   /** Show an enlarged copy of the pack art next to the mouse pointer while hovering. */
   preview?: boolean
+  /** Defaults to the pack's name; pass "" when the icon is purely decorative (e.g. redundant
+   * with adjacent text), so it doesn't get pulled into a containing link or button's accessible name. */
+  alt?: string
 }>(), {
   preview: false,
+  alt: undefined,
 })
 
 const remoteUrl = computed(() => props.pack.image ?? props.pack.image_png)
@@ -24,38 +29,20 @@ const { src, onError } = useLocalImage(localUrl.value, remoteUrl.value)
 
 const PREVIEW_WIDTH = 176
 const PREVIEW_HEIGHT = 288
-const CURSOR_GAP = 16
-
-const hovering = ref(false)
-const previewPosition = ref({ left: 0, top: 0 })
-
-function onPointerMove(event: PointerEvent) {
-  // Hover previews are a mouse affordance; on touch, a tap shouldn't leave one stuck open.
-  if (!props.preview || event.pointerType !== 'mouse')
-    return
-  hovering.value = true
-
-  // Sit to the lower right of the cursor, flipping to the other side near a viewport edge.
-  const fitsRight = event.clientX + CURSOR_GAP + PREVIEW_WIDTH <= window.innerWidth
-  const fitsBelow = event.clientY + CURSOR_GAP + PREVIEW_HEIGHT <= window.innerHeight
-  previewPosition.value = {
-    left: fitsRight ? event.clientX + CURSOR_GAP : Math.max(0, event.clientX - CURSOR_GAP - PREVIEW_WIDTH),
-    top: fitsBelow ? event.clientY + CURSOR_GAP : Math.max(0, event.clientY - CURSOR_GAP - PREVIEW_HEIGHT),
-  }
-}
+const { hovering, position, onPointerMove, onPointerLeave } = useHoverPreview({ width: PREVIEW_WIDTH, height: PREVIEW_HEIGHT })
 </script>
 
 <template>
   <img
     v-if="src"
     :src="src"
-    :alt="pack.name"
+    :alt="props.alt ?? pack.name"
     :class="cn('object-contain', props.class)"
     loading="lazy"
     @error="onError"
-    @pointermove="onPointerMove"
-    @pointerenter="onPointerMove"
-    @pointerleave="hovering = false"
+    @pointermove="preview && onPointerMove($event)"
+    @pointerenter="preview && onPointerMove($event)"
+    @pointerleave="onPointerLeave"
   >
   <!-- Teleported so the enlarged image isn't clipped by, or click-blocking inside, the card it sits in. -->
   <Teleport v-if="preview && src" to="body">
@@ -65,7 +52,7 @@ function onPointerMove(event: PointerEvent) {
       alt=""
       aria-hidden="true"
       class="pointer-events-none fixed z-50 object-contain drop-shadow-xl"
-      :style="{ left: `${previewPosition.left}px`, top: `${previewPosition.top}px`, width: `${PREVIEW_WIDTH}px`, maxHeight: `${PREVIEW_HEIGHT}px` }"
+      :style="{ left: `${position.left}px`, top: `${position.top}px`, width: `${PREVIEW_WIDTH}px`, maxHeight: `${PREVIEW_HEIGHT}px` }"
     >
   </Teleport>
 </template>

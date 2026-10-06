@@ -184,7 +184,8 @@
       "onOfferList": "On your offer list",
       "offerForTrade": "Offer for trade",
       "notTradableNotice": "This card can't be traded, so it can't go on your want or offer list.",
-      "otherPrintsHeading": "Other prints"
+      "otherPrintsHeading": "Other prints",
+      "exactCopyGroup": "Exact copy"
     },
     "collection": {
       "title": "Your sets",

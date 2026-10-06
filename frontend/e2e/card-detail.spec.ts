@@ -58,7 +58,7 @@ test('an alt-art print shows its base card\'s battle info and links to its other
   await expect(page.getByRole('heading', { name: 'Bulbasaur', level: 1 })).toBeVisible()
   await expect(page.getByRole('region', { name: 'Attacks' }).getByText('Vine Whip')).toBeVisible()
 
-  await page.getByRole('region', { name: 'Other prints' }).getByRole('link', { name: /^a1-001/ }).click()
+  await page.getByRole('region', { name: 'Other prints' }).getByRole('link', { name: /a1-001/ }).click()
   await expect(page).toHaveURL(/\/cards\/a1-001$/)
   await expect(page.getByRole('heading', { name: 'Bulbasaur', level: 1 })).toBeVisible()
 })

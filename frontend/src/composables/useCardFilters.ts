@@ -50,11 +50,23 @@ export function rarityFilterLabel(rarity: RarityFilter | ''): string {
   return i18n.global.t('cards.filters.starCount', { n }, n)
 }
 
-// Dropdown order: all diamond tiers, then all star tiers, then all shiny tiers (grouped
-// together rather than interleaved with their non-shiny counterpart), then crown/promo.
+// Canonical order: all diamond tiers, then all star tiers, then all shiny tiers (grouped
+// together rather than interleaved with their non-shiny counterpart), then crown/promo. Used
+// for the rarity filter dropdown, and anywhere else that lists a mix of rarities together (e.g.
+// a card's other prints).
 const DIAMOND_ORDER: Rarity[] = ['◊', '◊◊', '◊◊◊', '◊◊◊◊']
 const STAR_ORDER: Rarity[] = ['☆', '☆☆', '☆☆☆']
 const TAIL_ORDER: Rarity[] = ['Crown Rare', 'Promo']
+const RARITY_FILTER_ORDER: RarityFilter[] = [
+  ...DIAMOND_ORDER,
+  ...STAR_ORDER,
+  ...STAR_ORDER.map(rarity => shinyRarityLabel(rarity as '☆' | '☆☆' | '☆☆☆')),
+  ...TAIL_ORDER,
+]
+
+export function compareRarityFilters(a: RarityFilter, b: RarityFilter): number {
+  return RARITY_FILTER_ORDER.indexOf(a) - RARITY_FILTER_ORDER.indexOf(b)
+}
 
 /**
  * Search (name, number, attack/ability names and effect text) plus set, pack, rarity,
