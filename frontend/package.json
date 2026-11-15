@@ -18,7 +18,7 @@
     "@vueuse/core": "^15.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "pokemon-tcg-pocket-cards": "5.4.0",
+    "pokemon-tcg-pocket-cards": "5.5.2",
     "qrcode": "^1.5.4",
     "reka-ui": "^2.10.5",
     "tailwind-merge": "^3.7.0",

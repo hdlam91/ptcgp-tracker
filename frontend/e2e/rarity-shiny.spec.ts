@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { registerViaApi } from './testUsers'
 
-// Counts are read off the pinned pokemon-tcg-pocket-cards v5.3.1 dataset: Shining Revelry (a2b) has 14 shiny cards.
+// Counts are read off the pinned pokemon-tcg-pocket-cards v5.5.2 dataset: Shining Revelry (a2b) has 14 shiny cards.
 test('shiny cards are their own rarity on the collection page and the set page, not counted as star', async ({ page }) => {
   await registerViaApi(page)
   await page.goto('/')

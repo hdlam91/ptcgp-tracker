@@ -88,9 +88,9 @@ public class ImageMirrorEndpointsTests(PostgresApiFixture fixture) : IDisposable
         Assert.Equal(4 * ImageMirrorStubHandler.ImageBytes.Length, status.GetProperty("storedBytes").GetInt64());
 
         var requested = _github.Requests.ToList();
-        Assert.Contains(requested, url => url.EndsWith("/v5.4.0/images/webp/cards/a1/001.webp"));
-        Assert.Contains(requested, url => url.EndsWith("/v5.4.0/images/webp/cards/a2/001.webp"));
-        Assert.Contains(requested, url => url.EndsWith("/v5.4.0/images/webp/packs/a1-charizard.webp"));
+        Assert.Contains(requested, url => url.EndsWith("/v5.5.2/images/webp/cards/a1/001.webp"));
+        Assert.Contains(requested, url => url.EndsWith("/v5.5.2/images/webp/cards/a2/001.webp"));
+        Assert.Contains(requested, url => url.EndsWith("/v5.5.2/images/webp/packs/a1-charizard.webp"));
         Assert.DoesNotContain(requested, url => url.Contains("pa-promov1"));
 
         // Served to anyone (no login), as an image, cacheable.

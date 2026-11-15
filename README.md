@@ -149,7 +149,7 @@ Every option has a default, so nothing is required. You can set them as environm
 | `ADMIN_EMAILS` | *(none)* | Comma-separated emails that get the admin role (see [Your first admin](#your-first-admin)). |
 | `PTCGP_PORT` | `8081` | Host port for the website (self-host file). |
 | `PTCGP_VERSION` | `latest` | Which published image release to run (self-host file). |
-| `CARD_DATA_REPO_TAG` | `v5.4.0` | The pinned `pokemon-tcg-pocket-cards` release the backend downloads (build-from-source compose). See [Updating the card data](#updating-the-card-data). |
+| `CARD_DATA_REPO_TAG` | `v5.5.2` | The pinned `pokemon-tcg-pocket-cards` release the backend downloads (build-from-source compose). See [Updating the card data](#updating-the-card-data). |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM_ADDRESS` | *(none; `587`)* | An SMTP relay for "forgot password" emails. Left unset, the app still runs — that feature just can't send anything. The build-from-source compose defaults these to the bundled Mailpit container instead (a fake SMTP catcher for local dev, at `http://localhost:8025`), so it works out of the box with no real email. |
 
 Ports used by the build-from-source `docker-compose.yml`:

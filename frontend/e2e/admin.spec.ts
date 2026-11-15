@@ -117,7 +117,7 @@ test('the card data panel shows the loaded catalog and can refresh it', async ({
   await expect(page.getByText('Dataset version')).toBeVisible()
   // Scoped to the "Cards loaded" row specifically — the images card can coincidentally show the
   // same number (e.g. every card's art has been downloaded onto this dev server already).
-  await expect(page.getByText('Cards loaded').locator('xpath=following-sibling::dd[1]')).toHaveText('4317')
+  await expect(page.getByText('Cards loaded').locator('xpath=following-sibling::dd[1]')).toHaveText('4547')
 
   await page.getByRole('button', { name: 'Refresh card data' }).click()
   await expect(page.getByRole('button', { name: 'Refresh card data' })).toBeEnabled()

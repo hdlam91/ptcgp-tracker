@@ -6,9 +6,9 @@ test('searching and filtering the all-cards page spans every set', async ({ page
 
   await page.goto('/cards')
   await expect(page.getByRole('heading', { name: 'All cards' })).toBeVisible()
-  await expect(page.getByText('4317 / 4317 cards')).toBeVisible()
+  await expect(page.getByText('4547 / 4547 cards')).toBeVisible()
 
-  // Nothing renders until a filter narrows things down — rendering all ~4,317
+  // Nothing renders until a filter narrows things down — rendering all ~4,547
   // cards by default is a real perf hit, not just a display choice.
   await expect(page.getByText(/cards across every set/)).toBeVisible()
   await expect(page.locator('.grid > div')).toHaveCount(0)
@@ -18,9 +18,13 @@ test('searching and filtering the all-cards page spans every set', async ({ page
   await expect(matchedCards.first()).toBeVisible()
   const matchedCount = await matchedCards.count()
   expect(matchedCount).toBeGreaterThan(1)
-  for (const name of await matchedCards.locator('p.font-medium').allInnerTexts()) {
-    expect(name.toLowerCase()).toContain('pikachu')
-  }
+
+  // The search also covers attack, ability and card text, so a minority of matches aren't named
+  // Pikachu at all (c1-124 Light Ball is a tool whose text names Pikachu ex). Most still are.
+  const names = await matchedCards.locator('p.font-medium').allInnerTexts()
+  const namedPikachu = names.filter(name => name.toLowerCase().includes('pikachu'))
+  expect(namedPikachu.length).toBeGreaterThan(1)
+  expect(namedPikachu.length).toBeGreaterThan(names.length / 2)
 
   // Pikachu cards span multiple sets, proving the search isn't scoped to one.
   const cardIds = await matchedCards.locator('p.text-xs').allInnerTexts()
@@ -35,7 +39,7 @@ test('searching and filtering the all-cards page spans every set', async ({ page
   }
 
   await page.getByRole('button', { name: 'Clear' }).click()
-  await expect(page.getByText('4317 / 4317 cards')).toBeVisible()
+  await expect(page.getByText('4547 / 4547 cards')).toBeVisible()
   await expect(page.getByText(/cards across every set/)).toBeVisible()
 })
 
